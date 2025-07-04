@@ -1,5 +1,5 @@
 # php
-FROM php:7.4-apache-bullseye
+FROM php:8.2-apache-bullseye
 
 # timezone
 RUN echo "Asia/Jakarta" > /etc/timezone
@@ -13,7 +13,6 @@ RUN apt-get upgrade -y
 # install important lib
 RUN apt-get install -y \
     libpng-dev \
-    php7.*-mysqli \
     unzip \
     zip \
     libzip-dev
