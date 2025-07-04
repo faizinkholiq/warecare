@@ -1,0 +1,2 @@
+CREATE TABLE `warecare`.`user` (`id` INT NOT NULL AUTO_INCREMENT , `firstname` VARCHAR(50), `lastname` VARCHAR(50) , `username` VARCHAR(20) NOT NULL , `password` VARCHAR(255) NOT NULL , `role` TINYINT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
+INSERT INTO `user` (`id`, `firstname`, `lastname`, `username`, `password`, `role`) VALUES ('1', 'Admin', NULL, 'admin', 'admin@warecare', '1');

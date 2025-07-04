@@ -1,0 +1,11 @@
+
+# include default config
+!includedir /etc/mysql/conf.d/
+!includedir /etc/mysql/mysql.conf.d/
+
+# some important config
+[mysqld]
+sql_mode = STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+internal_tmp_disk_storage_engine = MyISAM
+group_concat_max_len = 1000000
+max_allowed_packet = 2048M

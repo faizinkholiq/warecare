@@ -1,0 +1,66 @@
+name: warecare
+
+networks:
+    internal:
+        external: false
+
+services:
+
+    # php
+    warecare_php:
+        container_name: warecare_php
+        build: 
+            context: ./images/php
+        restart: 'no'
+        depends_on:
+            - warecare_db
+        volumes:
+            - ../:/var/www/warecare
+            - ./config/php/php.development.ini:/usr/local/etc/php/php.ini
+            - ./config/apache2/site-enabled:/etc/apache2/sites-enabled
+            - ./config/apache2/apache2.conf:/etc/apache2/apache2.conf
+            - ./logs/apache2:/var/log/apache2
+        environment: 
+            TZ: Asia/Jakarta
+            CI_ENV: development
+        ports:
+            - "127.0.0.1:8088:80"
+        networks:
+            - internal
+
+    # mysql
+    warecare_db:
+        container_name: warecare_db
+        platform: linux/amd64
+        build: 
+            context: ./images/mysql
+        restart: 'no'
+        ports:
+            - "127.0.0.1:3388:3306"
+        volumes:
+            - ./data/mysql:/var/lib/mysql
+            - ./logs/mysql:/var/log/mysql
+            - ./config/mysql/mysql.cnf:/etc/mysql/mysql.cnf
+            - ./backup:/var/backup
+            - ../db:/var/db
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: warecare
+            MYSQL_USER: warecare_dev
+            MYSQL_PASSWORD: warecare_dev
+        networks:
+            - internal
+
+    # phpmyadmin
+    warecare_phpmyadmin:
+        container_name: warecare_phpmyadmin
+        image: phpmyadmin/phpmyadmin:latest
+        restart: 'no'
+        environment:
+            PMA_HOST: warecare_db
+            PMA_PORT: 3306
+            PMA_ABSOLUTE_URI: /phpmyadmin
+        volumes:
+            - /sessions
+        networks:
+            - internal
