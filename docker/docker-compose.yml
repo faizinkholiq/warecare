@@ -42,7 +42,7 @@ services:
             - ./logs/mysql:/var/log/mysql
             - ./config/mysql/mysql.cnf:/etc/mysql/mysql.cnf
             - ./backup:/var/backup
-            - ../db:/var/db
+            - ../migrations:/var/migrations
         environment:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: warecare

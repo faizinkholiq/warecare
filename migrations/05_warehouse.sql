@@ -5,7 +5,7 @@ CREATE TABLE `warecare`.`warehouse` (
     `created_by` INT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_by` INT NULL,
-    `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+    `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_warehouse_company
     FOREIGN KEY (company_id) REFERENCES company(id)
