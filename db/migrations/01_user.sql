@@ -1,2 +1,28 @@
-CREATE TABLE `warecare`.`user` (`id` INT NOT NULL AUTO_INCREMENT , `firstname` VARCHAR(50), `lastname` VARCHAR(50) , `username` VARCHAR(20) NOT NULL , `password` VARCHAR(255) NOT NULL , `role` TINYINT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB; 
-INSERT INTO `user` (`id`, `firstname`, `lastname`, `username`, `password`, `role`) VALUES ('1', 'Admin', NULL, 'admin', 'admin@warecare', '1');
+CREATE TABLE `warecare`.`user` (
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+    `first_name` VARCHAR(50), 
+    `lastname` VARCHAR(50), 
+    `username` VARCHAR(20) NOT NULL, 
+    `password` VARCHAR(255) NOT NULL, 
+    `role` ENUM('administrator', 'pelapor', 'kontraktor', 'rab', 'manager') DEFAULT 'pelapor',
+    `created_by` INT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_by` INT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+); 
+
+INSERT INTO `user` (
+    `id`, 
+    `firstname`, 
+    `lastname`, 
+    `username`, 
+    `password`, 
+    `role`
+) VALUES (
+    '1', 
+    'Super Admin', 
+    NULL, 
+    'administrator', 
+    'admin@warecare', 
+    '1'
+);
