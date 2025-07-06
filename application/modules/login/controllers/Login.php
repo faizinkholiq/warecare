@@ -32,7 +32,6 @@ class Login extends MX_Controller
                     $this->session->set_userdata('sess_data', $data_session);
 
                     redirect('home');
-        
                 }else{
                     $this->session->set_flashdata('msg', 'Username / Password is wrong');
                     $this->load->view("login", $d);

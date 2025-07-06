@@ -10,4 +10,4 @@ CREATE TABLE `warecare`.`warehouse` (
     CONSTRAINT fk_warehouse_company
     FOREIGN KEY (company_id) REFERENCES company(id)
     ON DELETE CASCADE
-); 
+);

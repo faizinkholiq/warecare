@@ -1,5 +1,5 @@
 # php
-FROM php:8.2-apache-bullseye
+FROM php:7.4-apache
 
 # timezone
 RUN echo "Asia/Jakarta" > /etc/timezone
