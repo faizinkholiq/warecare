@@ -22,7 +22,7 @@ INSERT INTO `user` (
     '1', 
     'Super Admin', 
     NULL, 
-    'administrator', 
+    'admin', 
     'admin@warecare', 
     '1'
 );

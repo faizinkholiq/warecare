@@ -118,7 +118,7 @@
             <div class="media align-items-center p-3">
               <img src="<?= base_url('assets/dist/img/user1-128x128.jpg') ?>" alt="User Avatar" class="img-size-32 mr-3 img-circle">
               <div class="media-body">
-                <b style="font-size: 1.25rem;"><?=$firstname.' '.$lastname ?></b>
+                <b style="font-size: 1.25rem;"><?=$first_name.' '.$last_name ?></b>
               </div>
             </div>
             <div class="dropdown-divider"></div>
@@ -135,8 +135,8 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
       <a href="<?= site_url('home') ?>" class="brand-link logo-switch">
-        <span class="brand-text logo-xs font-weight-semibold" style="left: 42px;">A</span>
-        <span class="brand-text logo-xl font-weight-semibold" style="left: 40px;">AKATSUKI SYSTEM</span>
+        <span class="brand-text logo-xs font-weight-semibold" style="left: 42px;">W</span>
+        <span class="brand-text logo-xl font-weight-semibold" style="left: 40px;">WareCare</span>
       </a>
 
       <!-- Sidebar -->
