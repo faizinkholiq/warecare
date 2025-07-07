@@ -1,6 +1,6 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Invoice_model extends CI_Model {
+class Warehouse_model extends CI_Model {
 
     
     public function get_datatables($p)
