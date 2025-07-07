@@ -1,15 +1,12 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Warehouse_model extends CI_Model {
+class Company_model extends CI_Model {
 
-    private $table = 'warehouse';
+    private $table = 'company';
 
     public function get_all()
     {
-        $this->db->select('warehouse.*, company.name AS company_name');
-        $this->db->from($this->table);
-        $this->db->join('company', 'company.id = warehouse.company_id');
-        return $this->db->get()->result();
+        return $this->db->get($this->table)->result();
     }
 
     public function get($id)
