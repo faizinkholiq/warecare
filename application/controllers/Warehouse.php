@@ -3,7 +3,7 @@
 // application/controllers/Warehouses.php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Warehouse extends CI_Controller
+class Warehouse extends MY_Controller
 {
   public function __construct()
   {
