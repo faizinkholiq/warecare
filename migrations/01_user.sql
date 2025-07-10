@@ -23,6 +23,6 @@ INSERT INTO `user` (
     'Super Admin', 
     NULL, 
     'admin', 
-    'admin@warecare', 
+    '$2y$10$14TupGE3hyGvHmiwyUbtyOd43I9jik86/W4ucMjQaojLmJC9SUdZa', -- admin@warecare 
     '1'
 );

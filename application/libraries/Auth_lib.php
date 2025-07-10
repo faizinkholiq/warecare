@@ -19,7 +19,7 @@ class Auth_lib
 
   public function user_id()
   {
-    return $this->CI->session->userdata('user_id');
+    return $this->CI->session->userdata('id');
   }
 
   public function current_user()

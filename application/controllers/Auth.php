@@ -13,14 +13,11 @@ class Auth extends CI_Controller {
       $username = $this->input->post('username');
       $password = $this->input->post('password');
       $user = $this->User_model->get_by_username($username);
+      
+      if ($user && password_verify($password, $user["password"])) {
+        $user["logged_in"] = TRUE;
+        $this->session->set_userdata($user);
 
-      if ($user && password_verify($password, $user->password)) {
-        $this->session->set_userdata([
-          'user_id' => $user->id,
-          'username' => $user->username,
-          'role' => $user->role,
-          'logged_in' => TRUE
-        ]);
         return redirect('dashboard');
       }
 
