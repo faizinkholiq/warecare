@@ -14,8 +14,36 @@ class Warehouse extends MY_Controller
 
   public function index()
   {
-    $data['warehouses'] = $this->Warehouse_model->get_all();
-    print_r($data);
+    $data["current_user"] = $this->auth_lib->current_user();
+		$data["title"] = "Warehouse";
+		$data["view"] = "warehouse/index";
+    $this->load->view('layouts/template', $data);
+  }
+
+  public function get_list()
+  {
+    $warehouses = $this->Warehouse_model->get_all();
+    
+    $data = [];
+    foreach ($warehouses as $warehouse) {
+      $data[] = [
+        'id'          => $warehouse['id'],
+        'name'        => $warehouse['name'],
+        'location'    => $warehouse['location'],
+        'company'     => $warehouse['company_name'],
+        'created_at'  => date('Y-m-d H:i:s', strtotime($warehouse['created_at'])),
+      ];
+    }
+
+    echo json_encode(['data' => $data]);
+  }
+
+  public function get($id)
+  {
+    $warehouse = $this->Warehouse_model->get($id);
+    if (!$warehouse) show_404();
+
+    echo json_encode($warehouse);
   }
 
   public function create()
