@@ -19,7 +19,7 @@
 <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
-            <img src="<?= base_url('assets/images/logo.png') ?>" alt="Logo" width="280px">
+            <h1 class="text-bold">WareCare</h1>
         </div>
         <!-- /.login-logo -->
         <div class="card">

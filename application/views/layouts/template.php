@@ -153,10 +153,51 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="<?= site_url('invoice') ?>" id="menu_invoice" class="nav-link">
-                <i class="nav-icon fas fa-receipt"></i>
-                <p>Invoice</p>
+              <a href="<?= site_url('report') ?>" id="menu_report" class="nav-link">
+                <i class="nav-icon fas fa-bullhorn"></i>
+                <p>Pengaduan</p>
               </a>
+            </li>
+            <li class="nav-item menu-open">
+              <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-wrench"></i>
+                <p>
+                  Master
+                  <i class="fas fa-angle-left right"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview" style="display: block;">
+                <li class="nav-item">
+                  <a href="<?= site_url('company') ?>" id="menu_company" class="nav-link">
+                    <i class="nav-icon far fa-circle"></i>
+                    <p>Perusahaan</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?= site_url('warehouse') ?>" id="menu_warehouse" class="nav-link">
+                    <i class="nav-icon far fa-circle"></i>
+                    <p>Gudang</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?= site_url('project') ?>" id="menu_project" class="nav-link">
+                    <i class="nav-icon far fa-circle"></i>
+                    <p>Project</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?= site_url('entity') ?>" id="menu_entity" class="nav-link">
+                    <i class="nav-icon far fa-circle"></i>
+                    <p>Entity</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?= site_url('category') ?>" id="menu_category" class="nav-link">
+                    <i class="nav-icon far fa-circle"></i>
+                    <p>Kategori</p>
+                  </a>
+                </li>
+              </ul>
             </li>
           </ul>
         </nav>
