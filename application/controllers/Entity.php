@@ -2,35 +2,36 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Warehouse extends MY_Controller
+class Entity extends MY_Controller
 {
   public function __construct()
   {
     parent::__construct();
-    $this->load->model('Warehouse_model');
+    $this->load->model('Entity_model');
     $this->load->library('form_validation');
   }
 
   public function index()
   {
     $data["current_user"] = $this->auth_lib->current_user();
-		$data["title"] = "Warehouse";
-		$data["view"] = "warehouse/index";
+		$data["title"] = "Entity";
+		$data["menu_id"] = "entity";
+		$data["view"] = "entity/index";
     $this->load->view('layouts/template', $data);
   }
 
   public function get_list()
   {
-    $warehouses = $this->Warehouse_model->get_all();
+    $entities = $this->Entity_model->get_all();
     
     $data = [];
-    foreach ($warehouses as $warehouse) {
+    foreach ($entities as $entity) {
       $data[] = [
-        'id'          => $warehouse['id'],
-        'name'        => $warehouse['name'],
-        'location'    => $warehouse['location'],
-        'company'     => $warehouse['company_name'],
-        'created_at'  => date('Y-m-d H:i:s', strtotime($warehouse['created_at'])),
+        'id'          => $entity['id'],
+        'name'        => $entity['name'],
+        'location'    => $entity['location'],
+        'entity'     => $entity['entity_name'],
+        'created_at'  => date('Y-m-d H:i:s', strtotime($entity['created_at'])),
       ];
     }
 
@@ -39,62 +40,62 @@ class Warehouse extends MY_Controller
 
   public function get($id)
   {
-    $warehouse = $this->Warehouse_model->get($id);
-    if (!$warehouse) show_404();
+    $entity = $this->Entity_model->get($id);
+    if (!$entity) show_404();
 
-    echo json_encode($warehouse);
+    echo json_encode($entity);
   }
 
   public function create()
   {
     $this->form_validation->set_rules('name', 'Name', 'required');
-    $this->form_validation->set_rules('company_id', 'Company', 'required');
+    $this->form_validation->set_rules('entity_id', 'Entity', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-      $data['companies'] = $this->Warehouse_model->get_companies();
+      $data['entities'] = $this->Entity_model->get_companies();
       $this->load->view('layouts/header');
-      $this->load->view('warehouse/form', $data);
+      $this->load->view('entity/form', $data);
       $this->load->view('layouts/footer');
     } else {
       $data = [
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
-        'company_id'  => $this->input->post('company_id'),
+        'entity_id'  => $this->input->post('entity_id'),
         'created_by'  => $this->session->userdata('user_id'),
       ];
-      $this->Warehouse_model->insert($data);
-      redirect('warehouse');
+      $this->Entity_model->insert($data);
+      redirect('entity');
     }
   }
 
   public function edit($id)
   {
-    $warehouse = $this->Warehouse_model->get($id);
-    if (!$warehouse) show_404();
+    $entity = $this->Entity_model->get($id);
+    if (!$entity) show_404();
 
     $this->form_validation->set_rules('name', 'Name', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-      $data['warehouse'] = $warehouse;
-      $data['companies'] = $this->Warehouse_model->get_companies();
+      $data['entity'] = $entity;
+      $data['entities'] = $this->Entity_model->get_companies();
       $this->load->view('layouts/header');
-      $this->load->view('warehouse/form', $data);
+      $this->load->view('entity/form', $data);
       $this->load->view('layouts/footer');
     } else {
       $data = [
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
-        'company_id'  => $this->input->post('company_id'),
+        'entity_id'  => $this->input->post('entity_id'),
         'updated_by'  => $this->session->userdata('user_id'),
       ];
-      $this->Warehouse_model->update($id, $data);
-      redirect('warehouse');
+      $this->Entity_model->update($id, $data);
+      redirect('entity');
     }
   }
 
   public function delete($id)
   {
-    $this->Warehouse_model->delete($id);
-    redirect('warehouse');
+    $this->Entity_model->delete($id);
+    redirect('entity');
   }
 }

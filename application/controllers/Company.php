@@ -2,35 +2,36 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Warehouse extends MY_Controller
+class Company extends MY_Controller
 {
   public function __construct()
   {
     parent::__construct();
-    $this->load->model('Warehouse_model');
+    $this->load->model('Company_model');
     $this->load->library('form_validation');
   }
 
   public function index()
   {
     $data["current_user"] = $this->auth_lib->current_user();
-		$data["title"] = "Warehouse";
-		$data["view"] = "warehouse/index";
+		$data["title"] = "Company";
+		$data["menu_id"] = "company";
+		$data["view"] = "company/index";
     $this->load->view('layouts/template', $data);
   }
 
   public function get_list()
   {
-    $warehouses = $this->Warehouse_model->get_all();
+    $companies = $this->Company_model->get_all();
     
     $data = [];
-    foreach ($warehouses as $warehouse) {
+    foreach ($companies as $company) {
       $data[] = [
-        'id'          => $warehouse['id'],
-        'name'        => $warehouse['name'],
-        'location'    => $warehouse['location'],
-        'company'     => $warehouse['company_name'],
-        'created_at'  => date('Y-m-d H:i:s', strtotime($warehouse['created_at'])),
+        'id'          => $company['id'],
+        'name'        => $company['name'],
+        'location'    => $company['location'],
+        'company'     => $company['company_name'],
+        'created_at'  => date('Y-m-d H:i:s', strtotime($company['created_at'])),
       ];
     }
 
@@ -39,10 +40,10 @@ class Warehouse extends MY_Controller
 
   public function get($id)
   {
-    $warehouse = $this->Warehouse_model->get($id);
-    if (!$warehouse) show_404();
+    $company = $this->Company_model->get($id);
+    if (!$company) show_404();
 
-    echo json_encode($warehouse);
+    echo json_encode($company);
   }
 
   public function create()
@@ -51,9 +52,9 @@ class Warehouse extends MY_Controller
     $this->form_validation->set_rules('company_id', 'Company', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-      $data['companies'] = $this->Warehouse_model->get_companies();
+      $data['companies'] = $this->Company_model->get_companies();
       $this->load->view('layouts/header');
-      $this->load->view('warehouse/form', $data);
+      $this->load->view('company/form', $data);
       $this->load->view('layouts/footer');
     } else {
       $data = [
@@ -62,23 +63,23 @@ class Warehouse extends MY_Controller
         'company_id'  => $this->input->post('company_id'),
         'created_by'  => $this->session->userdata('user_id'),
       ];
-      $this->Warehouse_model->insert($data);
-      redirect('warehouse');
+      $this->Company_model->insert($data);
+      redirect('company');
     }
   }
 
   public function edit($id)
   {
-    $warehouse = $this->Warehouse_model->get($id);
-    if (!$warehouse) show_404();
+    $company = $this->Company_model->get($id);
+    if (!$company) show_404();
 
     $this->form_validation->set_rules('name', 'Name', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-      $data['warehouse'] = $warehouse;
-      $data['companies'] = $this->Warehouse_model->get_companies();
+      $data['company'] = $company;
+      $data['companies'] = $this->Company_model->get_companies();
       $this->load->view('layouts/header');
-      $this->load->view('warehouse/form', $data);
+      $this->load->view('company/form', $data);
       $this->load->view('layouts/footer');
     } else {
       $data = [
@@ -87,14 +88,14 @@ class Warehouse extends MY_Controller
         'company_id'  => $this->input->post('company_id'),
         'updated_by'  => $this->session->userdata('user_id'),
       ];
-      $this->Warehouse_model->update($id, $data);
-      redirect('warehouse');
+      $this->Company_model->update($id, $data);
+      redirect('company');
     }
   }
 
   public function delete($id)
   {
-    $this->Warehouse_model->delete($id);
-    redirect('warehouse');
+    $this->Company_model->delete($id);
+    redirect('company');
   }
 }

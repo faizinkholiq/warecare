@@ -118,7 +118,7 @@
             <div class="media align-items-center p-3">
               <img src="<?= base_url('assets/dist/img/user1-128x128.jpg') ?>" alt="User Avatar" class="img-size-32 mr-3 img-circle">
               <div class="media-body">
-                <b style="font-size: 1.25rem;"><?=$first_name.' '.$last_name ?></b>
+                <b style="font-size: 1.25rem;"><?=$current_user["first_name"].' '.$current_user["last_name"]?></b>
               </div>
             </div>
             <div class="dropdown-divider"></div>
@@ -147,7 +147,7 @@
             <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
             <li class="nav-item">
-              <a href="<?= site_url('home') ?>" id="menu_home" class="nav-link">
+              <a href="<?= site_url('home') ?>" id="menu_dashboard" class="nav-link">
                 <i class="nav-icon fas fa-home"></i>
                 <p>Home</p>
               </a>
@@ -253,7 +253,7 @@
   </div>
 </body>
 <script>
-  const menuId = <?php echo $menu_id; ?>;
+  const menuId = '<?php echo $menu_id; ?>';
   const modalPrompt = $("#modal_prompt");
 
   $(document).ready(function() {
@@ -266,7 +266,7 @@
       useStric: true
     });
 
-    $(menuId).addClass('active');
+    $('#menu_'+menuId).addClass('active');
   });
 </script>
 

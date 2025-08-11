@@ -2,35 +2,35 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Warehouse extends MY_Controller
+class Project extends MY_Controller
 {
   public function __construct()
   {
     parent::__construct();
-    $this->load->model('Warehouse_model');
+    $this->load->model('Project_model');
     $this->load->library('form_validation');
   }
 
   public function index()
   {
     $data["current_user"] = $this->auth_lib->current_user();
-		$data["title"] = "Warehouse";
-		$data["view"] = "warehouse/index";
+		$data["title"] = "Project";
+		$data["view"] = "project/index";
     $this->load->view('layouts/template', $data);
   }
 
   public function get_list()
   {
-    $warehouses = $this->Warehouse_model->get_all();
+    $projects = $this->Project_model->get_all();
     
     $data = [];
-    foreach ($warehouses as $warehouse) {
+    foreach ($projects as $project) {
       $data[] = [
-        'id'          => $warehouse['id'],
-        'name'        => $warehouse['name'],
-        'location'    => $warehouse['location'],
-        'company'     => $warehouse['company_name'],
-        'created_at'  => date('Y-m-d H:i:s', strtotime($warehouse['created_at'])),
+        'id'          => $project['id'],
+        'name'        => $project['name'],
+        'location'    => $project['location'],
+        'project'     => $project['project_name'],
+        'created_at'  => date('Y-m-d H:i:s', strtotime($project['created_at'])),
       ];
     }
 
@@ -39,62 +39,62 @@ class Warehouse extends MY_Controller
 
   public function get($id)
   {
-    $warehouse = $this->Warehouse_model->get($id);
-    if (!$warehouse) show_404();
+    $project = $this->Project_model->get($id);
+    if (!$project) show_404();
 
-    echo json_encode($warehouse);
+    echo json_encode($project);
   }
 
   public function create()
   {
     $this->form_validation->set_rules('name', 'Name', 'required');
-    $this->form_validation->set_rules('company_id', 'Company', 'required');
+    $this->form_validation->set_rules('project_id', 'Project', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-      $data['companies'] = $this->Warehouse_model->get_companies();
+      $data['projects'] = $this->Project_model->get_companies();
       $this->load->view('layouts/header');
-      $this->load->view('warehouse/form', $data);
+      $this->load->view('project/form', $data);
       $this->load->view('layouts/footer');
     } else {
       $data = [
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
-        'company_id'  => $this->input->post('company_id'),
+        'project_id'  => $this->input->post('project_id'),
         'created_by'  => $this->session->userdata('user_id'),
       ];
-      $this->Warehouse_model->insert($data);
-      redirect('warehouse');
+      $this->Project_model->insert($data);
+      redirect('project');
     }
   }
 
   public function edit($id)
   {
-    $warehouse = $this->Warehouse_model->get($id);
-    if (!$warehouse) show_404();
+    $project = $this->Project_model->get($id);
+    if (!$project) show_404();
 
     $this->form_validation->set_rules('name', 'Name', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-      $data['warehouse'] = $warehouse;
-      $data['companies'] = $this->Warehouse_model->get_companies();
+      $data['project'] = $project;
+      $data['projects'] = $this->Project_model->get_companies();
       $this->load->view('layouts/header');
-      $this->load->view('warehouse/form', $data);
+      $this->load->view('project/form', $data);
       $this->load->view('layouts/footer');
     } else {
       $data = [
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
-        'company_id'  => $this->input->post('company_id'),
+        'project_id'  => $this->input->post('project_id'),
         'updated_by'  => $this->session->userdata('user_id'),
       ];
-      $this->Warehouse_model->update($id, $data);
-      redirect('warehouse');
+      $this->Project_model->update($id, $data);
+      redirect('project');
     }
   }
 
   public function delete($id)
   {
-    $this->Warehouse_model->delete($id);
-    redirect('warehouse');
+    $this->Project_model->delete($id);
+    redirect('project');
   }
 }

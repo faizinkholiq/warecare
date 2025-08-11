@@ -28,3 +28,5 @@ CREATE TABLE IF NOT EXISTS report (
   CONSTRAINT fk_report_warehouse   FOREIGN KEY (warehouse_id)  REFERENCES warehouse(id)   ON DELETE CASCADE,
   CONSTRAINT fk_report_category    FOREIGN KEY (category_id)   REFERENCES category(id)   ON DELETE CASCADE
 );
+
+ALTER TABLE `report` ADD `no` VARCHAR(20) NOT NULL AFTER `id`, ADD UNIQUE `unique_report_no` (`no`); 
