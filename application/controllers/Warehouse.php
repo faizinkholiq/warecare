@@ -45,11 +45,11 @@ class Warehouse extends MY_Controller
   {
     $warehouse = $this->Warehouse_model->get($id);
 	if (!$warehouse) {
-      $this->session->set_flashdata('error', 'Product not found');
+      $this->session->set_flashdata('error', 'Warehouse not found');
       $this->output->set_status_header(404);
       echo json_encode([
         'success' => false,
-        'error' => 'Product not found.',
+        'error' => 'Warehouse not found.',
       ]);
       return;
     }
@@ -91,11 +91,11 @@ class Warehouse extends MY_Controller
   {
     $warehouse = $this->Warehouse_model->get($id);
     if (!$warehouse) {
-      $this->session->set_flashdata('error', 'Product not found');
+      $this->session->set_flashdata('error', 'Warehouse not found');
       $this->output->set_status_header(404);
       echo json_encode([
         'success' => false,
-        'error' => 'Product not found.',
+        'error' => 'Warehouse not found.',
       ]);
       return;
     }
@@ -131,11 +131,11 @@ class Warehouse extends MY_Controller
   {
     $warehouse = $this->Warehouse_model->get($id);
     if (!$warehouse) {
-      $this->session->set_flashdata('error', 'Product not found');
+      $this->session->set_flashdata('error', 'Warehouse not found');
       $this->output->set_status_header(404);
       echo json_encode([
         'success' => false,
-        'error' => 'Product not found.',
+        'error' => 'Warehouse not found.',
       ]);
       return;
     }
