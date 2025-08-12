@@ -1,212 +1,266 @@
-<div class="d-flex flex-column" style="height: 100%;">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-4 d-flex" style="gap: 0.5rem;">
-                <button type="button" class="btn btn-success" style="flex: 1;" onclick="createAction('IDR')">Create</button>
-                <button type="button" class="btn btn-warning" style="flex: 1;" onclick="editAction()">Edit</button>
-                <button type="button" class="btn btn-danger" style="flex: 1;" onclick="deleteAction()">Delete</button>
+<style>
+</style>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="create-btn btn btn-light border shadow-sm">
+                    <i class="fas fa-plus mr-2"></i> Add New Warehouse
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive text-sm">
+                <table id="warehousesTable" class="table table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th class="dt-center">No</th>
+                            <th class="dt-center">Perusahaan</th>
+                            <th class="dt-center">Name</th>
+                            <th class="dt-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div id="warehouse_table_container" class="container-fluid mt-4" style="flex: 1;">
-        <table id="warehouse_table" class="table table-bordered table-striped" style="table-layout: fixed;">
-            <thead>
-                <tr>
-                    <th width="30px">No.</th>
-                    <th width="30px">#ID</th>
-                    <th width="80px">Date</th>
-                    <th width="50px">Currency</th>
-                    <th width="80px">Code</th>
-                    <th width="100px">Category</th>
-                    <th width="100px">Invoice To</th>
-                    <th width="100px">Address</th>
-                    <th width="100px">Phone</th>
-                    <th width="100px">Email</th>
-                    <th width="100px">Description</th>
-                    <th width="100px">Quantity</th>
-                    <th width="100px">Price</th>
-                    <th width="100px">Sub Total</th>
-                    <th width="100px">Tax</th>
-                    <th width="100px">Other</th>
-                    <th width="100px">Deduction</th>
-                    <th width="100px">Grand Total</th>
-                    <th width="100px">Paid By</th>
-                    <th width="100px">Status</th>
-                    <th width="100px">Received</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
 </div>
-<div class="modal fade" id="warehouseModal" tabindex="-1" aria-labelledby="warehouseModalHeader" aria-hidden="true">
+
+<!-- Create or Edit Modal -->
+<div class="modal fade" id="inputModal" tabindex="-1" aria-labelledby="inputModalHeader" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="warehouseModalHeader">New Warehouse</h5>
+                <h5 class="modal-title" id="inputModalHeader">New Warehouse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="warehouseForm">
+                <div class="modal-body">
+                    <input id="warehouseId" type="hidden" name="id">
+                    <div class="form-group col-md-10">
+                        <label for="warehouseCompany">Perusahaan</label>
+                        <select id="warehouseCompany" class="form-control" name="company_id" required>
+                            <option value="">- Pilih Perusahaan -</option>
+                            <?php foreach($list_data['company'] as $key => $value): ?>    
+                            <option value="<?=$value['id']  ?>"><?= $value['name']  ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="warehouseName">Name</label>
+                        <input id="warehouseName" type="text" class="form-control" name="name" placeholder="Name" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save mr-2"></i> Save Warehouse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Delete Warehouse</span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="warehouse_form">
-                    <input id="warehouse_id" type="hidden" name="id">
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_date">Date</label>
-                            <div class="input-group date-input" id="warehouse_date" name="date" data-target-input="nearest">
-                                <input type="text" name="date" class="form-control datetimepicker-input" data-target="#warehouse_date" />
-                                <div class="input-group-append" data-target="#warehouse_date" data-toggle="datetimepicker">
-                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_currency">Currency</label>
-                            <input type="text" class="form-control" id="warehouse_currency" name="currency" readonly />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_code">Code</label>
-                            <input type="text" class="form-control" id="warehouse_code" name="code" placeholder="Code" />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_category">Category</label>
-                            <select class="form-control select2 select2-danger" id="warehouse_category" name="category" data-placeholder="Category" placeholder="Category" data-dropdown-css-class="select2-danger" style="width: 100%;">
-                                <?php foreach($list['category'] as $key => $value): ?>    
-                                <option value="<?=$value['id']  ?>"><?= $value['name']  ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="warehouse_to">Invoice To</label>
-                        <input type="text" class="form-control" id="warehouse_to" name="warehouse_to" placeholder="Invoice To" />
-                    </div>
-                    <div class="form-group">
-                        <label for="warehouse_address">Address</label>
-                        <input type="text" class="form-control" id="warehouse_address" name="address" placeholder="Address" />
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_phone">Phone</label>
-                            <input type="number" class="form-control" id="warehouse_phone" name="phone" placeholder="Phone" />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_email">Email</label>
-                            <input type="email" class="form-control" id="warehouse_email" name="email" placeholder="Email" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="warehouse_description">Description</label>
-                        <textarea id="warehouse_description" name="description" class="form-control" rows="3" placeholder="Description"></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_qty">Quantity</label>
-                            <input type="number" class="form-control" id="warehouse_qty" name="qty" placeholder="Quantity" onchange="calculateSubTotal()" />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_price">Price</label>
-                            <input type="text" class="form-control" id="warehouse_price" name="price" placeholder="Price" onchange="calculateSubTotal()" />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_sub_total">Sub Total</label>
-                            <input type="text" class="form-control" id="warehouse_sub_total" name="sub_total" placeholder="Total" readonly />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_tax">Tax</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="warehouse_tax" name="tax" min="0" max="100" placeholder="Tax" onchange="calculateTotal()" />
-                                <div class="input-group-append">
-                                    <div class="input-group-text"><i class="fa fa-percent"></i></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_other">Other</label>
-                            <input type="text" class="form-control" id="warehouse_other" name="other" placeholder="Other" onchange="calculateTotal()" />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_deduction">Deduction</label>
-                            <input type="text" class="form-control" id="warehouse_deduction" name="deduction" placeholder="Deduction" onchange="calculateTotal()" />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_total">Grand Total</label>
-                            <input type="text" class="form-control" id="warehouse_total" name="total" placeholder="Grand Total" readonly />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_paid_by">Paid By</label>
-                            <select class="form-control select2 select2-danger" id="warehouse_paid_by" name="paid_by" data-placeholder="Paid By" placeholder="Paid By" data-dropdown-css-class="select2-danger" style="width: 100%;">
-                                <option value="cash">Cash</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="transfer">Transfer</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_status">Status</label>
-                            <select class="form-control select2 select2-danger" id="warehouse_status" name="status" data-placeholder="Status" placeholder="Status" data-dropdown-css-class="select2-danger" style="width: 100%;">
-                                <?php foreach($list['status'] as $key => $value): ?>    
-                                <option value="<?=$value['id']  ?>"><?= $value['name']  ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="warehouse_received">Received</label>
-                            <input type="text" class="form-control" id="warehouse_received" name="received" placeholder="Received" />
-                        </div>
-                    </div>
-                </form>
+                <input type="hidden" id="deleteWarehouseId">
+                <p>Are you sure you want to delete this warehouse?</p>
+                <p class="text-center text-sm border px-4 py-2 border-warning text-bold rounded bg-light-warning"><i class="fas fa-exclamation-triangle text-warning mr-2"></i> The data will be permanently deleted.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" onclick="submitAction()">Submit</button>
+            <div class="modal-footer d-flex">
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-default bg-white" data-dismiss="modal">Cancel</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete Warehouse</button>
             </div>
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    const warehouseTable = $("#warehouse_table");
-    let warehouseTableHeight = 420;
 
-    const warehouseModal = $("#warehouseModal");
-    const warehouseModalHeader = $("#warehouseModalHeader");
-    const warehouseForm = {
-        group: $("#warehouse_form"),
-        controls: {
-            id: $("#warehouse_id"),
-            company: $("#warehouse_company"),
-            name: $("#warehouse_name"),
-        }
+<script>
+    let notifications = {
+        success: '<?= $this->session->flashdata('success') ?>',
+        error: '<?= $this->session->flashdata('error') ?>'
     };
-    const summary = {
-        total_transaction: $('#summary-total-transaction'),
-    }
 
     const urls = {
-        site: "<?= site_url("/warehouse") ?>",
-        datatables: "<?= site_url("/warehouse/datatables") ?>",
-        create: "<?= site_url("/warehouse/create") ?>",
-        detail: "<?= site_url("/warehouse/detail") ?>",
-        edit: "<?= site_url("/warehouse/edit") ?>",
-        delete: "<?= site_url("/warehouse/delete") ?>",
-    };
+        get_list: "<?= site_url('warehouse/get_list') ?>",
+        get: "<?= site_url('warehouse/get') ?>",
+        create: "<?= site_url('warehouse/create') ?>",
+        edit: "<?= site_url('warehouse/edit') ?>",
+        delete: "<?= site_url('warehouse/delete') ?>",
+    }
 
-    $(function() {
+    $(document).ready(function() {
         setTimeout(() => {
-            warehouseTableHeight = $("#warehouse_table_container").height() - 105;
-            initDatatables();
-        }, 300);
+            if(notifications.success) {
+                toastr.success(notifications.success);
+            }else if (notifications.error) {
+                toastr.error(notifications.error);
+            }
+        }, 500)
 
-        initDatatablesFilter();
-        initFormValidation();
+        // Initialize DataTable
+        var table = $('#warehousesTable').DataTable({
+            serverSide: true,
+            ajax: {
+                url: urls.get_list,
+                type: 'POST'
+            },
+            rowId: 'id',
+            columns: [
+                { 
+                    data: "id", 
+                    visible: false,
+                    orderable: false,
+                    targets: 0 
+                },
+                {
+                    data: null,
+                    width: "3%",
+                    render: function (data, type, row, meta) {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    },
+                    searchable: false,
+                    orderable: false,
+                    targets: 1
+                },
+                { 
+                    data: "company",
+                    width: "30%",
+                    targets: 2
+                },
+                { 
+                    data: "name",
+                    targets: 3
+                },
+                {
+                    data: null,
+                    width: "10%",
+                    className: "dt-center",
+                    render: function(data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-primary border-0 edit-btn" data-id="${row.id}">
+                                <i class="text-xs fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger border-0 delete-btn" data-id="${row.id}">
+                                <i class="text-xs fas fa-trash"></i>
+                            </button>
+                        `;
+                    },
+                    orderable: false,
+                    targets: 4
+                }
+            ],
+            scrollResize: true,
+            scrollX: "100%",
+            scrollCollapse: true,
+            paging: false,
+            responsive: false,
+            lengthChange: false,
+            autoWidth: false,
+            searching: false,
+            select: false,
+            info: false,
+        });
+
+        // Create Warehouse Button
+        $(document).on('click', '.create-btn', function() {
+            resetForm();
+            $('#inputModalHeader').text('Add New Warehouse');
+            $('#warehouseId').val('');
+            $('#inputModal').modal('show');
+        });
+
+        // Edit Warehouse Button
+        $(document).on('click', '.edit-btn', function() {
+            resetForm();
+            
+            var warehouse = $(this).data('id');
+            $('#warehouseId').val(warehouse);
+
+            $.get(urls.get + '/' + warehouse, function(data) {
+                data = JSON.parse(data);
+                if (data.error) {
+                    toastr.error(data.error);
+                    return;
+                }
+
+                $('#warehouseCompany').val(data.company_id).trigger('change');
+                $('#warehouseName').val(data.name);
+                $('#inputModalHeader').text('Edit Warehouse');
+            });
+
+            $('#inputModal').modal('show');
+        });
+
+        $('#warehouseForm').submit(function(e) {
+            e.preventDefault();
+
+            const id = $('#warehouseId').val();
+            
+            const formData = new FormData();
+            formData.append('company_id', $('#warehouseCompany').val());
+            formData.append('name', $('#warehouseName').val());
+            
+            // Submit form
+            $.ajax({
+                url: !(id)? urls.create : urls.edit + '/' + id,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#inputModal').modal('hide');
+                    table.ajax.reload();
+                    toastr.success('Warehouse updated successfully');
+                },
+                error: function() {
+                    toastr.error("Failed to "+ mode +" product.");
+                }
+            });
+        });
+
+        // Delete Warehouse Button
+        $(document).on('click', '.delete-btn', function() {
+            var warehouse = $(this).data('id');
+            $('#deleteWarehouseId').val(warehouse);
+            $('#deleteModal').modal('show');
+        });
+
+        // Confirm Delete
+        $('#confirmDeleteBtn').click(function() {
+            var warehouse = $('#deleteWarehouseId').val();
+            
+            $.ajax({
+                url: urls.delete + '/' + warehouse,
+                method: 'DELETE',
+                success: function() {
+                    $('#deleteModal').modal('hide');
+                    table.ajax.reload();
+                    toastr.success('Warehouse deleted successfully');
+                },
+                error: function() {
+                    toastr.error("Failed to delete warehouse.");
+                }
+            });
+        });
     });
+
+    function resetForm() {
+        $('#warehouseForm')[0].reset();
+        $('#warehouseId').val('');
+        $('#warehouseCompany').val('').trigger('change');
+    }
 </script>

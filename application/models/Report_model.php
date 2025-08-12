@@ -73,9 +73,10 @@ class Report_model extends CI_Model {
 		return $data;
 	}
 
-	public function get_by_id($id) {
-		return $this->db->get_where($this->table, ['id' => $id])->row_array();
-	}
+    public function get($id)
+    {
+        return $this->db->get_where($this->table, ['id' => $id])->row_array();
+    }
 
 	public function create($data)
 	{	

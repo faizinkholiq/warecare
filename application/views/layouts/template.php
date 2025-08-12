@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="<?= base_url('assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') ?>">
   <!-- Template -->
   <link rel="stylesheet" href="<?= base_url('assets/modules/template/template.css') ?>">
+  <!-- Toastr -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
   <!-- jQuery -->
   <script src="<?= base_url('assets/plugins/jquery/jquery.min.js') ?>"></script>
@@ -64,6 +66,8 @@
   <script src="<?= base_url('assets/plugins/jquery-validation/additional-methods.min.js') ?>"></script>
   <!-- Template -->
   <script src="<?= base_url('assets/modules/template/template.js') ?>"></script>
+  <!-- Toastr -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <!-- Additional -->
   <?php
   if (!empty($js_files)) {
@@ -252,21 +256,30 @@
     <!-- /.prompt -->
   </div>
 </body>
+
 <script>
   const menuId = '<?php echo $menu_id; ?>';
   const modalPrompt = $("#modal_prompt");
 
   $(document).ready(function() {
-    $('.select2').select2({
-      theme: 'bootstrap4',
-    });
+      $('.select2').select2({
+          theme: 'bootstrap4',
+      });
 
-    $('.date-input').datetimepicker({
-      format: "YYYY-MM-DD",
-      useStric: true
-    });
+      $('.date-input').datetimepicker({
+          format: "YYYY-MM-DD",
+          useStric: true
+      });
 
-    $('#menu_'+menuId).addClass('active');
+      $('#menu_'+menuId).addClass('active');
+
+      toastr.options = {
+          positionClass: "toast-top-right",
+          progressBar: true,
+          closeButton: true,
+          preventDuplicates: true, 
+          timeOut: 3000,
+      };
   });
 </script>
 

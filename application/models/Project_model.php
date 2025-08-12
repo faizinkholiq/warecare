@@ -1,15 +1,12 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Warehouse_model extends CI_Model {
+class Project_model extends CI_Model {
 
-    private $table = 'warehouse';
+    private $table = 'project';
 
     public function get_all()
     {
-        $this->db->select('warehouse.*, company.name AS company_name');
-        $this->db->from($this->table);
-        $this->db->join('company', 'company.id = warehouse.company_id');
-        return $this->db->get()->result_array();
+        return $this->db->get($this->table)->result_array();
     }
 
     public function get($id)
@@ -17,7 +14,7 @@ class Warehouse_model extends CI_Model {
         return $this->db->get_where($this->table, ['id' => $id])->row_array();
     }
 
-	public function create($data)
+    public function create($data)
 	{	
 		$this->db->insert($this->table, $data);
         return $this->db->insert_id();
