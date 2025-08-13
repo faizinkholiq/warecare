@@ -18,7 +18,7 @@
                             <th>ID</th>
                             <th class="dt-center">No</th>
                             <th class="dt-center">Perusahaan</th>
-                            <th class="dt-center">Name</th>
+                            <th class="dt-center">Nama</th>
                             <th class="dt-center">Aksi</th>
                         </tr>
                     </thead>

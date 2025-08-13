@@ -31,7 +31,6 @@ class Company extends MY_Controller
       $data[] = [
         'id'          => $company['id'],
         'name'        => $company['name'],
-        'company'     => $company['company_name'],
         'created_at'  => date('Y-m-d H:i:s', strtotime($company['created_at'])),
       ];
     }
@@ -58,11 +57,9 @@ class Company extends MY_Controller
   public function create()
   {
     $this->form_validation->set_rules('name', 'Name', 'required');
-    $this->form_validation->set_rules('company_id', 'Company', 'required');
 
     $data = [
       'name'        => $this->input->post('name'),
-      'company_id'  => $this->input->post('company_id'),
       'created_by'  => $this->session->userdata('user_id'),
     ];
 
@@ -99,11 +96,9 @@ class Company extends MY_Controller
     }
 
     $this->form_validation->set_rules('name', 'Name', 'required');
-    $this->form_validation->set_rules('company_id', 'Company', 'required');
 
     $data = [
       'name'        => $this->input->post('name'),
-      'company_id'  => $this->input->post('company_id'),
       'updated_by'  => $this->session->userdata('user_id'),
     ];
 
