@@ -12,7 +12,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive text-sm">
-                <table id="companysTable" class="table table-bordered" style="width:100%">
+                <table id="companiesTable" class="table table-bordered" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -102,7 +102,7 @@
         }, 500)
 
         // Initialize DataTable
-        var table = $('#companysTable').DataTable({
+        var table = $('#companiesTable').DataTable({
             serverSide: true,
             ajax: {
                 url: urls.get_list,

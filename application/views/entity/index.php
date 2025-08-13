@@ -6,19 +6,18 @@
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <button type="button" class="create-btn btn btn-light border shadow-sm">
-                    <i class="fas fa-plus mr-2"></i> Add New Warehouse
+                    <i class="fas fa-plus mr-2"></i> Add New Entity
                 </button>
             </div>
         </div>
         <div class="card-body">
             <div class="table-responsive text-sm">
-                <table id="warehousesTable" class="table table-bordered" style="width:100%">
+                <table id="entityiesTable" class="table table-bordered" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th class="dt-center">No</th>
-                            <th class="dt-center">Perusahaan</th>
-                            <th class="dt-center">Name</th>
+                            <th class="dt-center">Nama</th>
                             <th class="dt-center">Aksi</th>
                         </tr>
                     </thead>
@@ -34,31 +33,22 @@
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="inputModalHeader">New Warehouse</h5>
+                <h5 class="modal-title" id="inputModalHeader">New Entity</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="warehouseForm">
+            <form id="entityForm">
                 <div class="modal-body">
-                    <input id="warehouseId" type="hidden" name="id">
+                    <input id="entityId" type="hidden" name="id">
                     <div class="form-group col-md-10">
-                        <label for="warehouseCompany">Perusahaan</label>
-                        <select id="warehouseCompany" class="form-control" name="company_id" required>
-                            <option value="">- Pilih Perusahaan -</option>
-                            <?php foreach($list_data['company'] as $key => $value): ?>    
-                            <option value="<?=$value['id']  ?>"><?= $value['name']  ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="form-group col-md-10">
-                        <label for="warehouseName">Name</label>
-                        <input id="warehouseName" type="text" class="form-control" name="name" placeholder="Name" required />
+                        <label for="entityName">Name</label>
+                        <input id="entityName" type="text" class="form-control" name="name" placeholder="Name" required />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save mr-2"></i> Save Warehouse</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save mr-2"></i> Save Entity</button>
                 </div>
             </form>
         </div>
@@ -70,19 +60,19 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Delete Warehouse</span></h5>
+                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Delete Entity</span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="deleteWarehouseId">
-                <p>Are you sure you want to delete this warehouse?</p>
+                <input type="hidden" id="deleteEntityId">
+                <p>Are you sure you want to delete this entity?</p>
                 <p class="text-center text-sm border px-4 py-2 border-warning text-bold rounded bg-light-warning"><i class="fas fa-exclamation-triangle text-warning mr-2"></i> The data will be permanently deleted.</p>
             </div>
             <div class="modal-footer d-flex">
                 <button type="button" style="flex: 1 1 auto;" class="btn btn-default bg-white" data-dismiss="modal">Cancel</button>
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete Warehouse</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete Entity</button>
             </div>
         </div>
     </div>
@@ -95,11 +85,11 @@
     };
 
     const urls = {
-        get_list: "<?= site_url('warehouse/get_list') ?>",
-        get: "<?= site_url('warehouse/get') ?>",
-        create: "<?= site_url('warehouse/create') ?>",
-        edit: "<?= site_url('warehouse/edit') ?>",
-        delete: "<?= site_url('warehouse/delete') ?>",
+        get_list: "<?= site_url('entity/get_list') ?>",
+        get: "<?= site_url('entity/get') ?>",
+        create: "<?= site_url('entity/create') ?>",
+        edit: "<?= site_url('entity/edit') ?>",
+        delete: "<?= site_url('entity/delete') ?>",
     }
 
     $(document).ready(function() {
@@ -112,7 +102,7 @@
         }, 500)
 
         // Initialize DataTable
-        var table = $('#warehousesTable').DataTable({
+        var table = $('#entityiesTable').DataTable({
             serverSide: true,
             ajax: {
                 url: urls.get_list,
@@ -137,13 +127,8 @@
                     targets: 1
                 },
                 { 
-                    data: "company",
-                    width: "30%",
-                    targets: 2
-                },
-                { 
                     data: "name",
-                    targets: 3
+                    targets: 2
                 },
                 {
                     data: null,
@@ -160,7 +145,7 @@
                         `;
                     },
                     orderable: false,
-                    targets: 4
+                    targets: 3
                 }
             ],
             scrollResize: true,
@@ -175,44 +160,42 @@
             info: false,
         });
 
-        // Create Warehouse Button
+        // Create Entity Button
         $(document).on('click', '.create-btn', function() {
             resetForm();
-            $('#inputModalHeader').text('Add New Warehouse');
-            $('#warehouseId').val('');
+            $('#inputModalHeader').text('Add New Entity');
+            $('#entityId').val('');
             $('#inputModal').modal('show');
         });
 
-        // Edit Warehouse Button
+        // Edit Entity Button
         $(document).on('click', '.edit-btn', function() {
             resetForm();
             
-            var warehouse = $(this).data('id');
-            $('#warehouseId').val(warehouse);
+            var entity = $(this).data('id');
+            $('#entityId').val(entity);
 
-            $.get(urls.get + '/' + warehouse, function(data) {
+            $.get(urls.get + '/' + entity, function(data) {
                 data = JSON.parse(data);
                 if (data.error) {
                     toastr.error(data.error);
                     return;
                 }
 
-                $('#warehouseCompany').val(data.company_id).trigger('change');
-                $('#warehouseName').val(data.name);
-                $('#inputModalHeader').text('Edit Warehouse');
+                $('#entityName').val(data.name);
+                $('#inputModalHeader').text('Edit Entity');
             });
 
             $('#inputModal').modal('show');
         });
 
-        $('#warehouseForm').submit(function(e) {
+        $('#entityForm').submit(function(e) {
             e.preventDefault();
 
-            const id = $('#warehouseId').val();
+            const id = $('#entityId').val();
             
             const formData = new FormData();
-            formData.append('company_id', $('#warehouseCompany').val());
-            formData.append('name', $('#warehouseName').val());
+            formData.append('name', $('#entityName').val());
             
             // Submit form
             $.ajax({
@@ -224,7 +207,7 @@
                 success: function(response) {
                     $('#inputModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Warehouse updated successfully');
+                    toastr.success('Entity updated successfully');
                 },
                 error: function() {
                     toastr.error("Failed to "+ mode +" product.");
@@ -232,35 +215,34 @@
             });
         });
 
-        // Delete Warehouse Button
+        // Delete Entity Button
         $(document).on('click', '.delete-btn', function() {
-            var warehouse = $(this).data('id');
-            $('#deleteWarehouseId').val(warehouse);
+            var entity = $(this).data('id');
+            $('#deleteEntityId').val(entity);
             $('#deleteModal').modal('show');
         });
 
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
-            var warehouse = $('#deleteWarehouseId').val();
+            var entity = $('#deleteEntityId').val();
             
             $.ajax({
-                url: urls.delete + '/' + warehouse,
+                url: urls.delete + '/' + entity,
                 method: 'DELETE',
                 success: function() {
                     $('#deleteModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Warehouse deleted successfully');
+                    toastr.success('Entity deleted successfully');
                 },
                 error: function() {
-                    toastr.error("Failed to delete warehouse.");
+                    toastr.error("Failed to delete entity.");
                 }
             });
         });
     });
 
     function resetForm() {
-        $('#warehouseForm')[0].reset();
-        $('#warehouseId').val('');
-        $('#warehouseCompany').val('').trigger('change');
+        $('#entityForm')[0].reset();
+        $('#entityId').val('');
     }
 </script>
