@@ -24,10 +24,10 @@ class Entity extends MY_Controller
 
   public function get_list()
   {
-    $entitys = $this->Entity_model->get_all();
+    $entities = $this->Entity_model->get_all();
     
     $data = [];
-    foreach ($entitys as $entity) {
+    foreach ($entities as $entity) {
       $data[] = [
         'id'          => $entity['id'],
         'name'        => $entity['name'],
