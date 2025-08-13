@@ -61,7 +61,7 @@ class Entity extends MY_Controller
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
         'entity_id'  => $this->input->post('entity_id'),
-        'created_by'  => $this->session->userdata('user_id'),
+        'created_by'  => $this->auth_lib->user_id(),
       ];
       $this->Entity_model->insert($data);
       redirect('entity');
@@ -86,7 +86,7 @@ class Entity extends MY_Controller
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
         'entity_id'  => $this->input->post('entity_id'),
-        'updated_by'  => $this->session->userdata('user_id'),
+        'updated_by'  => $this->auth_lib->user_id(),
       ];
       $this->Entity_model->update($id, $data);
       redirect('entity');

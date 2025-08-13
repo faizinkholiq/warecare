@@ -65,7 +65,7 @@ class Warehouse extends MY_Controller
     $data = [
       'name'        => $this->input->post('name'),
       'company_id'  => $this->input->post('company_id'),
-      'created_by'  => $this->session->userdata('user_id'),
+      'created_by'  => $this->auth_lib->user_id(),
     ];
 
     $warehouse_id = $this->Warehouse_model->create($data);
@@ -106,7 +106,7 @@ class Warehouse extends MY_Controller
     $data = [
       'name'        => $this->input->post('name'),
       'company_id'  => $this->input->post('company_id'),
-      'updated_by'  => $this->session->userdata('user_id'),
+      'updated_by'  => $this->auth_lib->user_id(),
     ];
 
     if(!$this->Warehouse_model->update($id, $data)) {

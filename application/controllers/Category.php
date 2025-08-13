@@ -61,7 +61,7 @@ class Category extends MY_Controller
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
         'category_id'  => $this->input->post('category_id'),
-        'created_by'  => $this->session->userdata('user_id'),
+        'created_by'  => $this->auth_lib->user_id(),
       ];
       $this->Category_model->insert($data);
       redirect('category');
@@ -86,7 +86,7 @@ class Category extends MY_Controller
         'name'        => $this->input->post('name'),
         'location'    => $this->input->post('location'),
         'category_id'  => $this->input->post('category_id'),
-        'updated_by'  => $this->session->userdata('user_id'),
+        'updated_by'  => $this->auth_lib->user_id(),
       ];
       $this->Category_model->update($id, $data);
       redirect('category');

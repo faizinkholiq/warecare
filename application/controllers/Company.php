@@ -60,7 +60,7 @@ class Company extends MY_Controller
 
     $data = [
       'name'        => $this->input->post('name'),
-      'created_by'  => $this->session->userdata('user_id'),
+      'created_by'  => $this->auth_lib->user_id(),
     ];
 
     $company_id = $this->Company_model->create($data);
@@ -99,7 +99,7 @@ class Company extends MY_Controller
 
     $data = [
       'name'        => $this->input->post('name'),
-      'updated_by'  => $this->session->userdata('user_id'),
+      'updated_by'  => $this->auth_lib->user_id(),
     ];
 
     if(!$this->Company_model->update($id, $data)) {
