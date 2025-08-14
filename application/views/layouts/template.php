@@ -165,7 +165,7 @@
               </div>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="<?=site_url('login/logout')?>" class="dropdown-item">
+            <a href="<?=site_url('auth/logout')?>" class="dropdown-item">
               <i class="fas fa-sign-out-alt mr-2"></i> Logout
             </a>
           </div>

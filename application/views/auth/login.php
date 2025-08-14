@@ -16,15 +16,15 @@
     <link rel="stylesheet" href="<?= base_url('assets/dist/css/adminlte.min.css') ?>">
 </head>
 
-<body class="hold-transition login-page">
+<body class="hold-transition login-page justify-content-start bg-white" style="margin-top: 10rem;">
     <div class="login-box">
         <div class="login-logo">
-            <h1 class="text-bold">WareCare</h1>
+            <img src="<?= base_url('assets/images/logo.png') ?>" alt="Waringin Group Logo" class="img-fluid mb-3" style="max-width: 14rem;">
         </div>
         <!-- /.login-logo -->
-        <div class="card">
+        <div class="card shadow border-0 rounded-lg py-2">
             <div class="card-body login-card-body">
-                <p class="login-box-msg">Sign in to start your session</p>
+                <p class="login-box-msg">Silahkan masuk</p>
 
                 <form action="<?= $login_url ?>" method="POST">
                     <div class="input-group mb-3">
@@ -43,16 +43,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="icheck-primary">
-                                <input type="checkbox" id="remember">
-                                <label for="remember">Remember Me</label>
-                            </div>
-                        </div>
+                    <div class="row mt-5">
                         <!-- /.col -->
-                        <div class="col-4">
-                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-lg rounded-lg bg-navy btn-block">Masuk</button>
                         </div>
                         <!-- /.col -->
                     </div>
@@ -64,11 +58,11 @@
     <!-- /.login-box -->
 
     <!-- jQuery -->
-    <script src="<?= base_url('plugins/jquery/jquery.min.js') ?>"></script>
+    <script src="<?= base_url('assets/plugins/jquery/jquery.min.js') ?>"></script>
     <!-- Bootstrap 4 -->
-    <script src="<?= base_url('plugins/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= base_url('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
     <!-- AdminLTE App -->
-    <script src="<?= base_url('dist/js/adminlte.min.js') ?>"></script>
+    <script src="<?= base_url('assets/dist/js/adminlte.min.js') ?>"></script>
 </body>
 
 </html>
