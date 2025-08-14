@@ -6,6 +6,11 @@ class Report extends MY_Controller {
 		parent::__construct();
 		$this->load->model([
 			'Report_model',
+			'Entity_model',
+			'Project_model',
+			'Company_model',
+			'Warehouse_model',
+			'Category_model',
 		]);
 	}
 
@@ -14,7 +19,7 @@ class Report extends MY_Controller {
 		$data["current_user"] = $this->auth_lib->current_user();
 		$data["title"] = "Pengaduan";
 		$data["menu_id"] = "report";
-		$data["view"] = "report/form";
+		$data["view"] = "report/index";
     	$this->load->view('layouts/template', $data);
 	}
 
@@ -58,21 +63,22 @@ class Report extends MY_Controller {
 
 	public function create()
 	{
-		$data["title"] = "Product Management";
-		$data["sub_title"] = "Add New";
+		$data["title"] = "Pengaduan";
+		$data["menu_id"] = "report";
 		$data["current_user"] = $this->auth_lib->current_user();
+		$data["list_data"]["entity"] = $this->Entity_model->get_all();
+		$data["list_data"]["project"] = $this->Project_model->get_all();
+		$data["list_data"]["company"] = $this->Company_model->get_all();
+		$data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
+		$data["list_data"]["category"] = $this->Category_model->get_all();
 		
 		$this->form_validation->set_rules('name', 'Name', 'required');
 		$this->form_validation->set_rules('price', 'Price', 'required|numeric');
 		$this->form_validation->set_rules('quantity', 'Quantity', 'required|integer');
 		
 		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
-			$data["menu_id"] = "add_product";
-			$data["mode"] = "create";
-			$data["list_data"]["category"] = $this->Category_model->get_all();
-			$data["view"] = "seller/product/form";
-
-			$this->load->view('seller/layouts/template', $data);
+			$data["view"] = "report/form";
+			$this->load->view('layouts/template', $data);
 		} else {
 			
 			$data = [
@@ -97,7 +103,7 @@ class Report extends MY_Controller {
 					]);
 					return;
 				}else{
-					redirect('seller/product/create');
+					redirect('report/create');
 				}
 			}
 
@@ -116,87 +122,7 @@ class Report extends MY_Controller {
 				]);
 				return;
 			}else{
-				redirect('seller/product');
-			}
-		}
-	}
-
-	public function edit($id)
-	{
-		$data["title"] = "Product Management";
-		$data["sub_title"] = "Edit";
-		$data["current_user"] = $this->auth_lib->current_user();
-
-		$product = $this->Report_model->get_by_id($id);
-		if (!$product) {
-			$this->session->set_flashdata('error', 'Product not found');
-			if ($this->input->is_ajax_request()){
-				$this->output->set_status_header(404);
-				echo json_encode([
-					'success' => false,
-					'message' => 'Product not found.',
-				]);
-				return;
-			}else{
-				redirect('seller/product');
-			}
-		}
-
-		$this->form_validation->set_rules('name', 'Name', 'required');
-		$this->form_validation->set_rules('price', 'Price', 'required|numeric');
-		$this->form_validation->set_rules('quantity', 'Quantity', 'required|integer');
-
-		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
-			$data["menu_id"] = "my_products";
-			$data["mode"] = "edit";
-			$data["product"] = $this->Report_model->get_details($id);
-			$data["list_data"]["category"] = $this->Category_model->get_all();
-			$data["view"] = "seller/product/form";
-
-			$this->load->view('seller/layouts/template', $data);
-		} else {
-			$data = [
-				'name' => $this->input->post('name'),
-                'description' => $this->input->post('description'),
-                'sku' => $this->input->post('sku'),
-                'price' => (float)str_replace('.', '', $this->input->post('price')),
-                'quantity' => $this->input->post('stock'),
-                'category_id' => $this->input->post('category_id'),
-                'is_active' => $this->input->post('status') ? 1 : 0,
-				'updated_by'  => $this->auth_lib->user_id()
-			];
-			
-            $this->session->set_flashdata('success', 'Product updated successfully');
-			if(!$this->Report_model->update($id, $data)){
-				$this->session->set_flashdata('error', 'Failed to update product');
-				if ($this->input->is_ajax_request()) {
-					$this->output->set_status_header(500);
-					echo json_encode([
-						"success" => false,
-						"error" => "Failed to update product"
-					]);
-					return;
-				}else{
-					redirect('seller/product/edit/'.$id);
-				}
-			}
-
-			if (!empty($upload_data)) {
-                foreach ($upload_data as $file) {
-                    $this->Report_model->add_image($id, $file['file_path'], $file['file_name']);
-                }
-            }
-
-			$this->session->set_flashdata('success', 'Product updated successfully');
-			if ($this->input->is_ajax_request()) {
-				$this->output->set_status_header(200);
-				echo json_encode([
-					"success" => true,
-					"message" => "Product updated successfully"
-				]);
-				return;
-			}else{
-				redirect('seller/product/edit/'.$id);
+				redirect('report');
 			}
 		}
 	}
@@ -213,7 +139,7 @@ class Report extends MY_Controller {
 				]);
 				return;
 			}else{
-				redirect('seller/product');
+				redirect('report');
 			}
         }
 
@@ -227,7 +153,7 @@ class Report extends MY_Controller {
 				]);
 				return;
 			}else{
-				redirect('seller/product');
+				redirect('report');
 			}
 		}
 
@@ -240,7 +166,7 @@ class Report extends MY_Controller {
 			]);
 			return;
 		}else{
-			redirect('seller/product');
+			redirect('report');
 		}
 	}
 }

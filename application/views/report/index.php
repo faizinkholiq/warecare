@@ -77,36 +77,28 @@
 </style>
 
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <a href="<?= site_url('/report/create') ?>" class="btn btn-light border shadow-sm">
-                    <i class="fas fa-plus mr-2"></i> Add Report
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive text-sm">
-                <table id="reportsTable" class="table table-bordered" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th class="dt-center">No</th>
-                            <th class="dt-center">No. Pengaduan</th>
-                            <th class="dt-center">Entity</th>
-                            <th class="dt-center">Project</th>
-                            <th class="dt-center">Tgl. Pengaduan</th>
-                            <th class="dt-center">No. Gudang</th>
-                            <th class="dt-center">Nama Perusahaan</th>
-                            <th class="dt-center">Kategori Pengaduan</th>
-                            <th class="dt-center">Status Pengajuan</th>
-                            <th class="dt-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+    <a href="<?= site_url('/report/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg text-navy font-weight-bold create-btn">
+        <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru
+    </a>
+    <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg p-3">
+        <table id="reportsTable" class="table table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th class="dt-center">No</th>
+                    <th class="dt-center">No. Pengaduan</th>
+                    <th class="dt-center">Entity</th>
+                    <th class="dt-center">Project</th>
+                    <th class="dt-center">Tgl. Pengaduan</th>
+                    <th class="dt-center">No. Gudang</th>
+                    <th class="dt-center">Nama Perusahaan</th>
+                    <th class="dt-center">Kategori Pengaduan</th>
+                    <th class="dt-center">Status Pengajuan</th>
+                    <th class="dt-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 

@@ -91,6 +91,45 @@
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
     }
+
+    .bg-light-primary {
+      background-color: #007bff17 !important;
+    }
+
+    .bg-light-success{
+      background-color: #28a74530!important;
+    }
+
+    .bg-light-warning{
+      background-color: #ffc1071a!important;
+    }
+
+    .bg-light-danger{
+      background-color: #dc354533!important;
+    }
+
+    .table > thead > tr > th {
+      border-top: none;
+      border-bottom: 1px solid #dee2e6a8;
+    }
+
+    .btn-default {
+      background-color: #fff;
+    }
+    .btn-default:hover {
+      background-color: #f1f1f1ff;
+    }
+
+    .nav-link.active {
+      background-color: #001f3f !important;
+      color: #fff!important;
+    }
+
+    .dropdown-menu-md {
+      max-width: 15rem;
+      min-width: 12rem;
+      padding-top: 0;
+    }
   </style>
 </head>
 
@@ -118,11 +157,11 @@
           <a class="nav-link" data-toggle="dropdown" href="#">
             <i class="far fa-user"></i>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-            <div class="media align-items-center p-3">
+          <div class="dropdown-menu dropdown-menu-md dropdown-menu-right border-0 shadow">
+            <div class="media align-items-center pt-3 pr-3 pb-1 pl-3">
               <img src="<?= base_url('assets/dist/img/user1-128x128.jpg') ?>" alt="User Avatar" class="img-size-32 mr-3 img-circle">
               <div class="media-body">
-                <b style="font-size: 1.25rem;"><?=$current_user["first_name"].' '.$current_user["last_name"]?></b>
+                <b style="font-size: 1rem;"><?=$current_user["first_name"].' '.$current_user["last_name"]?></b>
               </div>
             </div>
             <div class="dropdown-divider"></div>
@@ -136,22 +175,27 @@
     <!-- /.navbar -->
 
     <!-- Main Sidebar Container -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <aside class="main-sidebar sidebar-light-primary elevation-4">
       <!-- Brand Logo -->
-      <a href="<?= site_url('home') ?>" class="brand-link logo-switch">
-        <span class="brand-text logo-xs font-weight-semibold" style="left: 42px;">W</span>
-        <span class="brand-text logo-xl font-weight-semibold" style="left: 40px;">WareCare</span>
+      <a style="height: 5rem;" href="<?= site_url('dashboard') ?>" class="brand-link logo-switch d-flex align-items-center justify-content-center">
+        <span class="brand-text logo-xs ml-2">
+          <img style="height:1.5rem;" src="<?= base_url('assets/images/logo-small.png') ?>" alt="waringin_logo">
+        </span>
+        <span class="brand-text logo-xl d-flex align-items-center">
+          <img style="height:1.5rem;" src="<?= base_url('assets/images/logo-small.png') ?>" alt="waringin_logo">
+          <div class="font-weight-bold ml-2 text-lg mt-2">Waringin Group</div>
+        </span>
       </a>
 
       <!-- Sidebar -->
-      <div class="sidebar">
+      <div class="sidebar" style="margin-top: calc(5rem + 1px);">
         <!-- Sidebar Menu -->
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
             <li class="nav-item">
-              <a href="<?= site_url('home') ?>" id="menu_dashboard" class="nav-link">
+              <a href="<?= site_url('dashboard') ?>" id="menu_dashboard" class="nav-link">
                 <i class="nav-icon fas fa-home"></i>
                 <p>Home</p>
               </a>
@@ -211,7 +255,7 @@
     </aside>
 
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+    <div class="content-wrapper bg-white">
       <!-- Main content -->
       <section class="content p-3" style="height: 100%;">
         <?php
@@ -226,7 +270,7 @@
 
     <!-- Footer -->
     <footer class="main-footer text-center">
-      <strong>Copyright &copy; Akatsuki International</strong>
+      <strong>Copyright &copy; Waringin Group</strong>
       All rights reserved.
     </footer>
     <!-- /.footer -->

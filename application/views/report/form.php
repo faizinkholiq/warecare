@@ -2,7 +2,7 @@
 
  </style>
 <div class="container-fluid">
-    <div class="card">
+    <div class="card rounded-lg shadow border-0">
         <form id="reportForm">
             <div class="card-body">
                 <div class="form-group col-md-6">
@@ -61,15 +61,15 @@
             </div>
             <div class="card-footer bg-white border-top rounded">
                 <div class="d-flex justify-content-between">
-                    <a href="<?= site_url('/seller/report') ?>" class="btn btn-default">
+                    <a href="<?= site_url('report') ?>" class="btn btn-default border-0 shadow-sm rounded-lg">
                         <i class="fas fa-chevron-left mr-2"></i> Cancel
                     </a>
                     <div>
-                        <button onclick="resetForm()" type="button" class="btn btn-danger ml-2">
+                        <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                             <i class="fas fa-trash mr-2"></i> Clear
                         </button>
-                        <button type="submit" class="btn btn-success ml-2">
-                            <i class="fas fa-save mr-2"></i> Save Report
+                        <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
+                            <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan 
                         </button>
                     </div>
                 </div>
