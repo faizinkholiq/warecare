@@ -202,10 +202,10 @@
                 success: function(response) {
                     $('#inputModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Company updated successfully');
+                    toastr.success('Berhasil menyimpan perusahaan');
                 },
                 error: function() {
-                    toastr.error("Failed to "+ mode +" product.");
+                    toastr.error("Gagal menyimpan perusahaan");
                 }
             });
         });
@@ -227,10 +227,10 @@
                 success: function() {
                     $('#deleteModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Company deleted successfully');
+                    toastr.success('Berhasil menghapus perusahaan');
                 },
                 error: function() {
-                    toastr.error("Failed to delete company.");
+                    toastr.error("Gagal menghapus perusahaan");
                 }
             });
         });

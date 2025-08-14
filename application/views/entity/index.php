@@ -1,39 +1,28 @@
-<style>
-</style>
-
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <button type="button" class="create-btn btn btn-light border shadow-sm">
-                    <i class="fas fa-plus mr-2"></i> Add New Entity
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive text-sm">
-                <table id="entityiesTable" class="table table-bordered" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th class="dt-center">No</th>
-                            <th class="dt-center">Nama</th>
-                            <th class="dt-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+    <button type="button" class="create-btn btn btn-default border shadow-sm rounded-lg border-0 font-weight-bold">
+        <i class="fas fa-plus text-success mr-2"></i> Tambah Entity Baru
+    </button>
+    <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg">
+        <table id="entitiesTable" class="table border-0" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th class="dt-center">No</th>
+                    <th class="dt-center">Nama</th>
+                    <th class="dt-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 
 <!-- Create or Edit Modal -->
 <div class="modal fade" id="inputModal" tabindex="-1" aria-labelledby="inputModalHeader" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content border-0 rounded-lg">
             <div class="modal-header">
-                <h5 class="modal-title" id="inputModalHeader">New Entity</h5>
+                <h5 class="modal-title" id="inputModalHeader"><i class="fas fa-plus mr-3 rounded px-2 py-2 text-primary bg-light-primary text-sm" id="inputModalIcon"></i> <span id="inputModalTitle">Tambah Entity Baru</span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -47,8 +36,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save mr-2"></i> Save Entity</button>
+                    <button type="button" class="btn btn-default rounded-lg shadow border-0 mr-2" data-dismiss="modal"><i class="fas fa-times mr-2"></i> Batal</button>
+                    <button type="submit" class="btn btn-success rounded-lg shadow border-0"><i class="fas fa-save mr-2"></i> Simpan Entity</button>
                 </div>
             </form>
         </div>
@@ -60,19 +49,19 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Delete Entity</span></h5>
+                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Hapus Entity</span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="deleteEntityId">
-                <p>Are you sure you want to delete this entity?</p>
-                <p class="text-center text-sm border px-4 py-2 border-warning text-bold rounded bg-light-warning"><i class="fas fa-exclamation-triangle text-warning mr-2"></i> The data will be permanently deleted.</p>
+                <p>Apakah kamu yakin ingin menghapus entity ini?</p>
+                <p class="text-center text-sm border px-4 py-2 border-warning text-bold rounded bg-light-warning"><i class="fas fa-exclamation-triangle text-warning mr-2"></i> Data akan dihapus secara permanen.</p>
             </div>
             <div class="modal-footer d-flex">
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-default bg-white" data-dismiss="modal">Cancel</button>
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete Entity</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-default rounded-lg border-0 shadow" data-dismiss="modal">Batal</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger rounded-lg border-0 shadow" id="confirmDeleteBtn">Ya, Hapus Entity</button>
             </div>
         </div>
     </div>
@@ -102,7 +91,7 @@
         }, 500)
 
         // Initialize DataTable
-        var table = $('#entityiesTable').DataTable({
+        var table = $('#entitiesTable').DataTable({
             serverSide: true,
             ajax: {
                 url: urls.get_list,
@@ -136,10 +125,10 @@
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-primary border-0 edit-btn" data-id="${row.id}">
+                            <button class="btn btn-sm rounded-lg shadow btn-primary border-0 edit-btn" data-id="${row.id}">
                                 <i class="text-xs fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger border-0 delete-btn" data-id="${row.id}">
+                            <button class="btn btn-sm rounded-lg shadow btn-danger border-0 delete-btn" data-id="${row.id}">
                                 <i class="text-xs fas fa-trash"></i>
                             </button>
                         `;
@@ -163,7 +152,10 @@
         // Create Entity Button
         $(document).on('click', '.create-btn', function() {
             resetForm();
-            $('#inputModalHeader').text('Add New Entity');
+            $('#inputModalTitle').text('Tambah Entity Baru');
+            $('#inputModalIcon').removeClass('fa-edit').addClass('fa-plus');
+            $('#inputModalIcon').removeClass('text-primary').addClass('text-success');
+            $('#inputModalIcon').removeClass('bg-light-primary').addClass('bg-light-success');
             $('#entityId').val('');
             $('#inputModal').modal('show');
         });
@@ -183,7 +175,10 @@
                 }
 
                 $('#entityName').val(data.name);
-                $('#inputModalHeader').text('Edit Entity');
+                $('#inputModalIcon').removeClass('fa-plus').addClass('fa-edit');
+                $('#inputModalIcon').removeClass('text-success').addClass('text-primary');
+                $('#inputModalIcon').removeClass('bg-light-success').addClass('bg-light-primary');
+                $('#inputModalTitle').text('Ubah Entity');
             });
 
             $('#inputModal').modal('show');
@@ -207,10 +202,10 @@
                 success: function(response) {
                     $('#inputModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Entity updated successfully');
+                    toastr.success('Berhasil menyimpan entity');
                 },
                 error: function() {
-                    toastr.error("Failed to "+ mode +" product.");
+                    toastr.error("Gagal menyimpan entity");
                 }
             });
         });
@@ -232,10 +227,10 @@
                 success: function() {
                     $('#deleteModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Entity deleted successfully');
+                    toastr.success('Berhasil menghapus entity');
                 },
                 error: function() {
-                    toastr.error("Failed to delete entity.");
+                    toastr.error("Gagal menghapus entity");
                 }
             });
         });
