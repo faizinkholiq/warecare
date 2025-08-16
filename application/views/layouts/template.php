@@ -159,7 +159,7 @@
           </a>
           <div class="dropdown-menu dropdown-menu-md dropdown-menu-right border-0 shadow">
             <div class="media align-items-center pt-3 pr-3 pb-1 pl-3">
-              <img src="<?= base_url('assets/dist/img/user1-128x128.jpg') ?>" alt="User Avatar" class="img-size-32 mr-3 img-circle">
+              <img src="<?= base_url('assets/dist/img/anon-user.webp') ?>" alt="User Avatar" class="img-size-32 mr-3 img-circle">
               <div class="media-body">
                 <b style="font-size: 1rem;"><?=$current_user["first_name"].' '.$current_user["last_name"]?></b>
               </div>
