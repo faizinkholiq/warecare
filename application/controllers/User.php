@@ -31,9 +31,9 @@ class User extends MY_Controller
         $params["length"] = $this->input->post("length");
         $params["start"] = $this->input->post("start");
 
-		$products = $this->User_model->get_list_datatables($params);
+		$users = $this->User_model->get_list_datatables($params);
 		
-		echo json_encode($products);
+		echo json_encode($users);
 	}
 
   public function create()
@@ -92,4 +92,39 @@ class User extends MY_Controller
     $this->User_model->delete($id);
     redirect('users');
   }
+
+  public function set_status($id) {
+		$user = $this->User_model->get_by_id($id);
+        
+		if (!$user) {
+			$this->session->set_flashdata('error', 'User not found');
+      $this->output->set_status_header(404);
+      echo json_encode([
+        'success' => false,
+        'message' => 'User not found.',
+      ]);
+      return;
+    }
+        
+		if(!$this->User_model->update($id, [
+			'is_active'	 => $user['is_active'] ? 0 : 1,
+			'updated_by' => $this->auth_lib->user_id()
+		])){
+			$this->session->set_flashdata('success', 'Failed to set status user');
+			$this->output->set_status_header(500);
+      echo json_encode([
+        'success' => false,
+        'message' => 'Failed to set status user.',
+      ]);
+      return;
+		}
+        
+    $this->session->set_flashdata('success', 'Set status user successfully');
+    $this->output->set_status_header(200);
+    echo json_encode([
+      'success' => true,
+      'message' => 'Set status user successfully.',
+    ]);
+  }
+
 }

@@ -98,6 +98,28 @@
     </div>
 </div>
 
+<!-- Active/Inactive Confirmation Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex"><i id="statusModalIcon" class="fas mr-3 rounded px-2 py-2 text-sm"></i> <span id="statusModalTitle">Set Status User</span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="statusUserId">
+                 <p id="statusModalContent"></p>
+            </div>
+            <div class="modal-footer d-flex">
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-default bg-white" data-dismiss="modal">Cancel</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-success"  id="confirmStatusBtn">Yes, Set Active</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -130,6 +152,7 @@
     const urls = {
         get_list_datatables: "<?= site_url('user/get_list_datatables') ?>",
         edit: "<?= site_url('user/edit') ?>",
+        set_status: "<?= site_url('user/set_status') ?>",
         delete: "<?= site_url('user/delete') ?>",
     }
 
@@ -185,17 +208,17 @@
                      render: function(data, type, row) {
                         switch(data) {
                             case 'administrator':
-                                return '<span class="badge badge-primary">Administrator</span>';
+                                return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-primary">Administrator</span>';
                             case 'pelapor':
-                                return '<span class="badge badge-secondary">Pelapor</span>';
+                                return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-danger">Pelapor</span>';
                             case 'kontraktor':
-                                return '<span class="badge badge-success">Kontraktor</span>';
+                                return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-success">Kontraktor</span>';
                             case 'rab':
-                                return '<span class="badge badge-warning">RAB</span>';
+                                return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-warning">RAB</span>';
                             case 'manager':
-                                return '<span class="badge badge-info">Manager</span>';
+                                return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-info">Manager</span>';
                             default:
-                                return '<span class="badge badge-light">Unknown</span>';
+                                return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-light">Unknown</span>';
                         }
                     },
                     targets: 4
@@ -217,6 +240,9 @@
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `
+                            <button class="btn btn-sm btn-${row.is_active == 1? 'warning' : 'success'} border-0 status-btn" data-id="${row.id}" data-status="${row.is_active}">
+                                <i class="text-xs fas fa-${row.is_active == 1? 'eye-slash' : 'eye'}"></i>
+                            </button>
                             <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary border-0 edit-btn">
                                 <i class="text-xs fas fa-edit"></i>
                             </a>
@@ -239,6 +265,40 @@
             searching: true,
             select: false,
             dom: 'lftipr'
+        });
+
+        
+        // Status Toggle Button
+        $(document).on('click', '.status-btn', function() {
+            var userId = $(this).data('id');
+            var currentStatus = $(this).data('status');
+            var newStatus = currentStatus == 1 ? 0 : 1;
+
+            $('#statusModalTitle').text('Set '+ (newStatus == 1 ? 'Active' : 'Deactive') + ' status')
+            $('#statusModalIcon').removeClass('fa-eye text-success bg-light-success fa-eye-slash text-warning bg-light-warning').addClass(newStatus == 1 ? 'fa-eye text-success bg-light-success' : 'fa-eye-slash text-warning bg-light-warning')
+            $('#statusModalContent').text('Are you sure you want to ' + (newStatus == 1 ? 'activate' : 'deactivate') + ' this user?')
+            $('#confirmStatusBtn').text(newStatus == 1 ? 'Yes, set active' : 'Yes, set deactive')
+            $('#confirmStatusBtn').removeClass('btn-warning btn-success').addClass(newStatus == 1 ? 'btn-success' : 'btn-warning')
+            $('#statusUserId').val(userId);
+            $('#statusModal').modal('show');
+        });
+
+        // Confirm Set Status
+        $('#confirmStatusBtn').click(function() {
+            var userId = $('#statusUserId').val();
+            
+            $.ajax({
+                url: urls.set_status + '/' + userId,
+                method: 'POST',
+                success: function() {
+                    $('#statusModal').modal('hide');
+                    table.ajax.reload();
+                    toastr.success('Set status user successfully');
+                },
+                error: function() {
+                    toastr.error("Failed to set status user.");
+                }
+            });
         });
 
         // Delete Report Button
