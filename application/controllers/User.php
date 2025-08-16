@@ -2,7 +2,7 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Users extends MY_Controller
+class User extends MY_Controller
 {
   public function __construct()
   {
@@ -17,11 +17,24 @@ class Users extends MY_Controller
 
   public function index()
   {
-    $data['users'] = $this->User_model->get_all();
-    $this->load->view('layouts/header');
-    $this->load->view('users/index', $data);
-    $this->load->view('layouts/footer');
+    $data["current_user"] = $this->auth_lib->current_user();
+		$data["title"] = "Manajemen User";
+		$data["menu_id"] = "user";
+		$data["view"] = "user/index";
+    $this->load->view('layouts/template', $data);
   }
+
+  public function get_list_datatables()
+	{
+		$params["search"] = $this->input->post("search");
+        $params["draw"] = $this->input->post("draw");
+        $params["length"] = $this->input->post("length");
+        $params["start"] = $this->input->post("start");
+
+		$products = $this->User_model->get_list_datatables($params);
+		
+		echo json_encode($products);
+	}
 
   public function create()
   {

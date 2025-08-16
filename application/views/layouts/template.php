@@ -206,6 +206,12 @@
                 <p>Pengaduan</p>
               </a>
             </li>
+            <li class="nav-item">
+              <a href="<?= site_url('user') ?>" id="menu_user" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Manajemen User</p>
+              </a>
+            </li>
             <li class="nav-item menu-open">
               <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-wrench"></i>

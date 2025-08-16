@@ -36,7 +36,7 @@ class Auth_lib
 
   public function is_admin()
   {
-    return $this->role() === 'admin';
+    return $this->role() === 'administrator';
   }
 
   public function has_role($roles)
