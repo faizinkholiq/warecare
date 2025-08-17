@@ -4,11 +4,18 @@
             <div class="card-body">
                 <div class="form-group">
                     <label for="userUsername">Username</label>
-                    <input type="text" class="form-control col-md-6" id="userUserName" value="<?= isset($user) ? $user['username'] : ''; ?>" required>
+                    <input type="text" class="form-control col-md-6 <?= form_error('username') ? 'is-invalid' : '' ?>" id="userUserName" name="username" value="<?= isset($user) ? $user['username'] : set_value('username'); ?>" required>
+                    <div class="invalid-feedback"><?= form_error('username') ?></div>
                 </div>
-                <div class="form-group">
+               <div class="form-group">
                     <label for="userPassword">Password</label>
                     <input type="password" class="form-control col-md-6" id="userPassword" value="" required>
+                    <div class="invalid-feedback" id="userPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="userConfirmPassword">Konfirmasi Password</label>
+                    <input type="password" class="form-control col-md-6" id="userConfirmPassword" value="" required>
+                    <div class="invalid-feedback" id="userConfirmPasswordError">Password tidak sama</div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-3 mr-1">
@@ -38,9 +45,11 @@
                         <i class="fas fa-chevron-left mr-2"></i> Cancel
                     </a>
                     <div>
+                        <?php if ($mode === 'create'): ?>
                         <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                             <i class="fas fa-trash mr-2"></i> Clear
                         </button>
+                        <?php endif; ?>
                         <button type="submit" class="btn btn-success rounded-lg border-0 shadow-sm ml-2">
                             <i class="fas fa-save mr-2"></i> Simpan User 
                         </button>
@@ -64,11 +73,46 @@
     $(document).ready(function() {
         if (mode === 'edit' && user) {
             $('#userPassword').removeAttr('required');
+            $('#userConfirmPassword').removeAttr('required');
+        }
+
+        // Password validation
+        function validatePassword() {
+            const password = $('#userPassword').val();
+            const userConfirmPassword = $('#userConfirmPassword').val();
+            let isValid = true;
+
+            // Clear previous errors
+            $('#userPassword').removeClass('is-invalid');
+            $('#userConfirmPassword').removeClass('is-invalid');
+
+            // Only validate if in create mode or password field is not empty
+            if (mode === 'create' || password.length > 0) {
+                // Check password strength
+                const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+                if (!strongRegex.test(password)) {
+                    $('#userPassword').addClass('is-invalid');
+                    $('#userPasswordError').text('Password setidaknya harus berisi 8 karakter, mengandung huruf besar, huruf kecil, & angka');
+                    isValid = false;
+                }
+
+                // Check password match
+                if (password !== userConfirmPassword) {
+                    $('#userConfirmPassword').addClass('is-invalid');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
         }
 
         // Form submission
         $('#userForm').submit(function(e) {
             e.preventDefault();
+
+            if (!validatePassword()) {
+                return false;
+            }
             
             const formData = new FormData();
             formData.append('username', $('#userUserName').val());
@@ -84,18 +128,33 @@
                 data: formData,
                 processData: false,
                 contentType: false,
+                dataType: 'json',
                 success: function(response) {
                     window.location.href = urls.default;
                 },
-                error: function() {
-                    toastr.error("Failed to "+ mode +" user.");
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        const errors = xhr.responseJSON.errors;
+                        for (const field in errors) {
+                            const input = $(`[name="${field}"]`);
+                            input.addClass('is-invalid');
+                            input.next('.invalid-feedback').html(errors[field]);
+                        }
+                    } else {
+                        toastr.error("Failed to "+ mode +" user.");
+                    }
                 }
             });
+        });
+
+        $('#userPassword, #userConfirmPassword').on('keyup', function() {
+            validatePassword();
         });
     });
 
     
     function resetForm() {
         $('#userForm')[0].reset();
+        $('#userPassword, #userConfirmPassword').removeClass('is-invalid');
     }
 </script>

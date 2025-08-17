@@ -10,6 +10,9 @@ class User extends MY_Controller
     $this->load->model('User_model');
     $this->load->library('form_validation');
 
+    $this->form_validation->set_message('required', '{field} harus diisi');
+    $this->form_validation->set_message('is_unique', '{field} sudah digunakan, silakan pilih yang lain');
+
     if (!$this->auth_lib->is_admin()) {
       show_error('Access denied. Admins only.', 403);
     }
@@ -43,15 +46,33 @@ class User extends MY_Controller
     $data["menu_id"] = "user";
     $data["mode"] = "create";
 		
-		$this->form_validation->set_rules('username', 'Username', 'required');
+    $this->form_validation->set_rules('username', 'Username', 'required|is_unique[user.username]');
 		$this->form_validation->set_rules('password', 'Password', 'required');
+    $this->form_validation->set_rules('first_name', 'First Name', 'required');
+    $this->form_validation->set_rules('last_name', 'Last Name', 'required');
+    $this->form_validation->set_rules('role', 'Role', 'required');
 		
 		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
 			$data["view"] = "user/form";
 			$this->load->view('layouts/template', $data);
 		} else {
+      if ($this->form_validation->run() === FALSE) {
+        $this->output->set_status_header(422);
+        echo json_encode([
+          'success' => false,
+          'errors' => [
+            'username' => form_error('username', '', ''),
+            'password' => form_error('password', '', ''),
+            'first_name' => form_error('first_name', '', ''),
+            'last_name' => form_error('last_name', '', ''),
+            'role' => form_error('role', '', '')
+          ]
+        ]);
+        return;
+      }
+
 			$data = [
-				'username' => $this->input->post('username'),
+			  'username' => $this->input->post('username'),
 				'password' => $this->input->post('password'),
 				'first_name' => $this->input->post('first_name'),
 				'last_name' => $this->input->post('last_name'),
@@ -111,14 +132,30 @@ class User extends MY_Controller
 			}
 		}
 
-		$this->form_validation->set_rules('username', 'Username', 'required');
-		$this->form_validation->set_rules('password', 'Password', 'required');
+    $this->form_validation->set_rules('username', 'Username', 'required|is_unique[user.username]');
+    $this->form_validation->set_rules('first_name', 'First Name', 'required');
+    $this->form_validation->set_rules('last_name', 'Last Name', 'required');
+    $this->form_validation->set_rules('role', 'Role', 'required');
 
 		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
 			$data["user"] = $user;
 			$data["view"] = "user/form";
 			$this->load->view('layouts/template', $data);
 		} else {
+      if ($this->form_validation->run() === FALSE) {
+        $this->output->set_status_header(422);
+        echo json_encode([
+          'success' => false,
+          'errors' => [
+            'username' => form_error('username', '', ''),
+            'first_name' => form_error('first_name', '', ''),
+            'last_name' => form_error('last_name', '', ''),
+            'role' => form_error('role', '', '')
+          ]
+        ]);
+        return;
+      }
+
 			$data = [
         'username' => $this->input->post('username'),
 				'password' => $this->input->post('password'),
