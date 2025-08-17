@@ -68,14 +68,14 @@ private $table = 'user';
 	}
 
   public function get_by_username($username) {
-    return $this->db->get_where($this->table, ['username' => $username])->row_array();
+    return $this->db->get_where($this->table, ['username' => $username, 'is_active' => true])->row_array();
   }
 
   public function get_by_id($id) {
     return $this->db->get_where($this->table, ['id' => $id])->row_array();
   }
 
-  public function insert($data)
+  public function create($data)
   {
     $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
     return $this->db->insert($this->table, $data);

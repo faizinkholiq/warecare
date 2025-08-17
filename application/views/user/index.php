@@ -125,19 +125,19 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Delete Report</span></h5>
+                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Delete User</span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="deleteReportId">
+                <input type="hidden" id="deleteUserId">
                 <p>Are you sure you want to delete this user?</p>
                 <p class="text-center text-sm border px-4 py-2 border-warning text-bold rounded bg-light-warning"><i class="fas fa-exclamation-triangle text-warning mr-2"></i> The data will be permanently deleted.</p>
             </div>
             <div class="modal-footer d-flex">
                 <button type="button" style="flex: 1 1 auto;" class="btn btn-default bg-white" data-dismiss="modal">Cancel</button>
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete Report</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete User</button>
             </div>
         </div>
     </div>
@@ -301,16 +301,16 @@
             });
         });
 
-        // Delete Report Button
+        // Delete User Button
         $(document).on('click', '.delete-btn', function() {
             var userId = $(this).data('id');
-            $('#deleteuserId').val(userId);
+            $('#deleteUserId').val(userId);
             $('#deleteModal').modal('show');
         });
 
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
-            var userId = $('#deleteuserId').val();
+            var userId = $('#deleteUserId').val();
             
             $.ajax({
                 url: urls.delete + '/' + userId,
@@ -318,7 +318,7 @@
                 success: function() {
                     $('#deleteModal').modal('hide');
                     table.ajax.reload();
-                    toastr.success('Report deleted successfully');
+                    toastr.success('User deleted successfully');
                 },
                 error: function() {
                     toastr.error("Failed to delete user.");

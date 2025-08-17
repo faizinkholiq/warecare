@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="<?= base_url('assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css') ?>">
     <!-- Theme style -->
     <link rel="stylesheet" href="<?= base_url('assets/dist/css/adminlte.min.css') ?>">
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 
 <body class="hold-transition login-page justify-content-start bg-white" style="margin-top: 10rem;">
@@ -63,6 +65,29 @@
     <script src="<?= base_url('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
     <!-- AdminLTE App -->
     <script src="<?= base_url('assets/dist/js/adminlte.min.js') ?>"></script>
+    <!-- Toastr -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        const notifications = {
+            error: '<?= $this->session->flashdata('error') ?>'
+        };
+
+        $(document).ready(function() {
+            toastr.options = {
+                positionClass: "toast-top-right",
+                progressBar: true,
+                closeButton: true,
+                preventDuplicates: true, 
+                timeOut: 3000,
+            };
+
+            setTimeout(() => {
+                if (notifications.error) {
+                    toastr.error(notifications.error);
+                }
+            }, 100)
+        });
+    </script>
 </body>
 
 </html>

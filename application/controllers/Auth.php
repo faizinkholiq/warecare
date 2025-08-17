@@ -21,7 +21,7 @@ class Auth extends CI_Controller {
         return redirect('dashboard');
       }
 
-      $this->session->set_flashdata('error', 'Invalid credentials');
+      $this->session->set_flashdata('error', 'Username or password is incorrect.');
       return redirect('auth/login');
     }
 
