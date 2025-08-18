@@ -165,19 +165,28 @@
                 </div>
                 <div class="form-group col-md-7">
                     <label for="reportDescription">Deskripsi</label>
-                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;"></textarea>
+                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;"><?= isset($report) ? $report['description'] : ''; ?></textarea>
                 </div>
                 <div class="form-group col-md-7">
-                    <label for="reportImages">Lampiran Gambar</label>
+                    <label for="reportImages">Lampiran Bukti</label>
                     <div class="dropzone" id="imageDropzone">
                         <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                        <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 10MB per file.</p>
+                        <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
                         <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
                     </div>
-                    <div class="invalid-feedback" id="imageError">
-                        Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan dengan ukuran maksimal 10MB.
+                    <div class="invalid-feedback" id="imageError"></div>
+                    <div class="preview-container" id="imagePreview">
+                        <?php if (isset($report) && !empty($report['evidences'])): ?>
+                            <?php foreach ($report['evidences'] as $evidence): 
+                                $file_path = base_url('/uploads/'. $evidence['image_name']);
+                            ?>
+                                <div id="previewItem<?= $evidence['id']; ?>" class="preview-item">
+                                    <img src="<?= $file_path ?>" alt="Evidence Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
+                                    <button type="button" class="remove-btn" onclick="removeFile(<?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
-                    <div class="preview-container" id="imagePreview"></div>
                 </div>
             </div>
             <div class="card-footer bg-white border-top rounded">
@@ -205,21 +214,24 @@
 </div>
 
 <script>
+    const mode = "<?= $mode ?>";
     const urls = {
-        default: "<?= site_url('report/report') ?>",
+        default: "<?= site_url('report') ?>",
         create: "<?= site_url('report/create') ?>",
         edit: "<?= site_url('report/edit') ?>",
     };
 
     let report = <?= !empty($report)? json_encode($report) : 'null' ?>;
-    let uploadedFiles = [];
+    let evidenceFiles = [];
+    let deletedEvidenceFiles = [];
+
+    // Initialize dropzone
+    const dropzone = document.getElementById('imageDropzone');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('imagePreview');
+    const imageError = document.getElementById('imageError');
 
     $(document).ready(function() {
-        // Initialize dropzone
-        const dropzone = document.getElementById('imageDropzone');
-        const fileInput = document.getElementById('fileInput');
-        const previewContainer = document.getElementById('imagePreview');
-        const imageError = document.getElementById('imageError');
 
         // Handle click on dropzone
         dropzone.addEventListener('click', () => {
@@ -253,95 +265,16 @@
             }
         });
 
-        // Function to handle uploaded files
-        function handleFiles(files) {
-            imageError.style.display = 'none';
-            let hasError = false;
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                
-                // Validate file type
-                if (!file.type.match('image.*')) {
-                    hasError = true;
-                    continue;
-                }
-                
-                // Validate file size (10MB max)
-                if (file.size > 10 * 1024 * 1024) {
-                    hasError = true;
-                    continue;
-                }
-                
-                // Add to uploaded files array
-                uploadedFiles.push(file);
-                
-                // Create preview
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'preview-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.dataset.src = e.target.result;
-
-                    const removeBtn = document.createElement('button');
-                    removeBtn.className = 'remove-btn';
-                    removeBtn.innerHTML = '<i class="fa fa-times"></i>';
-                    removeBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        removeFile(file, previewItem);
+        if (mode === 'edit' && report) {
+            if (report.evidences.length > 0) {
+                evidenceFiles = report.evidences.map(evidence => {
+                    return {
+                        id: evidence.id,
+                        file_name: evidence.image_name,
+                        file_path: evidence.image_path
                     };
-
-                    img.onclick = (e) => {
-                        e.stopPropagation();
-                        zoomImage(e.target.dataset.src);
-                    };
-                    
-                    previewItem.appendChild(img);
-                    previewItem.appendChild(removeBtn);
-                    previewContainer.appendChild(previewItem);
-                };
-                reader.readAsDataURL(file);
+                });
             }
-            
-            if (hasError) {
-                imageError.style.display = 'block';
-            }
-        }
-
-        // Function to zoom image
-        function zoomImage(src) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('zoomedImage');
-            modal.style.display = "block";
-            modalImg.src = src;
-            
-            // Close when clicking X
-            document.querySelector('.close-modal').onclick = function() {
-                modal.style.display = "none";
-            }
-            
-            // Close when clicking outside image
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    modal.style.display = "none";
-                }
-            }
-            
-            // Close with ESC key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === "Escape") {
-                    modal.style.display = "none";
-                }
-            });
-        }
-        
-        // Function to remove a file
-        function removeFile(file, previewElement) {
-            uploadedFiles = uploadedFiles.filter(f => f !== file);
-            previewContainer.removeChild(previewElement);
         }
 
         // Form submission
@@ -356,15 +289,19 @@
             formData.append('category_id', $('#reportCategory').val());
             formData.append('title', $('#reportTitle').val());
             formData.append('description', $('#reportDescription').val());
-            
-            // Append all uploaded files
-            uploadedFiles.forEach((file, index) => {
-                formData.append(`images[${index}]`, file);
+        
+            let idx = 0;
+            evidenceFiles.forEach((file, index) => {
+                if (file instanceof File) {
+                    formData.append(`evidence_files[${idx}]`, file);
+                    idx++;
+                }
             });
+
+            formData.append('deleted_evidence_files', JSON.stringify(deletedEvidenceFiles.map(file => file.id)));
             
-            // Submit form
             $.ajax({
-                url: urls.create,
+                url: mode.edit === 'create'? urls.create : urls.edit + '/' + report.id,
                 method: 'POST',
                 data: formData,
                 processData: false,
@@ -379,9 +316,123 @@
         });
     });
 
+    // Function to handle uploaded files
+    function handleFiles(files) {
+        imageError.style.display = 'none';
+
+        if (evidenceFiles.length + files.length > 5) {
+            imageError.innerHTML = 'Maksimum upload file hanya 5 gambar.';
+            imageError.style.display = 'block';
+            return;
+        }
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            if (!file.type.match('image.*')) {
+                imageError.innerHTML = 'Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan.';
+                imageError.style.display = 'block';
+                break;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) {
+                imageError.innerHTML = 'Ukuran file maksimal 2MB.';
+                imageError.style.display = 'block';
+                break;
+            }
+            
+            if (evidenceFiles.length > 5) {
+                imageError.innerHTML = 'Maksimum upload file hanya 5 gambar.';
+                imageError.style.display = 'block';
+                break;
+            }
+            
+            evidenceFiles.push(file);
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                createPreviewImage("Temp"+i, file, e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function createPreviewImage(id, file, src) {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        previewItem.id = 'previewItem' + id; 
+        
+        const img = document.createElement('img');
+        img.src = src;
+        img.dataset.src = src;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            removeFile(id, file);
+        };
+
+        img.onclick = (e) => {
+            e.stopPropagation();
+            zoomImage(e.target.dataset.src);
+        };
+        
+        previewItem.appendChild(img);
+        previewItem.appendChild(removeBtn);
+        previewContainer.appendChild(previewItem);
+    }
+
+    // Function to zoom image
+    function zoomImage(src) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('zoomedImage');
+        modal.style.display = "block";
+        modalImg.src = src;
+        
+        document.querySelector('.close-modal').onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === "Escape") {
+                modal.style.display = "none";
+            }
+        });
+    }
+    
+    // Function to remove a file
+    function removeFile(id, file) {
+        if (file instanceof File) {
+            evidenceFiles = evidenceFiles.filter(f => f !== file);
+        } else {
+            const fileIndex = evidenceFiles.findIndex(f => f.id == id);
+            if (fileIndex > -1) {
+                if (!deletedEvidenceFiles.some(f => f.id == id)) {
+                    deletedEvidenceFiles.push(evidenceFiles[fileIndex]);
+                }
+                evidenceFiles = evidenceFiles.filter(f => f.id != id);
+            }
+        }
+
+        const previewElement = document.getElementById('previewItem'+id);
+        previewElement?.remove();
+        
+        imageError.style.display = evidenceFiles.length > 5 ? 'block' : 'none';
+    }
+
+
     function resetForm() {
         $('#reportForm')[0].reset();
-        uploadedFiles = [];
+        evidenceFiles = [];
         document.getElementById('imagePreview').innerHTML = '';
         document.getElementById('imageError').style.display = 'none';
     }

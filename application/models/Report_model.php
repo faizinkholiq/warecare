@@ -93,4 +93,34 @@ class Report_model extends CI_Model {
 	{
 		return $this->db->delete($this->table, ['id' => $id]);
 	}
+
+	public function get_evidences_by_report($report_id)
+	{
+		return $this->db->get_where('report_evidences', ['report_id' => $report_id])->result_array();
+	}
+
+	public function get_evidence($id)
+	{
+		return $this->db->get_where('report_evidences', ['id' => $id])->row_array();
+	}
+
+	public function add_evidence($report_id, $image_path, $image_name) {
+        $data = array(
+            'report_id' => $report_id,
+            'image_path' => $image_path,
+            'image_name' => $image_name
+        );
+        $this->db->insert('report_evidences', $data);
+        return $this->db->insert_id();
+    }
+
+	public function delete_evidences_by_report($report_id)
+	{
+		return $this->db->delete('report_evidences', ['report_id' => $report_id]);
+	}
+
+	public function delete_evidence($id)
+	{
+		return $this->db->delete('report_evidences', ['id' => $id]);
+	}
 }

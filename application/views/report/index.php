@@ -4,13 +4,25 @@
         padding: 5px 10px;
         border-radius: 20px;
     }
-    .status-active {
+    .status-pending {
+        background-color: #ffc10721;
+        color: #f0b400;
+        font-weight: bold;
+    }
+    .status-approved {
+        background-color: #007bff1a;
+        color: #007bff;
+        font-weight: bold;
+    }
+    .status-rejected {
+        background-color: #dc354521;
+        color: #dc3545;
+        font-weight: bold;
+    }
+    .status-completed {
         background-color: #d4edda;
         color: #155724;
-    }
-    .status-inactive {
-        background-color: #f8d7da;
-        color: #721c24;
+        font-weight: bold;
     }
     .action-btn {
         margin-right: 5px;
@@ -212,9 +224,7 @@
                     width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
-                        return row.is_active == 1 
-                            ? '<span class="status-badge status-active">Active</span>'
-                            : '<span class="status-badge status-inactive">Inactive</span>';
+                        return row.status? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` : '-';
                     },
                     targets: 9
                 },

@@ -22,24 +22,6 @@ class Report extends MY_Controller {
 		$data["view"] = "report/index";
     	$this->load->view('layouts/template', $data);
 	}
-
-	public function get_list()
-	{
-		$reports = $this->Report_model->get_all();
-		
-		$data = [];
-		foreach ($reports as $product) {
-		$data[] = [
-			'id'          => $product['id'],
-			'name'        => $product['name'],
-			'location'    => $product['location'],
-			'company'     => $product['company_name'],
-			'created_at'  => date('Y-m-d H:i:s', strtotime($product['created_at'])),
-		];
-		}
-
-		echo json_encode(['data' => $data]);
-	}
 	
 	public function get_list_datatables()
 	{
@@ -48,17 +30,17 @@ class Report extends MY_Controller {
         $params["length"] = $this->input->post("length");
         $params["start"] = $this->input->post("start");
 
-		$products = $this->Report_model->get_list_datatables($params);
+		$reports = $this->Report_model->get_list_datatables($params);
 		
-		echo json_encode($products);
+		echo json_encode($reports);
 	}
 
 	public function get($id)
 	{
-		$product = $this->Report_model->get($id);
-		if (!$product) show_404();
+		$report = $this->Report_model->get($id);
+		if (!$report) show_404();
 
-		echo json_encode($product);
+		echo json_encode($report);
 	}
 
 	public function create()
@@ -66,76 +48,93 @@ class Report extends MY_Controller {
 		$data["title"] = "Pengaduan";
 		$data["menu_id"] = "report";
 		$data["current_user"] = $this->auth_lib->current_user();
-		$data["list_data"]["entity"] = $this->Entity_model->get_all();
-		$data["list_data"]["project"] = $this->Project_model->get_all();
-		$data["list_data"]["company"] = $this->Company_model->get_all();
-		$data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
-		$data["list_data"]["category"] = $this->Category_model->get_all();
-		
-		$this->form_validation->set_rules('name', 'Name', 'required');
-		$this->form_validation->set_rules('price', 'Price', 'required|numeric');
-		$this->form_validation->set_rules('quantity', 'Quantity', 'required|integer');
+		$data["mode"] = "create";
+
+		$this->form_validation->set_rules('entity_id', 'Entity', 'required');
+		$this->form_validation->set_rules('project_id', 'Project', 'required');
+		$this->form_validation->set_rules('company_id', 'Company', 'required');
+		$this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
+		$this->form_validation->set_rules('category_id', 'Category', 'required');
+		$this->form_validation->set_rules('title', 'Title', 'required');
+		$this->form_validation->set_rules('description', 'Description', 'required');
 		
 		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
+			$data["list_data"]["entity"] = $this->Entity_model->get_all();
+			$data["list_data"]["project"] = $this->Project_model->get_all();
+			$data["list_data"]["company"] = $this->Company_model->get_all();
+			$data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
+			$data["list_data"]["category"] = $this->Category_model->get_all();
 			$data["view"] = "report/form";
+
 			$this->load->view('layouts/template', $data);
 		} else {
-			
+			$evidence_files = $_FILES['evidence_files'] ?? [];
+
+			if (empty($evidence_files)) {
+				$this->output->set_status_header(422);
+				echo json_encode([
+					'success' => false,
+					'error' => 'Please upload at least one evidence image.'
+				]);
+				return;
+			}
+
+			$uploaded_evidences = $this->handle_upload_images($evidence_files);
+
 			$data = [
-				'name' => $this->input->post('name'),
-                'description' => $this->input->post('description'),
-                'sku' => $this->input->post('sku'),
-                'price' => (float)str_replace('.', '', $this->input->post('price')),
-                'quantity' => $this->input->post('stock'),
+				'entity_id' => $this->input->post('entity_id'),
+                'project_id' => $this->input->post('project_id'),
+                'company_id' => $this->input->post('company_id'),
+                'warehouse_id' => $this->input->post('warehouse_id'),
                 'category_id' => $this->input->post('category_id'),
-                'is_active' => $this->input->post('status') ? 1 : 0,
+                'title' => $this->input->post('title'),
+                'description' => $this->input->post('description'),
+				'status' => 'Pending',
+				'rab' => false,
 				'created_by'  => $this->auth_lib->user_id()
 			];
 
-			$product_id = $this->Report_model->create($data);
-			if (!$product_id) {
-				$this->session->set_flashdata('error', 'Failed to create product');
-				if ($this->input->is_ajax_request()) {
-					$this->output->set_status_header(500);
-					echo json_encode([
-						"success" => false,
-						"error" => "Failed to create product"
-					]);
-					return;
-				}else{
-					redirect('report/create');
-				}
+			$report_id = $this->Report_model->create($data);
+			if (!$report_id) {
+				$this->session->set_flashdata('error', 'Failed to create report');
+				$this->output->set_status_header(500);
+				echo json_encode([
+					"success" => false,
+					"error" => "Failed to create report"
+				]);
+				return;
 			}
 
-            if (!empty($upload_data)) {
-                foreach ($upload_data as $file) {
-                    $this->Report_model->add_image($product_id, $file['file_path'], $file['file_name']);
+            if (!empty($uploaded_evidences)) {
+                foreach ($uploaded_evidences as $file) {
+                    $this->Report_model->add_evidence($report_id, $file['file_path'], $file['file_name']);
                 }
             }
             
-			$this->session->set_flashdata('success', 'Product created successfully');
-			if ($this->input->is_ajax_request()) {
-				$this->output->set_status_header(200);
-				echo json_encode([
-					"success" => true,
-					"message" => "Product created successfully"
-				]);
-				return;
-			}else{
-				redirect('report');
-			}
+			$this->session->set_flashdata('success', 'Report created successfully');
+			$this->output->set_status_header(200);
+			echo json_encode([
+				"success" => true,
+				"message" => "Report created successfully"
+			]);
 		}
 	}
 
-	public function delete($id)
+	public function edit($id)
 	{
-		if (!$this->Report_model->get_by_id($id)) {
-			$this->session->set_flashdata('error', 'Product not found');
+		$data["title"] = "Pengaduan";
+		$data["menu_id"] = "report";
+		$data["current_user"] = $this->auth_lib->current_user();
+		$data["mode"] = "edit";
+
+		$report = $this->Report_model->get($id);
+		if (!$report) {
+			$this->session->set_flashdata('error', 'Report not found');
 			if ($this->input->is_ajax_request()){
 				$this->output->set_status_header(404);
 				echo json_encode([
 					'success' => false,
-					'message' => 'Product not found.',
+					'message' => 'Report not found.',
 				]);
 				return;
 			}else{
@@ -143,30 +142,158 @@ class Report extends MY_Controller {
 			}
         }
 
-		if(!$this->Report_model->delete($id)){
-			$this->session->set_flashdata('success', 'Delete product failed');
-			if ($this->input->is_ajax_request()){
+		$this->form_validation->set_rules('entity_id', 'Entity', 'required');
+		$this->form_validation->set_rules('project_id', 'Project', 'required');
+		$this->form_validation->set_rules('company_id', 'Company', 'required');
+		$this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
+		$this->form_validation->set_rules('category_id', 'Category', 'required');
+		$this->form_validation->set_rules('title', 'Title', 'required');
+		$this->form_validation->set_rules('description', 'Description', 'required');
+		
+		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
+			$data["report"] = $report;
+			$data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);
+			$data["list_data"]["entity"] = $this->Entity_model->get_all();
+			$data["list_data"]["project"] = $this->Project_model->get_all();
+			$data["list_data"]["company"] = $this->Company_model->get_all();
+			$data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
+			$data["list_data"]["category"] = $this->Category_model->get_all();
+			$data["view"] = "report/form";
+			$this->load->view('layouts/template', $data);
+		} else {
+			$evidence_files = $_FILES['evidence_files'] ?? [];
+			if (!empty($evidence_files)) {
+				$uploaded_evidences = $this->handle_upload_images($evidence_files);
+			}
+
+			$deleted_evidences = json_decode($this->input->post('deleted_evidence_files'), true) ?? [];
+
+			$data = [
+				'entity_id' => $this->input->post('entity_id'),
+                'project_id' => $this->input->post('project_id'),
+                'company_id' => $this->input->post('company_id'),
+                'warehouse_id' => $this->input->post('warehouse_id'),
+                'category_id' => $this->input->post('category_id'),
+                'title' => $this->input->post('title'),
+                'description' => $this->input->post('description'),
+				'updated_by'  => $this->auth_lib->user_id()
+			];
+
+			if (!$this->Report_model->update($id, $data)) {
+				$this->session->set_flashdata('error', 'Failed to create report');
 				$this->output->set_status_header(500);
 				echo json_encode([
-					'success' => false,
-					'message' => 'Delete product failed.',
+					"success" => false,
+					"error" => "Failed to create report"
 				]);
 				return;
-			}else{
-				redirect('report');
 			}
-		}
 
-		$this->session->set_flashdata('success', 'Product deleted successfully');
-		if ($this->input->is_ajax_request()){
+            if (!empty($uploaded_evidences)) {
+                foreach ($uploaded_evidences as $file) {
+                    $this->Report_model->add_evidence($id, $file['file_path'], $file['file_name']);
+                }
+            }
+
+			if (!empty($deleted_evidences)) {
+				foreach ($deleted_evidences as $file_id) {
+					$file = $this->Report_model->get_evidence($file_id);
+					if ($file) {
+						$this->handle_delete_images('./uploads/', $file['image_name']);
+						$this->Report_model->delete_evidence($file_id);
+					}
+				}
+			}
+            
+			$this->session->set_flashdata('success', 'Report updated successfully');
 			$this->output->set_status_header(200);
 			echo json_encode([
-				'success' => true,
-				'message' => 'Product deleted successfully.',
+				"success" => true,
+				"message" => "Report updated successfully"
+			]);
+		}
+	}
+
+	public function delete($id)
+	{
+		if (!$this->Report_model->get($id)) {
+			$this->session->set_flashdata('error', 'Report not found');
+			$this->output->set_status_header(404);
+			echo json_encode([
+				'success' => false,
+				'message' => 'Report not found.',
 			]);
 			return;
-		}else{
-			redirect('report');
+        }
+
+		if(!$this->Report_model->delete($id)){
+			$this->session->set_flashdata('success', 'Delete report failed');
+			$this->output->set_status_header(500);
+			echo json_encode([
+				'success' => false,
+				'message' => 'Delete report failed.',
+			]);
+			return;
+		}
+
+		$images = $this->Report_model->get_evidences_by_report($id);
+		foreach ($images as $image) {
+			$this->handle_delete_images('./uploads/', $image['image_name']);
+		}
+
+		$this->Report_model->delete_evidences_by_report($id);
+
+		$this->session->set_flashdata('success', 'Report deleted successfully');
+		$this->output->set_status_header(200);
+		echo json_encode([
+			'success' => true,
+			'message' => 'Report deleted successfully.',
+		]);
+	}
+
+	private function handle_upload_images($files) {        
+        $config['upload_path'] = './uploads/';
+        $config['allowed_types'] = 'gif|jpg|png|jpeg';
+        $config['max_size'] = '2048'; // 2MB
+        $config['encrypt_name'] = TRUE;
+		$config['file_ext_tolower'] = TRUE;
+		$config['mimes'] = array(
+			'jpg' => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'png' => 'image/png',
+			'gif' => 'image/gif'
+		);
+
+        if (!is_dir($config['upload_path'])) {
+            mkdir($config['upload_path'], 0777, TRUE);
+        }
+        
+        $this->load->library('upload', $config);
+        $upload_data = [];
+
+        for ($i = 0; $i < count($files['name']); $i++) {
+			$_FILES['image']['name'] = $files['name'][$i];
+            $_FILES['image']['type'] = $files['type'][$i];
+            $_FILES['image']['tmp_name'] = $files['tmp_name'][$i];
+            $_FILES['image']['error'] = $files['error'][$i];
+            $_FILES['image']['size'] = $files['size'][$i];
+
+			$this->upload->initialize($config);
+
+            if ($this->upload->do_upload('image')) {
+                $upload_data[] = $this->upload->data();
+            }
+        }
+	
+        return $upload_data;
+    }
+
+	private function handle_delete_images($filepath, $filename) {
+		$filename = urldecode($filename);
+        $filepath = $filepath . $this->security->sanitize_filename($filename);
+
+		if (file_exists($filepath)) {
+			unlink($filepath);
 		}
 	}
 }
