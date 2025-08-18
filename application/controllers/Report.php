@@ -49,14 +49,6 @@ class Report extends MY_Controller {
 		$data["menu_id"] = "report";
 		$data["current_user"] = $this->auth_lib->current_user();
 		$data["mode"] = "create";
-
-		$this->form_validation->set_rules('entity_id', 'Entity', 'required');
-		$this->form_validation->set_rules('project_id', 'Project', 'required');
-		$this->form_validation->set_rules('company_id', 'Company', 'required');
-		$this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
-		$this->form_validation->set_rules('category_id', 'Category', 'required');
-		$this->form_validation->set_rules('title', 'Title', 'required');
-		$this->form_validation->set_rules('description', 'Description', 'required');
 		
 		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
 			$data["list_data"]["entity"] = $this->Entity_model->get_all();
@@ -68,13 +60,43 @@ class Report extends MY_Controller {
 
 			$this->load->view('layouts/template', $data);
 		} else {
-			$evidence_files = $_FILES['evidence_files'] ?? [];
+			$this->form_validation->set_rules('entity_id', 'Entity', 'required');
+			$this->form_validation->set_rules('project_id', 'Project', 'required');
+			$this->form_validation->set_rules('company_id', 'Company', 'required');
+			$this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
+			$this->form_validation->set_rules('category_id', 'Category', 'required');
+			$this->form_validation->set_rules('title', 'Title', 'required');
+			$this->form_validation->set_rules('description', 'Description', 'required');
 
-			if (empty($evidence_files)) {
+			$evidence_files = $_FILES['evidence_files'] ?? [];
+			$file_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
+
+			if ($file_count < 1) {
+				$this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
+					'required' => 'At least one evidence file is required.'
+				]);
+			} elseif ($file_count > 5) {
+				$this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
+					'max_evidence_files' => 'Maximum of 5 evidence files allowed.'
+				]);
+			}
+
+		    $this->form_validation->set_message('max_evidence_files', 'Maximum of 5 evidence files allowed.');
+
+			if ($file_count < 1) {
 				$this->output->set_status_header(422);
 				echo json_encode([
 					'success' => false,
 					'error' => 'Please upload at least one evidence image.'
+				]);
+				return;
+			}
+
+			if ($file_count > 5) {
+				$this->output->set_status_header(422);
+				echo json_encode([
+					'success' => false,
+					'error' => 'Maximum of 5 evidence files allowed.'
 				]);
 				return;
 			}
@@ -142,17 +164,12 @@ class Report extends MY_Controller {
 			}
         }
 
-		$this->form_validation->set_rules('entity_id', 'Entity', 'required');
-		$this->form_validation->set_rules('project_id', 'Project', 'required');
-		$this->form_validation->set_rules('company_id', 'Company', 'required');
-		$this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
-		$this->form_validation->set_rules('category_id', 'Category', 'required');
-		$this->form_validation->set_rules('title', 'Title', 'required');
-		$this->form_validation->set_rules('description', 'Description', 'required');
+	    $existing_evidences = $this->Report_model->get_evidences_by_report($id);
+		$existing_count = count($existing_evidences);
 		
 		if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
 			$data["report"] = $report;
-			$data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);
+			$data["report"]["evidences"] = $existing_evidences;
 			$data["list_data"]["entity"] = $this->Entity_model->get_all();
 			$data["list_data"]["project"] = $this->Project_model->get_all();
 			$data["list_data"]["company"] = $this->Company_model->get_all();
@@ -161,12 +178,44 @@ class Report extends MY_Controller {
 			$data["view"] = "report/form";
 			$this->load->view('layouts/template', $data);
 		} else {
+			$this->form_validation->set_rules('entity_id', 'Entity', 'required');
+			$this->form_validation->set_rules('project_id', 'Project', 'required');
+			$this->form_validation->set_rules('company_id', 'Company', 'required');
+			$this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
+			$this->form_validation->set_rules('category_id', 'Category', 'required');
+			$this->form_validation->set_rules('title', 'Title', 'required');
+			$this->form_validation->set_rules('description', 'Description', 'required');
+
 			$evidence_files = $_FILES['evidence_files'] ?? [];
-			if (!empty($evidence_files)) {
-				$uploaded_evidences = $this->handle_upload_images($evidence_files);
-			}
+		    $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
 
 			$deleted_evidences = json_decode($this->input->post('deleted_evidence_files'), true) ?? [];
+
+			$total_evidences = $existing_count + $evidence_count - count($deleted_evidences);
+
+			if ($total_evidences < 1) {
+				$this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
+					'required' => 'At least one evidence file is required.'
+				]);
+			} elseif ($total_evidences > 5) {
+				$this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
+					'max_evidence_files' => 'Maximum of 5 evidence files allowed.'
+				]);
+			}
+
+			$uploaded_evidences = [];
+			if (!empty($evidence_files['name'][0])) {
+				if ($total_evidences > 5) {
+					$this->session->set_flashdata('error', 'Maximum of 5 evidence files allowed.');
+					$this->output->set_status_header(400);
+					echo json_encode([
+						"success" => false,
+						"error" => "Maximum of 5 evidence files allowed."
+					]);
+					return;
+				}
+				$uploaded_evidences = $this->handle_upload_images($evidence_files);
+			}
 
 			$data = [
 				'entity_id' => $this->input->post('entity_id'),

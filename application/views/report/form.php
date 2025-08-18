@@ -195,9 +195,11 @@
                         <i class="fas fa-chevron-left mr-2"></i> Cancel
                     </a>
                     <div>
+                        <?php if ($mode === 'create'): ?>
                         <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                             <i class="fas fa-trash mr-2"></i> Clear
                         </button>
+                        <?php endif; ?>
                         <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
                             <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan 
                         </button>
@@ -280,6 +282,12 @@
         // Form submission
         $('#reportForm').submit(function(e) {
             e.preventDefault();
+
+            if (evidenceFiles.length === 0) {
+                imageError.innerHTML = 'Harap unggah setidaknya satu gambar bukti.';
+                imageError.style.display = 'block';
+                return;
+            }
             
             const formData = new FormData();
             formData.append('entity_id', $('#reportEntity').val());
@@ -301,7 +309,7 @@
             formData.append('deleted_evidence_files', JSON.stringify(deletedEvidenceFiles.map(file => file.id)));
             
             $.ajax({
-                url: mode.edit === 'create'? urls.create : urls.edit + '/' + report.id,
+                url: mode === 'create'? urls.create : urls.edit + '/' + report.id,
                 method: 'POST',
                 data: formData,
                 processData: false,
