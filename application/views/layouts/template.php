@@ -130,6 +130,10 @@
       min-width: 12rem;
       padding-top: 0;
     }
+
+    .content-wrapper{
+      height: auto!important;
+    }
   </style>
 </head>
 
