@@ -188,6 +188,13 @@
                         <?php endif; ?>
                     </div>
                 </div>
+                <div class="form-group col-md-6">
+                    <label for="reportRAB">RAB</label>
+                    <select class="form-control" id="reportRAB" required>
+                        <option value="0">Tanpa RAB</option><
+                        <option value="1">Dengan RAB</option><
+                    </select>
+                </div>
             </div>
             <div class="card-footer bg-white border-top rounded">
                 <div class="d-flex justify-content-between">
