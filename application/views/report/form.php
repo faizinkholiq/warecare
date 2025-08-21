@@ -195,6 +195,10 @@
                         <option value="1">Dengan RAB</option><
                     </select>
                 </div>
+                <div class="form-group col-md-6">
+                    <label for="reportRAB">RAB File</label>
+                    <input type="file" class="form-control" id="reportRABFile" value="">
+                </div> 
             </div>
             <div class="card-footer bg-white border-top rounded">
                 <div class="d-flex justify-content-between">
