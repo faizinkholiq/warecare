@@ -40,6 +40,7 @@ class Report_model extends CI_Model {
 		$this->db->select([
 			'report.id',
             'report.no',
+            'report.title',
             'entity.name as entity',
             'project.name as project',
             'report.created_at',

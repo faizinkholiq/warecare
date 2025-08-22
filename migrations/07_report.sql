@@ -11,9 +11,8 @@ CREATE TABLE IF NOT EXISTS report (
   description TEXT NOT NULL,
   status ENUM('Pending', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
 
-  rab BOOLEAN DEFAULT FALSE,
-  photo_rab VARCHAR(255),
-  photo_works VARCHAR(255),
+  is_rab BOOLEAN DEFAULT FALSE,
+  rab_file VARCHAR(255),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -31,6 +30,14 @@ CREATE TABLE IF NOT EXISTS report (
 ALTER TABLE `report` ADD `no` VARCHAR(20) NOT NULL AFTER `id`, ADD UNIQUE `unique_report_no` (`no`); 
 
 CREATE TABLE report_evidences (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    report_id INT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    image_name VARCHAR(255) NOT NULL,
+    FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
+);
+
+CREATE TABLE report_works (
     id INT PRIMARY KEY AUTO_INCREMENT,
     report_id INT NOT NULL,
     image_path VARCHAR(255) NOT NULL,

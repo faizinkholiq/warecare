@@ -196,9 +196,20 @@
                     </select>
                 </div>
                 <div class="form-group col-md-6">
-                    <label for="reportRAB">RAB File</label>
-                    <input type="file" class="form-control" id="reportRABFile" value="">
-                </div> 
+                    <label for="reportRABFile">RAB File</label>
+                    <div class="d-flex align-items-center justify-content-between border rounded-lg py-1 px-2">
+                        <input type="file" class="form-control" id="reportRABFile" hidden>
+                        <div>
+                            <button type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()">
+                                <i class="fas fa-folder-open mr-1"></i> Pilih File
+                            </button>
+                            <span id="reportRABFileName" class="ml-3">Belum ada file yang dipilih</span>
+                        </div>
+                        <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
+                            <i class="fa fa-times"></i> 
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-footer bg-white border-top rounded">
                 <div class="d-flex justify-content-between">
@@ -278,6 +289,18 @@
             }
         });
 
+        document.getElementById('reportRABFile').addEventListener('change', function(e) {
+            const files = this.files[0];
+            document.getElementById('reportRABFileName').textContent = files ? files.name : 'Belum ada file yang dipilih';
+            document.getElementById('reportRABRemoveFile').style.display = files ? '' : 'none';
+        });
+
+        document.getElementById('reportRABRemoveFile').addEventListener('click', function(e) {
+            document.getElementById('reportRABFile').value = "";
+            document.getElementById('reportRABFileName').textContent = "Belum ada file yang dipilih";
+            document.getElementById('reportRABRemoveFile').style.display = 'none';
+        });
+
         if (mode === 'edit' && report) {
             if (report.evidences.length > 0) {
                 evidenceFiles = report.evidences.map(evidence => {
@@ -308,6 +331,8 @@
             formData.append('category_id', $('#reportCategory').val());
             formData.append('title', $('#reportTitle').val());
             formData.append('description', $('#reportDescription').val());
+            formData.append('is_rab', $('#reportRAB').val());
+            formData.append('rab_file', $('#reportRABFile')[0].files);
         
             let idx = 0;
             evidenceFiles.forEach((file, index) => {
@@ -318,7 +343,7 @@
             });
 
             formData.append('deleted_evidence_files', JSON.stringify(deletedEvidenceFiles.map(file => file.id)));
-            
+
             $.ajax({
                 url: mode === 'create'? urls.create : urls.edit + '/' + report.id,
                 method: 'POST',
@@ -326,7 +351,8 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    window.location.href = urls.default;
+                    response = JSON.parse(response)
+                    if (response.success) window.location.href = urls.default;
                 },
                 error: function() {
                     toastr.error("Failed to "+ mode +" report.");

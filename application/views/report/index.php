@@ -98,7 +98,7 @@
                 <tr>
                     <th>ID</th>
                     <th class="dt-center">No</th>
-                    <th class="dt-center">No. Pengaduan</th>
+                    <th class="dt-center">Judul Pengaduan</th>
                     <th class="dt-center">Entity</th>
                     <th class="dt-center">Project</th>
                     <th class="dt-center">Tgl. Pengaduan</th>
@@ -184,12 +184,14 @@
                     targets: 1
                 },
                 { 
-                    data: "no",
+                    data: "title",
+                    width: "15%",
                     className: "vertical-align-middle",
                     targets: 2
                 },
                 { 
                     data: "entity",
+                    width: "10%",
                     className: "vertical-align-middle",
                     targets: 3
                 },
@@ -200,12 +202,12 @@
                 },
                 { 
                     data: "created_at",
-                    width: "15%",
+                    width: "10%",
                     targets: 5
                 },
                 { 
                     data: "warehouse",
-                    width: "7%",
+                    width: "10%",
                     targets: 6
                 },
                 { 
@@ -216,12 +218,12 @@
                 
                 { 
                     data: "category",
-                    width: "15%",
+                    width: "10%",
                     targets: 8
                 },
                 { 
                     data: null,
-                    width: "10%",
+                    width: "6%",
                     className: "dt-center",
                     render: function(data, type, row) {
                         return row.status? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` : '-';

@@ -60,6 +60,7 @@ class Report extends MY_Controller {
 
 			$this->load->view('layouts/template', $data);
 		} else {
+
 			$this->form_validation->set_rules('entity_id', 'Entity', 'required');
 			$this->form_validation->set_rules('project_id', 'Project', 'required');
 			$this->form_validation->set_rules('company_id', 'Company', 'required');
@@ -112,7 +113,7 @@ class Report extends MY_Controller {
                 'title' => $this->input->post('title'),
                 'description' => $this->input->post('description'),
 				'status' => 'Pending',
-				'rab' => false,
+				'is_rab' => (bool)$this->input->post('is_rab'),
 				'created_by'  => $this->auth_lib->user_id()
 			];
 
@@ -225,6 +226,7 @@ class Report extends MY_Controller {
                 'category_id' => $this->input->post('category_id'),
                 'title' => $this->input->post('title'),
                 'description' => $this->input->post('description'),
+				'is_rab' => (bool)$this->input->post('is_rab'),
 				'updated_by'  => $this->auth_lib->user_id()
 			];
 
