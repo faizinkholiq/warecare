@@ -188,38 +188,59 @@
                         <?php endif; ?>
                     </div>
                 </div>
-                <div class="form-group col-md-6">
-                    <label for="reportRAB">RAB</label>
-                    <select class="form-control" id="reportRAB" required>
-                        <option value="0">Tanpa RAB</option><
-                        <option value="1">Dengan RAB</option><
-                    </select>
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="reportRABFile">RAB File</label>
-                    <div class="d-flex align-items-center justify-content-between border rounded-lg py-1 px-2">
-                        <input type="file" class="form-control" id="reportRABFile" hidden>
-                        <div>
-                            <button type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()">
-                                <i class="fas fa-folder-open mr-1"></i> Pilih File
-                            </button>
-                            <span id="reportRABFileName" class="ml-3">Belum ada file yang dipilih</span>
-                        </div>
-                        <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
-                            <i class="fa fa-times"></i> 
-                        </button>
+                <?php if ($mode === 'edit'): ?>
+                    <div class="form-group col-md-6">
+                        <label for="reportRAB">RAB</label>
+                        <select class="form-control" id="reportRAB" required>
+                            <option value="0" <?= isset($report) && $report['is_rab'] == 0 ? 'selected' : '' ?>>Tanpa RAB</option><
+                            <option value="1" <?= isset($report) && $report['is_rab'] == 1 ? 'selected' : '' ?>>Dengan RAB</option><
+                        </select>
                     </div>
-                </div>
+                    <div id="reportRABContainer" class="form-group col-md-6">
+                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-1 px-2">
+                            <input type="file" class="form-control" id="reportRABFile" hidden>
+                            <div>
+                                <button type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()">
+                                    <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                </button>
+                                <span id="reportRABFileName" class="ml-3">Belum ada file yang dipilih</span>
+                            </div>
+                            <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
+                                <i class="fa fa-times"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="reportRABFinalFile">RAB Final</label>
+                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-1 px-2">
+                            <input type="file" class="form-control" id="reportRABFinalFile" hidden>
+                            <div>
+                                <button type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()">
+                                    <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                </button>
+                                <span id="reportRABFinalFileName" class="ml-3">Belum ada file yang dipilih</span>
+                            </div>
+                            <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
+                                <i class="fa fa-times"></i> 
+                            </button>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
             <div class="card-footer bg-white border-top rounded">
                 <div class="d-flex justify-content-between">
                     <a href="<?= site_url('report') ?>" class="btn btn-default border-0 shadow-sm rounded-lg">
-                        <i class="fas fa-chevron-left mr-2"></i> Cancel
+                        <i class="fas fa-chevron-left mr-2"></i> Batal
                     </a>
                     <div>
                         <?php if ($mode === 'create'): ?>
                         <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
-                            <i class="fas fa-trash mr-2"></i> Clear
+                            <i class="fas fa-trash mr-2"></i> Reset
+                        </button>
+                        <?php endif; ?>
+                        <?php if ($mode === 'edit'): ?>
+                        <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                            <i class="fas fa-times mr-2"></i> Ditolak
                         </button>
                         <?php endif; ?>
                         <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
@@ -289,18 +310,6 @@
             }
         });
 
-        document.getElementById('reportRABFile').addEventListener('change', function(e) {
-            const files = this.files[0];
-            document.getElementById('reportRABFileName').textContent = files ? files.name : 'Belum ada file yang dipilih';
-            document.getElementById('reportRABRemoveFile').style.display = files ? '' : 'none';
-        });
-
-        document.getElementById('reportRABRemoveFile').addEventListener('click', function(e) {
-            document.getElementById('reportRABFile').value = "";
-            document.getElementById('reportRABFileName').textContent = "Belum ada file yang dipilih";
-            document.getElementById('reportRABRemoveFile').style.display = 'none';
-        });
-
         if (mode === 'edit' && report) {
             if (report.evidences.length > 0) {
                 evidenceFiles = report.evidences.map(evidence => {
@@ -311,6 +320,36 @@
                     };
                 });
             }
+
+            document.getElementById('reportRABContainer').style.display = (report.is_rab === '1')? '' : 'none';
+
+            document.getElementById('reportRAB').addEventListener('change', function(e) {
+                document.getElementById('reportRABContainer').style.display = (e.target.value === '1')? '' : 'none';
+            });
+
+            document.getElementById('reportRABFile').addEventListener('change', function(e) {
+                const files = this.files[0];
+                document.getElementById('reportRABFileName').textContent = files ? files.name : 'Belum ada file yang dipilih';
+                document.getElementById('reportRABRemoveFile').style.display = files ? '' : 'none';
+            });
+
+            document.getElementById('reportRABRemoveFile').addEventListener('click', function(e) {
+                document.getElementById('reportRABFile').value = "";
+                document.getElementById('reportRABFileName').textContent = "Belum ada file yang dipilih";
+                document.getElementById('reportRABRemoveFile').style.display = 'none';
+            });
+
+            document.getElementById('reportRABFinalFile').addEventListener('change', function(e) {
+                const files = this.files[0];
+                document.getElementById('reportRABFinalFileName').textContent = files ? files.name : 'Belum ada file yang dipilih';
+                document.getElementById('reportRABFinalRemoveFile').style.display = files ? '' : 'none';
+            });
+
+            document.getElementById('reportRABFinalRemoveFile').addEventListener('click', function(e) {
+                document.getElementById('reportRABFinalFile').value = "";
+                document.getElementById('reportRABFinalFileName').textContent = "Belum ada file yang dipilih";
+                document.getElementById('reportRABFinalRemoveFile').style.display = 'none';
+            });
         }
 
         // Form submission
@@ -332,7 +371,8 @@
             formData.append('title', $('#reportTitle').val());
             formData.append('description', $('#reportDescription').val());
             formData.append('is_rab', $('#reportRAB').val());
-            formData.append('rab_file', $('#reportRABFile')[0].files);
+            formData.append('rab_file', $('#reportRABFile')[0].files[0]) ?? null;
+            formData.append('rab_final_file', $('#reportRABFinalFile')[0].files[0]) ?? null;
         
             let idx = 0;
             evidenceFiles.forEach((file, index) => {

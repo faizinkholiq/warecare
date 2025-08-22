@@ -60,7 +60,6 @@ class Report extends MY_Controller {
 
 			$this->load->view('layouts/template', $data);
 		} else {
-
 			$this->form_validation->set_rules('entity_id', 'Entity', 'required');
 			$this->form_validation->set_rules('project_id', 'Project', 'required');
 			$this->form_validation->set_rules('company_id', 'Company', 'required');
@@ -68,6 +67,19 @@ class Report extends MY_Controller {
 			$this->form_validation->set_rules('category_id', 'Category', 'required');
 			$this->form_validation->set_rules('title', 'Title', 'required');
 			$this->form_validation->set_rules('description', 'Description', 'required');
+
+			$data = [
+				'entity_id' => $this->input->post('entity_id'),
+                'project_id' => $this->input->post('project_id'),
+                'company_id' => $this->input->post('company_id'),
+                'warehouse_id' => $this->input->post('warehouse_id'),
+                'category_id' => $this->input->post('category_id'),
+                'title' => $this->input->post('title'),
+                'description' => $this->input->post('description'),
+				'status' => 'Pending',
+				'is_rab' => (bool)$this->input->post('is_rab'),
+				'created_by'  => $this->auth_lib->user_id()
+			];
 
 			$evidence_files = $_FILES['evidence_files'] ?? [];
 			$file_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
@@ -102,20 +114,7 @@ class Report extends MY_Controller {
 				return;
 			}
 
-			$uploaded_evidences = $this->handle_upload_images($evidence_files);
-
-			$data = [
-				'entity_id' => $this->input->post('entity_id'),
-                'project_id' => $this->input->post('project_id'),
-                'company_id' => $this->input->post('company_id'),
-                'warehouse_id' => $this->input->post('warehouse_id'),
-                'category_id' => $this->input->post('category_id'),
-                'title' => $this->input->post('title'),
-                'description' => $this->input->post('description'),
-				'status' => 'Pending',
-				'is_rab' => (bool)$this->input->post('is_rab'),
-				'created_by'  => $this->auth_lib->user_id()
-			];
+			$uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
 
 			$report_id = $this->Report_model->create($data);
 			if (!$report_id) {
@@ -187,11 +186,21 @@ class Report extends MY_Controller {
 			$this->form_validation->set_rules('title', 'Title', 'required');
 			$this->form_validation->set_rules('description', 'Description', 'required');
 
+			$data = [
+				'entity_id' => $this->input->post('entity_id'),
+                'project_id' => $this->input->post('project_id'),
+                'company_id' => $this->input->post('company_id'),
+                'warehouse_id' => $this->input->post('warehouse_id'),
+                'category_id' => $this->input->post('category_id'),
+                'title' => $this->input->post('title'),
+                'description' => $this->input->post('description'),
+				'is_rab' => (bool)$this->input->post('is_rab'),
+				'updated_by'  => $this->auth_lib->user_id()
+			];
+
 			$evidence_files = $_FILES['evidence_files'] ?? [];
 		    $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
-
 			$deleted_evidences = json_decode($this->input->post('deleted_evidence_files'), true) ?? [];
-
 			$total_evidences = $existing_count + $evidence_count - count($deleted_evidences);
 
 			if ($total_evidences < 1) {
@@ -215,20 +224,45 @@ class Report extends MY_Controller {
 					]);
 					return;
 				}
-				$uploaded_evidences = $this->handle_upload_images($evidence_files);
+
+				$uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
 			}
 
-			$data = [
-				'entity_id' => $this->input->post('entity_id'),
-                'project_id' => $this->input->post('project_id'),
-                'company_id' => $this->input->post('company_id'),
-                'warehouse_id' => $this->input->post('warehouse_id'),
-                'category_id' => $this->input->post('category_id'),
-                'title' => $this->input->post('title'),
-                'description' => $this->input->post('description'),
-				'is_rab' => (bool)$this->input->post('is_rab'),
-				'updated_by'  => $this->auth_lib->user_id()
-			];
+			$delete_rab_file = (bool)$this->input->post('delete_rab_file');
+			$delete_rab_final_file = (bool)$this->input->post('delete_rab_final_file');
+			
+			if($data['is_rab']) {
+				if($delete_rab_file) {
+					$data['rab_file'] = '';
+				}else{
+					$rab_file = $_FILES['rab_file'] ?? [];
+					if ($rab_file){
+						$uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
+						if ($uploaded_rab) {
+							$data['rab_file'] = $uploaded_rab['file_name'];
+							$this->handle_delete_file('./uploads/', $report['rab_file']);
+						}
+					}
+				}
+
+				if ($delete_rab_final_file) {
+					$data['rab_final_file'] = '';
+				}else{
+					$rab_final_file = $_FILES['rab_final_file'] ?? [];
+					if ($rab_final_file) {
+						$uploaded_rab_final = $this->handle_upload_file($rab_final_file, 'rab_final');
+						if ($uploaded_rab_final) {
+							$data['rab_file'] = $uploaded_rab_final['file_name'];
+							$this->handle_delete_file('./uploads/', $report['rab_final_file']);
+						}
+					}
+				}
+			}else{
+				$delete_rab_file = true;
+				$delete_rab_final_file = true;
+				$data['rab_file'] = '';
+				$data['rab_final_file'] = '';
+			}
 
 			if (!$this->Report_model->update($id, $data)) {
 				$this->session->set_flashdata('error', 'Failed to create report');
@@ -250,10 +284,19 @@ class Report extends MY_Controller {
 				foreach ($deleted_evidences as $file_id) {
 					$file = $this->Report_model->get_evidence($file_id);
 					if ($file) {
-						$this->handle_delete_images('./uploads/', $file['image_name']);
+						$this->handle_delete_file('./uploads/', $file['image_name']);
 						$this->Report_model->delete_evidence($file_id);
 					}
 				}
+			}
+
+			if ($delete_rab_file) {
+				$this->handle_delete_file('./uploads/', $report['rab_file']);
+			}
+
+			
+			if ($delete_rab_final_file) {
+				$this->handle_delete_file('./uploads/', $report['rab_final_file']);
 			}
             
 			$this->session->set_flashdata('success', 'Report updated successfully');
@@ -289,7 +332,7 @@ class Report extends MY_Controller {
 
 		$images = $this->Report_model->get_evidences_by_report($id);
 		foreach ($images as $image) {
-			$this->handle_delete_images('./uploads/', $image['image_name']);
+			$this->handle_delete_file('./uploads/', $image['image_name']);
 		}
 
 		$this->Report_model->delete_evidences_by_report($id);
@@ -302,17 +345,24 @@ class Report extends MY_Controller {
 		]);
 	}
 
-	private function handle_upload_images($files) {        
+	private function handle_bulk_upload_files($files, $suffix = 'my_file') {        
         $config['upload_path'] = './uploads/';
-        $config['allowed_types'] = 'gif|jpg|png|jpeg';
-        $config['max_size'] = '2048'; // 2MB
-        $config['encrypt_name'] = TRUE;
+		$config['allowed_types'] = 'gif|jpg|jpeg|png|pdf|doc|docx|xls|xlsx';
+        $config['max_size'] = '10240'; // 10MB
 		$config['file_ext_tolower'] = TRUE;
 		$config['mimes'] = array(
-			'jpg' => 'image/jpeg',
-			'jpeg' => 'image/jpeg',
+			// Images
+			'jpg' => array('image/jpeg', 'image/pjpeg'),
+			'jpeg' => array('image/jpeg', 'image/pjpeg'),
 			'png' => 'image/png',
-			'gif' => 'image/gif'
+			'gif' => 'image/gif',
+			
+			// Documents
+			'pdf' => array('application/pdf', 'application/x-pdf'),
+			'doc' => 'application/msword',
+			'docx' => array('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'),
+			'xls' => array('application/vnd.ms-excel', 'application/excel'),
+			'xlsx' => array('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip')
 		);
 
         if (!is_dir($config['upload_path'])) {
@@ -323,6 +373,12 @@ class Report extends MY_Controller {
         $upload_data = [];
 
         for ($i = 0; $i < count($files['name']); $i++) {
+			$original_name = $files['name'][$i];
+			$file_extension = pathinfo($original_name, PATHINFO_EXTENSION);
+			
+			$custom_filename = $suffix . '_' . date('YmdHis') . '.' . $file_extension;
+			$config['file_name'] = $custom_filename;
+			
 			$_FILES['image']['name'] = $files['name'][$i];
             $_FILES['image']['type'] = $files['type'][$i];
             $_FILES['image']['tmp_name'] = $files['tmp_name'][$i];
@@ -339,7 +395,55 @@ class Report extends MY_Controller {
         return $upload_data;
     }
 
-	private function handle_delete_images($filepath, $filename) {
+	private function handle_upload_file($files, $suffix = 'my_file') {        
+        $config['upload_path'] = './uploads/';
+		$config['allowed_types'] = 'gif|jpg|jpeg|png|pdf|doc|docx|xls|xlsx';
+        $config['max_size'] = '10240'; // 10MB
+		$config['file_ext_tolower'] = TRUE;
+		$config['mimes'] = array(
+			// Images
+			'jpg' => array('image/jpeg', 'image/pjpeg'),
+			'jpeg' => array('image/jpeg', 'image/pjpeg'),
+			'png' => 'image/png',
+			'gif' => 'image/gif',
+			
+			// Documents
+			'pdf' => array('application/pdf', 'application/x-pdf'),
+			'doc' => 'application/msword',
+			'docx' => array('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'),
+			'xls' => array('application/vnd.ms-excel', 'application/excel'),
+			'xlsx' => array('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip')
+		);
+
+        if (!is_dir($config['upload_path'])) {
+            mkdir($config['upload_path'], 0777, TRUE);
+        }
+        
+        $this->load->library('upload', $config);
+        $upload_data = [];
+
+		$original_name = $files['name'];
+		$file_extension = pathinfo($original_name, PATHINFO_EXTENSION);
+		
+		$custom_filename = $suffix . '_' . date('YmdHis') . '.' . $file_extension;
+		$config['file_name'] = $custom_filename;
+		
+		$_FILES['image']['name'] = $files['name'];
+		$_FILES['image']['type'] = $files['type'];
+		$_FILES['image']['tmp_name'] = $files['tmp_name'];
+		$_FILES['image']['error'] = $files['error'];
+		$_FILES['image']['size'] = $files['size'];
+
+		$this->upload->initialize($config);
+
+		if ($this->upload->do_upload('image')) {
+			$upload_data = $this->upload->data();
+		}
+	
+        return $upload_data;
+    }
+
+	private function handle_delete_file($filepath, $filename) {
 		$filename = urldecode($filename);
         $filepath = $filepath . $this->security->sanitize_filename($filename);
 

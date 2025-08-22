@@ -236,10 +236,10 @@
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `
-                            <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary border-0 edit-btn">
+                            <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
                                 <i class="text-xs fas fa-edit"></i>
                             </a>
-                            <button class="btn btn-sm btn-danger border-0 delete-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
                                 <i class="text-xs fas fa-trash"></i>
                             </button>
                         `;
