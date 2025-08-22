@@ -197,28 +197,38 @@
                         </select>
                     </div>
                     <div id="reportRABContainer" class="form-group col-md-6">
-                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-1 px-2">
+                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
                             <input type="file" class="form-control" id="reportRABFile" hidden>
                             <div>
-                                <button type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()">
+                                <?php if(isset($report) && $report['rab_file']): ?>
+                                <a id="reportRABDownloadFile" href="<?= site_url('file/download/'.$report['rab_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                    <i class="fas fa-download mr-1"></i> Download File
+                                </a>
+                                <?php endif; ?>
+                                <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file']? 'none' : '' ?>">
                                     <i class="fas fa-folder-open mr-1"></i> Pilih File
                                 </button>
-                                <span id="reportRABFileName" class="ml-3">Belum ada file yang dipilih</span>
+                                <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file']? $report['rab_file'] : 'Belum ada file yang dipilih' ?></span>
                             </div>
-                            <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
+                            <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file']? '' : 'none' ?>">
                                 <i class="fa fa-times"></i> 
                             </button>
                         </div>
                     </div>
                     <div class="form-group col-md-6">
                         <label for="reportRABFinalFile">RAB Final</label>
-                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-1 px-2">
+                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
                             <input type="file" class="form-control" id="reportRABFinalFile" hidden>
                             <div>
-                                <button type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()">
+                                <?php if(isset($report) && $report['rab_final_file']): ?>
+                                <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/'.$report['rab_final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                    <i class="fas fa-download mr-1"></i> Download File
+                                </a>
+                                <?php endif; ?>
+                                <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()">
                                     <i class="fas fa-folder-open mr-1"></i> Pilih File
                                 </button>
-                                <span id="reportRABFinalFileName" class="ml-3">Belum ada file yang dipilih</span>
+                                <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm">Belum ada file yang dipilih</span>
                             </div>
                             <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
                                 <i class="fa fa-times"></i> 
@@ -233,14 +243,17 @@
                         <i class="fas fa-chevron-left mr-2"></i> Batal
                     </a>
                     <div>
-                        <?php if ($mode === 'create'): ?>
-                        <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
-                            <i class="fas fa-trash mr-2"></i> Reset
-                        </button>
-                        <?php endif; ?>
                         <?php if ($mode === 'edit'): ?>
                         <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                             <i class="fas fa-times mr-2"></i> Ditolak
+                        </button>
+                        <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                            <i class="fas fa-check mr-2"></i> Setujui Pengaduan 
+                        </button>
+                        <?php endif; ?>
+                        <?php if ($mode === 'create'): ?>
+                        <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                            <i class="fas fa-trash mr-2"></i> Reset
                         </button>
                         <?php endif; ?>
                         <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
@@ -269,6 +282,8 @@
     let report = <?= !empty($report)? json_encode($report) : 'null' ?>;
     let evidenceFiles = [];
     let deletedEvidenceFiles = [];
+    let deleteRABFile = false;
+    let deleteRABFinalFile = false;
 
     // Initialize dropzone
     const dropzone = document.getElementById('imageDropzone');
@@ -337,6 +352,13 @@
                 document.getElementById('reportRABFile').value = "";
                 document.getElementById('reportRABFileName').textContent = "Belum ada file yang dipilih";
                 document.getElementById('reportRABRemoveFile').style.display = 'none';
+                document.getElementById('reportRABSelectFile').style.display = '';
+
+                const downloadFile = document.getElementById('reportRABDownloadFile');
+                if (downloadFile) {
+                    downloadFile.remove();
+                    deleteRABFile = true;
+                }
             });
 
             document.getElementById('reportRABFinalFile').addEventListener('change', function(e) {
@@ -349,6 +371,13 @@
                 document.getElementById('reportRABFinalFile').value = "";
                 document.getElementById('reportRABFinalFileName').textContent = "Belum ada file yang dipilih";
                 document.getElementById('reportRABFinalRemoveFile').style.display = 'none';
+                document.getElementById('reportRABFinalSelectFile').style.display = '';
+
+                const downloadFile = document.getElementById('reportRABFinalDownloadFile');
+                if (downloadFile) {
+                    downloadFile.remove();
+                    deleteRABFinalFile = true;
+                }
             });
         }
 
@@ -370,10 +399,7 @@
             formData.append('category_id', $('#reportCategory').val());
             formData.append('title', $('#reportTitle').val());
             formData.append('description', $('#reportDescription').val());
-            formData.append('is_rab', $('#reportRAB').val());
-            formData.append('rab_file', $('#reportRABFile')[0].files[0]) ?? null;
-            formData.append('rab_final_file', $('#reportRABFinalFile')[0].files[0]) ?? null;
-        
+            
             let idx = 0;
             evidenceFiles.forEach((file, index) => {
                 if (file instanceof File) {
@@ -383,6 +409,15 @@
             });
 
             formData.append('deleted_evidence_files', JSON.stringify(deletedEvidenceFiles.map(file => file.id)));
+
+            if (mode === 'edit') {
+                formData.append('is_rab', $('#reportRAB').val());
+                formData.append('rab_file', $('#reportRABFile')[0].files[0] || null);
+                formData.append('delete_rab_file', deleteRABFile)
+                formData.append('rab_final_file', $('#reportRABFinalFile')[0].files[0] || null);
+                formData.append('delete_rab_final_file', deleteRABFinalFile)
+            }
+        
 
             $.ajax({
                 url: mode === 'create'? urls.create : urls.edit + '/' + report.id,
