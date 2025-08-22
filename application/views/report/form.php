@@ -168,21 +168,21 @@
                     <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;"><?= isset($report) ? $report['description'] : ''; ?></textarea>
                 </div>
                 <div class="form-group col-md-7">
-                    <label for="reportImages">Lampiran Bukti</label>
-                    <div class="dropzone" id="imageDropzone">
+                    <label>Lampiran Bukti</label>
+                    <div class="dropzone" id="reportEvidenceDropzone">
                         <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
                         <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+                        <input type="file" id="reportEvidenceFiles" class="file-input" accept="image/*" multiple>
                     </div>
-                    <div class="invalid-feedback" id="imageError"></div>
-                    <div class="preview-container" id="imagePreview">
+                    <div class="invalid-feedback" id="reportEvidenceError"></div>
+                    <div class="preview-container" id="reportEvidencePreview">
                         <?php if (isset($report) && !empty($report['evidences'])): ?>
                             <?php foreach ($report['evidences'] as $evidence): 
                                 $file_path = base_url('/uploads/'. $evidence['image_name']);
                             ?>
-                                <div id="previewItem<?= $evidence['id']; ?>" class="preview-item">
+                                <div id="evidenceItem<?= $evidence['id']; ?>" class="preview-item">
                                     <img src="<?= $file_path ?>" alt="Evidence Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                    <button type="button" class="remove-btn" onclick="removeFile(<?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
+                                    <button type="button" class="remove-btn" onclick="removeFile('evidence', <?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -208,7 +208,7 @@
                                 <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file']? 'none' : '' ?>">
                                     <i class="fas fa-folder-open mr-1"></i> Pilih File
                                 </button>
-                                <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file']? $report['rab_file'] : 'Belum ada file yang dipilih' ?></span>
+                                <span id="reportRABFileName"  class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file']? $report['rab_file'] : 'Belum ada file yang dipilih' ?></span>
                             </div>
                             <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file']? '' : 'none' ?>">
                                 <i class="fa fa-times"></i> 
@@ -247,8 +247,14 @@
                         <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                             <i class="fas fa-times mr-2"></i> Ditolak
                         </button>
+                        <button type="button" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                            <i class="fas fa-print mr-2"></i> Cetak Memo
+                        </button>
                         <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
                             <i class="fas fa-check mr-2"></i> Setujui Pengaduan 
+                        </button>
+                        <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                            <i class="far fa-check-circle mr-2"></i> Selesai Pengerjaan
                         </button>
                         <?php endif; ?>
                         <?php if ($mode === 'create'): ?>
@@ -272,288 +278,360 @@
 </div>
 
 <script>
-    const mode = "<?= $mode ?>";
-    const urls = {
+    const URLS = {
         default: "<?= site_url('report') ?>",
         create: "<?= site_url('report/create') ?>",
         edit: "<?= site_url('report/edit') ?>",
     };
 
-    let report = <?= !empty($report)? json_encode($report) : 'null' ?>;
-    let evidenceFiles = [];
-    let deletedEvidenceFiles = [];
-    let deleteRABFile = false;
-    let deleteRABFinalFile = false;
-
-    // Initialize dropzone
-    const dropzone = document.getElementById('imageDropzone');
-    const fileInput = document.getElementById('fileInput');
-    const previewContainer = document.getElementById('imagePreview');
-    const imageError = document.getElementById('imageError');
-
-    $(document).ready(function() {
-
-        // Handle click on dropzone
-        dropzone.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Handle file selection
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-            fileInput.value = ''; // Reset input to allow selecting same files again
-        });
-
-        // Handle drag over
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('active');
-        });
-
-        // Handle drag leave
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('active');
-        });
-
-        // Handle drop
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('active');
-            
-            if (e.dataTransfer.files.length) {
-                handleFiles(e.dataTransfer.files);
-            }
-        });
-
-        if (mode === 'edit' && report) {
-            if (report.evidences.length > 0) {
-                evidenceFiles = report.evidences.map(evidence => {
-                    return {
-                        id: evidence.id,
-                        file_name: evidence.image_name,
-                        file_path: evidence.image_path
-                    };
-                });
-            }
-
-            document.getElementById('reportRABContainer').style.display = (report.is_rab === '1')? '' : 'none';
-
-            document.getElementById('reportRAB').addEventListener('change', function(e) {
-                document.getElementById('reportRABContainer').style.display = (e.target.value === '1')? '' : 'none';
-            });
-
-            document.getElementById('reportRABFile').addEventListener('change', function(e) {
-                const files = this.files[0];
-                document.getElementById('reportRABFileName').textContent = files ? files.name : 'Belum ada file yang dipilih';
-                document.getElementById('reportRABRemoveFile').style.display = files ? '' : 'none';
-            });
-
-            document.getElementById('reportRABRemoveFile').addEventListener('click', function(e) {
-                document.getElementById('reportRABFile').value = "";
-                document.getElementById('reportRABFileName').textContent = "Belum ada file yang dipilih";
-                document.getElementById('reportRABRemoveFile').style.display = 'none';
-                document.getElementById('reportRABSelectFile').style.display = '';
-
-                const downloadFile = document.getElementById('reportRABDownloadFile');
-                if (downloadFile) {
-                    downloadFile.remove();
-                    deleteRABFile = true;
-                }
-            });
-
-            document.getElementById('reportRABFinalFile').addEventListener('change', function(e) {
-                const files = this.files[0];
-                document.getElementById('reportRABFinalFileName').textContent = files ? files.name : 'Belum ada file yang dipilih';
-                document.getElementById('reportRABFinalRemoveFile').style.display = files ? '' : 'none';
-            });
-
-            document.getElementById('reportRABFinalRemoveFile').addEventListener('click', function(e) {
-                document.getElementById('reportRABFinalFile').value = "";
-                document.getElementById('reportRABFinalFileName').textContent = "Belum ada file yang dipilih";
-                document.getElementById('reportRABFinalRemoveFile').style.display = 'none';
-                document.getElementById('reportRABFinalSelectFile').style.display = '';
-
-                const downloadFile = document.getElementById('reportRABFinalDownloadFile');
-                if (downloadFile) {
-                    downloadFile.remove();
-                    deleteRABFinalFile = true;
-                }
-            });
-        }
-
-        // Form submission
-        $('#reportForm').submit(function(e) {
-            e.preventDefault();
-
-            if (evidenceFiles.length === 0) {
-                imageError.innerHTML = 'Harap unggah setidaknya satu gambar bukti.';
-                imageError.style.display = 'block';
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('entity_id', $('#reportEntity').val());
-            formData.append('project_id', $('#reportProject').val());
-            formData.append('company_id', $('#reportCompany').val());
-            formData.append('warehouse_id', $('#reportWarehouse').val());
-            formData.append('category_id', $('#reportCategory').val());
-            formData.append('title', $('#reportTitle').val());
-            formData.append('description', $('#reportDescription').val());
-            
-            let idx = 0;
-            evidenceFiles.forEach((file, index) => {
-                if (file instanceof File) {
-                    formData.append(`evidence_files[${idx}]`, file);
-                    idx++;
-                }
-            });
-
-            formData.append('deleted_evidence_files', JSON.stringify(deletedEvidenceFiles.map(file => file.id)));
-
-            if (mode === 'edit') {
-                formData.append('is_rab', $('#reportRAB').val());
-                formData.append('rab_file', $('#reportRABFile')[0].files[0] || null);
-                formData.append('delete_rab_file', deleteRABFile)
-                formData.append('rab_final_file', $('#reportRABFinalFile')[0].files[0] || null);
-                formData.append('delete_rab_final_file', deleteRABFinalFile)
-            }
-        
-
-            $.ajax({
-                url: mode === 'create'? urls.create : urls.edit + '/' + report.id,
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    response = JSON.parse(response)
-                    if (response.success) window.location.href = urls.default;
+    const domCache = {
+        form: {
+            main: document.getElementById('reportForm'),
+            item: {
+                entity: document.getElementById('reportEntity'),
+                project: document.getElementById('reportProject'),
+                company: document.getElementById('reportCompany'),
+                warehouse: document.getElementById('reportWarehouse'),
+                category: document.getElementById('reportCategory'),
+                title: document.getElementById('reportTitle'),
+                description: document.getElementById('reportDescription'),   
+                rab: document.getElementById('reportRAB'),
+                evidence: {
+                    input: document.getElementById('reportEvidenceFiles'),
+                    dropzone: document.getElementById('reportEvidenceDropzone'),
+                    preview: document.getElementById('reportEvidencePreview'),
+                    error: document.getElementById('reportEvidenceError')
                 },
-                error: function() {
-                    toastr.error("Failed to "+ mode +" report.");
-                }
-            });
+                rabFile: {
+                    input: document.getElementById('reportRABFile'),
+                    container: document.getElementById('reportRABContainer'),
+                    content: document.getElementById('reportRABFileName'),
+                    select: document.getElementById('reportRABSelectFile'),
+                    remove: document.getElementById('reportRABRemoveFile'),
+                    download: document.getElementById('reportRABDownloadFile'),
+                },
+                rabFinalFile: {
+                    input: document.getElementById('reportRABFinalFile'),
+                    content: document.getElementById('reportRABFinalFileName'),
+                    select: document.getElementById('reportRABFinalSelectFile'),
+                    remove: document.getElementById('reportRABFinalRemoveFile'),
+                    download: document.getElementById('reportRABFinalDownloadFile')
+                },
+            }
+        },
+        modal: {
+            image: {
+                container: document.getElementById('imageModal'),
+                content: document.getElementById('zoomedImage'),
+                close: document.getElementById('imageModal').querySelector('.close-modal')
+            }
+        },
+        buttons: {}
+    };
+
+    const appState = {
+        mode: "<?= $mode ?>",
+        reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
+        evidence: {
+            files: [],
+            deletedIds: []
+        },
+        rab: {
+            deleted: false
+        },
+        rabFinal: {
+            deleted: false
+        }
+    };
+
+    function init() {
+        setupEventListeners();
+        initializeExistingEvidence();
+        
+        if (appState.mode === 'edit') {
+            setupEditMode();
+        }
+    }
+
+    function setupEventListeners() {
+        domCache.form.item.evidence.dropzone.addEventListener('click', handleDropzoneClick);
+        domCache.form.item.evidence.input.addEventListener('change', handleFileInputChange);
+        domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
+        domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
+        domCache.form.item.evidence.dropzone.addEventListener('drop', handleDrop);
+        
+        domCache.form.main.addEventListener('submit', handleFormSubmit);
+        
+        domCache.modal.image.close.addEventListener('click', closeImageModal);
+        domCache.modal.image.container.addEventListener('click', (e) => {
+            if (e.target === domCache.modal.image.container) closeImageModal();
         });
-    });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") closeImageModal();
+        });
+    }
 
-    // Function to handle uploaded files
-    function handleFiles(files) {
-        imageError.style.display = 'none';
+    function initializeExistingEvidence() {
+        if (appState.mode === 'edit' && appState.reportData.evidences && appState.reportData.evidences.length > 0) {
+            appState.evidence.files = appState.reportData.evidences.map(evidence => ({
+                id: evidence.id,
+                fileName: evidence.image_name,
+                filePath: evidence.image_path,
+                isExisting: true
+            }));
+        }
+    }
 
-        if (evidenceFiles.length + files.length > 5) {
-            imageError.innerHTML = 'Maksimum upload file hanya 5 gambar.';
-            imageError.style.display = 'block';
-            return;
+    function setupEditMode() {
+        if (domCache.form.item.rab && domCache.form.item.rabContainer) {
+            domCache.form.item.rabContainer.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
+            domCache.form.item.rab.addEventListener('change', (e) => {
+                domCache.form.item.rabContainer.style.display = (e.target.value === '1') ? '' : 'none';
+            });
         }
         
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
+        if (domCache.form.item.rabFile.input) {
+            domCache.form.item.rabFile.input.addEventListener('change', function() {
+                const file = this.files[0];
+                updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+            });
+        }
+        
+        if (domCache.form.item.rabFile.remove) {
+            domCache.form.item.rabFile.remove.addEventListener('click', function() {
+                resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
+                
+                if (domCache.form.item.rabFile.download) {
+                    domCache.form.item.rabFile.download.remove();
+                    appState.rab.deleted = true;
+                }
+            });
+        }
+        
+        if (domCache.form.item.rabFinalFile.input) {
+            domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
+                const file = this.files[0];
+                updateFileUI(domCache.form.item.rabFinal.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
+            });
+        }
+        
+        if (domCache.form.item.rabFinalFile.remove) {
+            domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
+                resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinal.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
+                
+                if (domCache.form.item.rabFinalDownloadFile) {
+                    domCache.form.item.rabFinalDownloadFile.remove();
+                    appState.rabFinal.deleted = true;
+                }
+            });
+        }
+    }
+
+    function handleDropzoneClick() {
+        domCache.form.item.evidence.input.click();
+    }
+
+    function handleFileInputChange(e) {
+        processFiles(e.target.files);
+        e.target.value = '';
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        domCache.form.item.evidence.dropzone.classList.add('active');
+    }
+
+    function handleDragLeave() {
+        domCache.form.item.evidence.dropzone.classList.remove('active');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        domCache.form.item.evidence.dropzone.classList.remove('active');
+        
+        if (e.dataTransfer.files.length) {
+            processFiles(e.dataTransfer.files);
+        }
+    }
+
+    function processFiles(fileList) {
+        domCache.form.item.evidence.error.style.display = 'none';
+        
+        const files = Array.from(fileList);
+        const MAX_FILE_COUNT = 5;
+        const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+        
+        for (const file of files) {
+            if (appState.evidence.files.length >= MAX_FILE_COUNT) {
+                showError('Maksimum upload file hanya 5 gambar.');
+                break;
+            }
             
             if (!file.type.match('image.*')) {
-                imageError.innerHTML = 'Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan.';
-                imageError.style.display = 'block';
-                break;
+                showError('Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan.');
+                continue;
             }
             
-            if (file.size > 2 * 1024 * 1024) {
-                imageError.innerHTML = 'Ukuran file maksimal 2MB.';
-                imageError.style.display = 'block';
-                break;
+            if (file.size > MAX_FILE_SIZE) {
+                showError('Ukuran file maksimal 2MB.');
+                continue;
             }
             
-            if (evidenceFiles.length > 5) {
-                imageError.innerHTML = 'Maksimum upload file hanya 5 gambar.';
-                imageError.style.display = 'block';
-                break;
-            }
-            
-            evidenceFiles.push(file);
+            appState.evidence.files.push(file);
             
             const reader = new FileReader();
             reader.onload = (e) => {
-                createPreviewImage("Temp"+i, file, e.target.result);
+                createPreviewElement('evidence', `temp-${Date.now()}`, e.target.result, true, file);
             };
             reader.readAsDataURL(file);
         }
     }
 
-    function createPreviewImage(id, file, src) {
+    function showError(message) {
+        domCache.form.item.evidence.error.textContent = message;
+        domCache.form.item.evidence.error.style.display = 'block';
+    }
+
+    function createPreviewElement(type, id, src, isNewFile = false, file = null) {
         const previewItem = document.createElement('div');
         previewItem.className = 'preview-item';
-        previewItem.id = 'previewItem' + id; 
+        previewItem.id = `${type}Item${id}`;
         
         const img = document.createElement('img');
         img.src = src;
         img.dataset.src = src;
-
+        img.alt = 'Evidence Image';
+        
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '<i class="fa fa-times"></i>';
-        removeBtn.onclick = (e) => {
-            e.stopPropagation();
-            removeFile(id, file);
-        };
-
-        img.onclick = (e) => {
-            e.stopPropagation();
-            zoomImage(e.target.dataset.src);
-        };
+        removeBtn.onclick = () => removeFile(type, id, file);
+        
+        img.onclick = () => zoomImage(src);
         
         previewItem.appendChild(img);
         previewItem.appendChild(removeBtn);
-        previewContainer.appendChild(previewItem);
+        domCache.form.item.evidence.preview.appendChild(previewItem);
     }
 
-    // Function to zoom image
     function zoomImage(src) {
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('zoomedImage');
-        modal.style.display = "block";
-        modalImg.src = src;
-        
-        document.querySelector('.close-modal').onclick = function() {
-            modal.style.display = "none";
-        }
-        
-        modal.onclick = function(e) {
-            if (e.target === modal) {
-                modal.style.display = "none";
-            }
-        }
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.key === "Escape") {
-                modal.style.display = "none";
-            }
-        });
+        domCache.modal.image.content.src = src;
+        domCache.modal.image.container.style.display = "block";
+    }
+
+    function closeImageModal() {
+        domCache.modal.image.container.style.display = "none";
     }
     
-    // Function to remove a file
-    function removeFile(id, file) {
+    function removeFile(type, id, file) {
         if (file instanceof File) {
-            evidenceFiles = evidenceFiles.filter(f => f !== file);
+            appState.evidence.files = appState.evidence.files.filter(f => f !== file);
         } else {
-            const fileIndex = evidenceFiles.findIndex(f => f.id == id);
+            const fileIndex = appState.evidence.files.findIndex(f => f.id == id);
             if (fileIndex > -1) {
-                if (!deletedEvidenceFiles.some(f => f.id == id)) {
-                    deletedEvidenceFiles.push(evidenceFiles[fileIndex]);
-                }
-                evidenceFiles = evidenceFiles.filter(f => f.id != id);
+                appState.evidence.deletedIds.push(id);
+                appState.evidence.files.splice(fileIndex, 1);
             }
         }
-
-        const previewElement = document.getElementById('previewItem'+id);
-        previewElement?.remove();
         
-        imageError.style.display = evidenceFiles.length > 5 ? 'block' : 'none';
+        const previewElement = document.getElementById(`${type}Item${id}`);
+        if (previewElement) {
+            previewElement.remove();
+        }
+
+        // report.entity.evidence.dom.imageError.style.display = report.entity.evidence.data.length > 5 ? 'block' : 'none';
     }
 
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        if (appState.evidence.files.length === 0) {
+            showError('Harap unggah setidaknya satu gambar bukti.');
+            return;
+        }
+        
+        const formData = new FormData();
+        
+        formData.append('entity_id', domCache.form.entity.value);
+        formData.append('project_id', domCache.form.project.value);
+        formData.append('company_id', domCache.form.company.value);
+        formData.append('warehouse_id', domCache.form.warehouse.value);
+        formData.append('category_id', domCache.form.category.value);
+        formData.append('title', domCache.form.title.value);
+        formData.append('description', domCache.form.description.value);
+        
+        appState.evidence.files.forEach((file, index) => {
+            if (file instanceof File) {
+                formData.append(`evidence_files[${index}]`, file);
+            }
+        });
+        
+        formData.append('deleted_evidence_files', JSON.stringify(appState.evidence.deletedIds));
+        
+        if (appState.mode === 'edit') {
+            formData.append('is_rab', domCache.form.item.rab.value);
+            
+            if (domCache.form.item.rabFile.input && domCache.form.item.rabFile.input.files[0]) {
+                formData.append('rab_file', domCache.form.item.rabFile.input.files[0]);
+            }
+            
+            formData.append('delete_rab_file', appState.rab.deleted);
+            
+            if (domCache.form.item.rabFinalFile.input && domCache.form.item.rabFinalFile.input.files[0]) {
+                formData.append('rab_final_file', domCache.form.item.rabFinalFile.input.files[0]);
+            }
+            
+            formData.append('delete_rab_final_file', appState.rabFinal.deleted);
+        }
+        
+        submitFormData(formData);
+    }
+
+    function submitFormData(formData) {
+        const url = appState.mode === 'create' ? URLS.create : `${URLS.edit}/${appState.reportData.id}`;
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = URLS.default;
+            } else {
+                throw new Error('Operation failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error("Failed to "+ mode +" report.");
+        });
+    }
 
     function resetForm() {
-        $('#reportForm')[0].reset();
-        evidenceFiles = [];
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('imageError').style.display = 'none';
+        domCache.form.main.reset();
+        appState.evidence.files = [];
+        appState.evidence.deletedIds = [];
+        domCache.form.item.evidence.preview.innerHTML = '';
+        domCache.form.item.evidence.error.style.display = 'none';
+    }
+
+    function updateFileUI(fileNameElement, removeBtn, selectBtn, file) {
+        if (fileNameElement) fileNameElement.textContent = file ? file.name : 'Belum ada file yang dipilih';
+        if (removeBtn) removeBtn.style.display = file ? '' : 'none';
+    }
+
+    function resetFileUI(fileInput, fileNameElement, removeBtn, selectBtn) {
+        if (fileInput) fileInput.value = "";
+        if (fileNameElement) fileNameElement.textContent = "Belum ada file yang dipilih";
+        if (removeBtn) removeBtn.style.display = 'none';
+        if (selectBtn) selectBtn.style.display = '';
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
     }
 </script>
