@@ -1,8 +1,9 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
-
 class Report extends MY_Controller
 {
+    private $MAX_FILE_COUNT = 10;
+
     public function __construct()
     {
         parent::__construct();
@@ -90,13 +91,13 @@ class Report extends MY_Controller
                 $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
                     'required' => 'At least one evidence file is required.'
                 ]);
-            } elseif ($file_count > 5) {
+            } elseif ($file_count > $this->MAX_FILE_COUNT) {
                 $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
-                    'max_evidence_files' => 'Maximum of 5 evidence files allowed.'
+                    'max_evidence_files' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
                 ]);
             }
 
-            $this->form_validation->set_message('max_evidence_files', 'Maximum of 5 evidence files allowed.');
+            $this->form_validation->set_message('max_evidence_files', "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed.");
 
             if ($file_count < 1) {
                 $this->output->set_status_header(422);
@@ -107,11 +108,11 @@ class Report extends MY_Controller
                 return;
             }
 
-            if ($file_count > 5) {
+            if ($file_count > $this->MAX_FILE_COUNT) {
                 $this->output->set_status_header(422);
                 echo json_encode([
                     'success' => false,
-                    'error' => 'Maximum of 5 evidence files allowed.'
+                    'error' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
                 ]);
                 return;
             }
@@ -146,6 +147,8 @@ class Report extends MY_Controller
 
     public function edit($id)
     {
+        print_r("HALLO UR NUMBER IS {$this->MAX_FILE_COUNT}");
+        exit;
         $data["title"] = "Pengaduan";
         $data["menu_id"] = "report";
         $data["current_user"] = $this->auth_lib->current_user();
@@ -183,6 +186,7 @@ class Report extends MY_Controller
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["report"] = $report;
             $data["report"]["evidences"] = $existing_evidences;
+            $data["report"]["works"] = $existing_works;
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
             $data["list_data"]["project"] = $this->Project_model->get_all();
             $data["list_data"]["company"] = $this->Company_model->get_all();
@@ -212,20 +216,20 @@ class Report extends MY_Controller
                 $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
                     'required' => 'At least one evidence file is required.'
                 ]);
-            } elseif ($total_evidences > 10) {
+            } elseif ($total_evidences > $this->MAX_FILE_COUNT) {
                 $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
-                    'max_evidence_files' => 'Maximum of 10 evidence files allowed.'
+                    'max_evidence_files' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
                 ]);
             }
 
             $uploaded_evidences = [];
             if (!empty($evidence_files['name'][0])) {
-                if ($total_evidences > 10) {
-                    $this->session->set_flashdata('error', 'Maximum of 10 evidence files allowed.');
+                if ($total_evidences > $this->MAX_FILE_COUNT) {
+                    $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed.");
                     $this->output->set_status_header(400);
                     echo json_encode([
                         "success" => false,
-                        "error" => "Maximum of 10 evidence files allowed."
+                        "error" => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
                     ]);
                     return;
                 }
@@ -233,12 +237,42 @@ class Report extends MY_Controller
                 $uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
             }
 
-            $delete_rab_file = (bool)$this->input->post('delete_rab_file');
-            $delete_rab_final_file = (bool)$this->input->post('delete_rab_final_file');
+            $work_files = $_FILES['work_files'] ?? [];
+            $work_count = !empty($work_files['name'][0]) ? count($work_files['name']) : 0;
+            $deleted_works = json_decode($this->input->post('deleted_work_files'), true) ?? [];
+            $total_works = $existing_count + $work_count - count($deleted_works);
+
+            if ($total_works < 1) {
+                $this->form_validation->set_rules('work_files', 'Work Files', 'required', [
+                    'required' => 'At least one work file is required.'
+                ]);
+            } elseif ($total_works > $this->MAX_FILE_COUNT) {
+                $this->form_validation->set_rules('work_files', 'Work Files', 'max_work_files', [
+                    'max_work_files' => "Maximum of $this->MAX_FILE_COUNT work files allowed."
+                ]);
+            }
+
+            $uploaded_works = [];
+            if (!empty($work_files['name'][0])) {
+                if ($total_works > $this->MAX_FILE_COUNT) {
+                    $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} work files allowed.");
+                    $this->output->set_status_header(400);
+                    echo json_encode([
+                        "success" => false,
+                        "error" => "Maximum of {$this->MAX_FILE_COUNT} work files allowed."
+                    ]);
+                    return;
+                }
+
+                $uploaded_works = $this->handle_bulk_upload_files($work_files, 'work');
+            }
+
+            $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
+            $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
 
             if ($data['is_rab']) {
                 if ($delete_rab_file) {
-                    $data['rab_file'] = '';
+                    $data['rab_file'] = null;
                 } else {
                     $rab_file = $_FILES['rab_file'] ?? [];
                     if ($rab_file) {
@@ -251,13 +285,13 @@ class Report extends MY_Controller
                 }
 
                 if ($delete_rab_final_file) {
-                    $data['rab_final_file'] = '';
+                    $data['rab_final_file'] = null;
                 } else {
                     $rab_final_file = $_FILES['rab_final_file'] ?? [];
                     if ($rab_final_file) {
                         $uploaded_rab_final = $this->handle_upload_file($rab_final_file, 'rab_final');
                         if ($uploaded_rab_final) {
-                            $data['rab_file'] = $uploaded_rab_final['file_name'];
+                            $data['rab_final_file'] = $uploaded_rab_final['file_name'];
                             $this->handle_delete_file('./uploads/', $report['rab_final_file']);
                         }
                     }
@@ -265,8 +299,8 @@ class Report extends MY_Controller
             } else {
                 $delete_rab_file = true;
                 $delete_rab_final_file = true;
-                $data['rab_file'] = '';
-                $data['rab_final_file'] = '';
+                $data['rab_file'] = null;
+                $data['rab_final_file'] = null;
             }
 
             if (!$this->Report_model->update($id, $data)) {
@@ -294,6 +328,23 @@ class Report extends MY_Controller
                     }
                 }
             }
+
+            if (!empty($uploaded_works)) {
+                foreach ($uploaded_works as $file) {
+                    $this->Report_model->add_work($id, $file['file_path'], $file['file_name']);
+                }
+            }
+
+            if (!empty($deleted_works)) {
+                foreach ($deleted_works as $file_id) {
+                    $file = $this->Report_model->get_work($file_id);
+                    if ($file) {
+                        $this->handle_delete_file('./uploads/', $file['image_name']);
+                        $this->Report_model->delete_work($file_id);
+                    }
+                }
+            }
+
 
             if ($delete_rab_file) {
                 $this->handle_delete_file('./uploads/', $report['rab_file']);
@@ -335,12 +386,19 @@ class Report extends MY_Controller
             return;
         }
 
-        $images = $this->Report_model->get_evidences_by_report($id);
-        foreach ($images as $image) {
-            $this->handle_delete_file('./uploads/', $image['image_name']);
+        $evidences = $this->Report_model->get_evidences_by_report($id);
+        foreach ($evidences as $evidence) {
+            $this->handle_delete_file('./uploads/', $evidence['image_name']);
         }
 
         $this->Report_model->delete_evidences_by_report($id);
+
+        $works = $this->Report_model->get_works_by_report($id);
+        foreach ($works as $work) {
+            $this->handle_delete_file('./uploads/', $work['image_name']);
+        }
+
+        $this->Report_model->delete_works_by_report($id);
 
         $this->session->set_flashdata('success', 'Report deleted successfully');
         $this->output->set_status_header(200);

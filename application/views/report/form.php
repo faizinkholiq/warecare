@@ -234,12 +234,12 @@
                                         <i class="fas fa-download mr-1"></i> Download File
                                     </a>
                                 <?php endif; ?>
-                                <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()">
+                                <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab_final_file'] ? 'none' : '' ?>">
                                     <i class="fas fa-folder-open mr-1"></i> Pilih File
                                 </button>
-                                <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm">Belum ada file yang dipilih</span>
+                                <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_final_file'] ? $report['rab_final_file'] : 'Belum ada file yang dipilih' ?></span>
                             </div>
-                            <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:none">
+                            <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_final_file'] ? '' : 'none' ?>">
                                 <i class="fa fa-times"></i>
                             </button>
                         </div>
@@ -464,8 +464,8 @@
                 domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
                     resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
 
-                    if (domCache.form.item.rabFinalDownloadFile) {
-                        domCache.form.item.rabFinalDownloadFile.remove();
+                    if (domCache.form.item.rabFinalFile.download) {
+                        domCache.form.item.rabFinalFile.download.remove();
                         appState.rabFinal.deleted = true;
                     }
                 });
@@ -520,12 +520,12 @@
         domCache.form.item[field].error.style.display = 'none';
 
         const files = Array.from(fileList);
-        const MAX_FILE_COUNT = 5;
+        const MAX_FILE_COUNT = 10;
         const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
         for (const file of files) {
             if (appState[field].files.length >= MAX_FILE_COUNT) {
-                showError('Maksimum upload file hanya 5 gambar.');
+                showError(`Maksimum upload file hanya ${MAX_FILE_COUNT} gambar.`);
                 break;
             }
 
@@ -670,7 +670,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = URLS.default;
+                    // window.location.href = URLS.default;
                 } else {
                     throw new Error('Operation failed');
                 }
