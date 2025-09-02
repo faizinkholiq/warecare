@@ -689,15 +689,16 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log(data)
                 if (data.success) {
-                    // window.location.href = URLS.default;
+                    window.location.href = URLS.default;
                 } else {
                     throw new Error('Operation failed');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                toastr.error("Failed to " + mode + " report.");
+                toastr.error("Failed to " + appState.mode + " report.");
             });
     }
 

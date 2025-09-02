@@ -33,6 +33,10 @@ class Report extends MY_Controller
         $params["length"] = $this->input->post("length");
         $params["start"] = $this->input->post("start");
 
+        if ($this->auth_lib->role() === 'pelapor') {
+            $params["reported_by"] = $this->auth_lib->user_id();
+        }
+
         $reports = $this->Report_model->get_list_datatables($params);
 
         echo json_encode($reports);
@@ -53,6 +57,14 @@ class Report extends MY_Controller
         $data["current_user"] = $this->auth_lib->current_user();
         $data["mode"] = "create";
 
+        $this->form_validation->set_rules('entity_id', 'Entity', 'required');
+        $this->form_validation->set_rules('project_id', 'Project', 'required');
+        $this->form_validation->set_rules('company_id', 'Company', 'required');
+        $this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
+        $this->form_validation->set_rules('category_id', 'Category', 'required');
+        $this->form_validation->set_rules('title', 'Title', 'required');
+        $this->form_validation->set_rules('description', 'Description', 'required');
+
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
             $data["list_data"]["project"] = $this->Project_model->get_all();
@@ -63,14 +75,6 @@ class Report extends MY_Controller
 
             $this->load->view('layouts/template', $data);
         } else {
-            $this->form_validation->set_rules('entity_id', 'Entity', 'required');
-            $this->form_validation->set_rules('project_id', 'Project', 'required');
-            $this->form_validation->set_rules('company_id', 'Company', 'required');
-            $this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
-            $this->form_validation->set_rules('category_id', 'Category', 'required');
-            $this->form_validation->set_rules('title', 'Title', 'required');
-            $this->form_validation->set_rules('description', 'Description', 'required');
-
             $data = [
                 'entity_id' => $this->input->post('entity_id'),
                 'project_id' => $this->input->post('project_id'),
@@ -181,11 +185,6 @@ class Report extends MY_Controller
 
     public function edit($id)
     {
-        $data["title"] = "Pengaduan";
-        $data["menu_id"] = "report";
-        $data["current_user"] = $this->auth_lib->current_user();
-        $data["mode"] = "edit";
-
         $report = $this->Report_model->get($id);
         if (!$report) {
             $this->session->set_flashdata('error', 'Report not found');
@@ -200,6 +199,11 @@ class Report extends MY_Controller
                 redirect('report');
             }
         }
+
+        $data["title"] = "Pengaduan";
+        $data["menu_id"] = "report";
+        $data["current_user"] = $this->auth_lib->current_user();
+        $data["mode"] = "edit";
 
         $existing_evidences = $this->Report_model->get_evidences_by_report($id);
         $existing_count = count($existing_evidences);
@@ -336,11 +340,11 @@ class Report extends MY_Controller
             }
 
             if (!$this->Report_model->update($id, $data)) {
-                $this->session->set_flashdata('error', 'Failed to create report');
+                $this->session->set_flashdata('error', 'Failed to update report');
                 $this->output->set_status_header(500);
                 echo json_encode([
                     "success" => false,
-                    "error" => "Failed to create report"
+                    "error" => "Failed to update report"
                 ]);
                 return;
             }

@@ -211,53 +211,55 @@
                                 <p>Pengaduan</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="<?= site_url('user') ?>" id="menu_user" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Manajemen User</p>
-                            </a>
-                        </li>
-                        <li class="nav-item menu-open">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-wrench"></i>
-                                <p>
-                                    Master
-                                    <i class="fas fa-angle-left right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview" style="display: block;">
-                                <li class="nav-item">
-                                    <a href="<?= site_url('company') ?>" id="menu_company" class="nav-link">
-                                        <i class="nav-icon far fa-circle"></i>
-                                        <p>Perusahaan</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="<?= site_url('warehouse') ?>" id="menu_warehouse" class="nav-link">
-                                        <i class="nav-icon far fa-circle"></i>
-                                        <p>Gudang</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="<?= site_url('project') ?>" id="menu_project" class="nav-link">
-                                        <i class="nav-icon far fa-circle"></i>
-                                        <p>Project</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="<?= site_url('entity') ?>" id="menu_entity" class="nav-link">
-                                        <i class="nav-icon far fa-circle"></i>
-                                        <p>Entity</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="<?= site_url('category') ?>" id="menu_category" class="nav-link">
-                                        <i class="nav-icon far fa-circle"></i>
-                                        <p>Kategori</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        <?php if ($this->auth_lib->role() === 'administrator'): ?>
+                            <li class="nav-item">
+                                <a href="<?= site_url('user') ?>" id="menu_user" class="nav-link">
+                                    <i class="nav-icon fas fa-users"></i>
+                                    <p>Manajemen User</p>
+                                </a>
+                            </li>
+                            <li class="nav-item menu-open">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-wrench"></i>
+                                    <p>
+                                        Master
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview" style="display: block;">
+                                    <li class="nav-item">
+                                        <a href="<?= site_url('company') ?>" id="menu_company" class="nav-link">
+                                            <i class="nav-icon far fa-circle"></i>
+                                            <p>Perusahaan</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="<?= site_url('warehouse') ?>" id="menu_warehouse" class="nav-link">
+                                            <i class="nav-icon far fa-circle"></i>
+                                            <p>Gudang</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="<?= site_url('project') ?>" id="menu_project" class="nav-link">
+                                            <i class="nav-icon far fa-circle"></i>
+                                            <p>Project</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="<?= site_url('entity') ?>" id="menu_entity" class="nav-link">
+                                            <i class="nav-icon far fa-circle"></i>
+                                            <p>Entity</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="<?= site_url('category') ?>" id="menu_category" class="nav-link">
+                                            <i class="nav-icon far fa-circle"></i>
+                                            <p>Kategori</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->

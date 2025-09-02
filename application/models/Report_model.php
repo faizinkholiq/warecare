@@ -18,6 +18,8 @@ class Report_model extends CI_Model
         $limit = $p["length"];
         $offset = $p["start"];
 
+        if (!empty($p["reported_by"])) $this->db->where('report.created_by', $p['reported_by']);
+
         if (!empty($search["value"])) {
             $col = [
                 "report.name"
