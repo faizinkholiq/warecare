@@ -123,7 +123,7 @@
             <div class="card-body">
                 <div class="form-group col-md-6">
                     <label for="reportEntity">Entity</label>
-                    <select class="form-control" id="reportEntity" required>
+                    <select class="form-control" id="reportEntity" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                         <option value="">- Pilih Entity -</option>
                         <?php foreach ($list_data['entity'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['entity_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -132,7 +132,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportProject">Project</label>
-                    <select class="form-control" id="reportProject" required>
+                    <select class="form-control" id="reportProject" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                         <option value="">- Pilih Project -</option>
                         <?php foreach ($list_data['project'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['project_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -141,7 +141,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCompany">Nama Perusahaan</label>
-                    <select class="form-control" id="reportCompany" required>
+                    <select class="form-control" id="reportCompany" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                         <option value="">- Pilih Perusahaan -</option>
                         <?php foreach ($list_data['company'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['company_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -150,7 +150,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportWarehouse">Nomor Gudang</label>
-                    <select class="form-control" id="reportWarehouse" required>
+                    <select class="form-control" id="reportWarehouse" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                         <option value="">- Pilih Gudang -</option>
                         <?php foreach ($list_data['warehouse'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['warehouse_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -159,7 +159,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCategory">Kategori Pengaduan</label>
-                    <select class="form-control" id="reportCategory" required>
+                    <select class="form-control" id="reportCategory" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                         <option value="">- Pilih Kategori -</option>
                         <?php foreach ($list_data['category'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['category_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -168,20 +168,22 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportTitle">Judul</label>
-                    <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" required>
+                    <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                 </div>
                 <div class="form-group col-md-7">
                     <label for="reportDescription">Deskripsi</label>
-                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;"><?= isset($report) ? $report['description'] : ''; ?></textarea>
+                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
                 </div>
                 <div class="form-group col-md-7">
                     <label>Lampiran Bukti</label>
-                    <div class="dropzone" id="reportEvidenceDropzone">
-                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                        <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                        <input type="file" id="reportEvidenceFiles" class="file-input" accept="image/*" multiple>
-                    </div>
-                    <div class="invalid-feedback" id="reportEvidenceError"></div>
+                    <?php if ($mode !== 'detail'): ?>
+                        <div class="dropzone" id="reportEvidenceDropzone">
+                            <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
+                            <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
+                            <input type="file" id="reportEvidenceFiles" class="file-input" accept="image/*" multiple>
+                        </div>
+                        <div class="invalid-feedback" id="reportEvidenceError"></div>
+                    <?php endif; ?>
                     <div class="preview-container" id="reportEvidencePreview">
                         <?php if (isset($report) && !empty($report['evidences'])): ?>
                             <?php foreach ($report['evidences'] as $evidence):
@@ -189,55 +191,65 @@
                             ?>
                                 <div id="evidenceItem<?= $evidence['id']; ?>" class="preview-item">
                                     <img src="<?= $file_path ?>" alt="Evidence Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                    <button type="button" class="remove-btn" onclick="removeFile('evidence', <?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
+                                    <?php if ($mode !== 'detail'): ?>
+                                        <button type="button" class="remove-btn" onclick="removeFile('evidence', <?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
-                <?php if ($mode === 'edit'): ?>
+                <?php if ($mode !== 'create'): ?>
                     <div class="form-group col-md-6">
                         <label for="reportRAB">RAB</label>
-                        <select class="form-control" id="reportRAB" required>
+                        <select class="form-control" id="reportRAB" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
                             <option value="0" <?= isset($report) && $report['is_rab'] == 0 ? 'selected' : '' ?>>Tanpa RAB</option>
-                            <
-                                <option value="1" <?= isset($report) && $report['is_rab'] == 1 ? 'selected' : '' ?>>Dengan RAB</option>
-                                <
-                                    </select>
+                            <option value="1" <?= isset($report) && $report['is_rab'] == 1 ? 'selected' : '' ?>>Dengan RAB</option>
+                        </select>
                     </div>
                     <div id="reportRABContainer" class="form-group col-md-6">
                         <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
-                            <input type="file" class="form-control" id="reportRABFile" hidden>
+                            <?php if ($mode !== 'detail'): ?>
+                                <input type="file" class="form-control" id="reportRABFile" hidden>
+                            <?php endif; ?>
                             <div>
                                 <?php if (isset($report) && $report['rab_file']): ?>
                                     <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
                                         <i class="fas fa-download mr-1"></i> Download File
                                     </a>
                                 <?php endif; ?>
-                                <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file'] ? 'none' : '' ?>">
-                                    <i class="fas fa-folder-open mr-1"></i> Pilih File
-                                </button>
-                                <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file'] ? $report['rab_file'] : 'Belum ada file yang dipilih' ?></span>
+                                <?php if ($mode !== 'detail'): ?>
+                                    <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file'] ? 'none' : '' ?>">
+                                        <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                    </button>
+                                <?php endif; ?>
+                                <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file'] ? $report['rab_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                             </div>
-                            <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file'] ? '' : 'none' ?>">
-                                <i class="fa fa-times"></i>
-                            </button>
+                            <?php if ($mode !== 'detail'): ?>
+                                <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file'] ? '' : 'none' ?>">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="form-group col-md-6">
                         <label for="reportRABFinalFile">RAB Final</label>
                         <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
-                            <input type="file" class="form-control" id="reportRABFinalFile" hidden>
+                            <?php if ($mode !== 'detail'): ?>
+                                <input type="file" class="form-control" id="reportRABFinalFile" hidden>
+                            <?php endif; ?>
                             <div>
                                 <?php if (isset($report) && $report['rab_final_file']): ?>
                                     <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab_final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
                                         <i class="fas fa-download mr-1"></i> Download File
                                     </a>
                                 <?php endif; ?>
-                                <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab_final_file'] ? 'none' : '' ?>">
-                                    <i class="fas fa-folder-open mr-1"></i> Pilih File
-                                </button>
-                                <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_final_file'] ? $report['rab_final_file'] : 'Belum ada file yang dipilih' ?></span>
+                                <?php if ($mode !== 'detail'): ?>
+                                    <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab_final_file'] ? 'none' : '' ?>">
+                                        <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                    </button>
+                                <?php endif; ?>
+                                <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_final_file'] ? $report['rab_final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                             </div>
                             <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_final_file'] ? '' : 'none' ?>">
                                 <i class="fa fa-times"></i>
@@ -246,12 +258,14 @@
                     </div>
                     <div class="form-group col-md-7">
                         <label>Pengerjaan</label>
-                        <div class="dropzone" id="reportWorkDropzone">
-                            <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                            <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                            <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
-                        </div>
-                        <div class="invalid-feedback" id="reportWorkError"></div>
+                        <?php if ($mode !== 'detail'): ?>
+                            <div class="dropzone" id="reportWorkDropzone">
+                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
+                                <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
+                                <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
+                            </div>
+                            <div class="invalid-feedback" id="reportWorkError"></div>
+                        <?php endif; ?>
                         <div class="preview-container" id="reportWorkPreview">
                             <?php if (isset($report) && !empty($report['works'])): ?>
                                 <?php foreach ($report['works'] as $work):
@@ -259,7 +273,9 @@
                                 ?>
                                     <div id="workItem<?= $work['id']; ?>" class="preview-item">
                                         <img src="<?= $file_path ?>" alt="Work Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                        <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
+                                        <?php if ($mode !== 'detail'): ?>
+                                            <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -291,10 +307,10 @@
                             <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                 <i class="fas fa-trash mr-2"></i> Reset
                             </button>
+                            <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
+                                <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan
+                            </button>
                         <?php endif; ?>
-                        <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
-                            <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan
-                        </button>
                     </div>
                 </div>
             </div>
@@ -393,82 +409,86 @@
     }
 
     function setupEventListeners() {
-        domCache.form.item.evidence.dropzone.addEventListener('click', () => {
-            domCache.form.item.evidence.input.click();
+        domCache.modal.image.close.addEventListener('click', (e) => {
+            closeImageModal();
         });
-        domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
-        domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
-        domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
-            handleDrop('evidence', event);
-        });
-        domCache.form.item.evidence.input.addEventListener('change', (event) => {
-            handleFileInputChange('evidence', event);
-        });
-
-        domCache.form.name.addEventListener('submit', handleFormSubmit);
-
-        domCache.modal.image.close.addEventListener('click', closeImageModal);
         domCache.modal.image.container.addEventListener('click', (e) => {
             if (e.target === domCache.modal.image.container) closeImageModal();
         });
         document.addEventListener('keydown', (e) => {
-            if (e.key === "Escape") closeImageModal();
+            if (e.target === domCache.modal.image.container && e.key === "Escape") closeImageModal();
         });
 
-        if (appState.mode === 'edit') {
-            domCache.form.item.work.dropzone.addEventListener('click', () => {
-                domCache.form.item.work.input.click();
+        if (appState.mode !== 'detail') {
+            domCache.form.item.evidence.dropzone.addEventListener('click', () => {
+                domCache.form.item.evidence.input.click();
             });
-            domCache.form.item.work.dropzone.addEventListener('dragover', handleDragOver);
-            domCache.form.item.work.dropzone.addEventListener('dragleave', handleDragLeave);
-            domCache.form.item.work.dropzone.addEventListener('drop', (event) => {
-                handleDrop('work', event);
+            domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
+            domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
+            domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
+                handleDrop('evidence', event);
             });
-            domCache.form.item.work.input.addEventListener('change', (event) => {
-                handleFileInputChange('work', event);
+            domCache.form.item.evidence.input.addEventListener('change', (event) => {
+                handleFileInputChange('evidence', event);
             });
 
-            if (domCache.form.item.rab && domCache.form.item.rabContainer) {
-                domCache.form.item.rabContainer.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
-                domCache.form.item.rab.addEventListener('change', (e) => {
-                    domCache.form.item.rabContainer.style.display = (e.target.value === '1') ? '' : 'none';
+            domCache.form.name.addEventListener('submit', handleFormSubmit);
+
+            if (appState.mode === 'edit') {
+                domCache.form.item.work.dropzone.addEventListener('click', () => {
+                    domCache.form.item.work.input.click();
                 });
-            }
-
-            if (domCache.form.item.rabFile.input) {
-                domCache.form.item.rabFile.input.addEventListener('change', function() {
-                    const file = this.files[0];
-                    updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+                domCache.form.item.work.dropzone.addEventListener('dragover', handleDragOver);
+                domCache.form.item.work.dropzone.addEventListener('dragleave', handleDragLeave);
+                domCache.form.item.work.dropzone.addEventListener('drop', (event) => {
+                    handleDrop('work', event);
                 });
-            }
-
-            if (domCache.form.item.rabFile.remove) {
-                domCache.form.item.rabFile.remove.addEventListener('click', function() {
-                    resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
-
-                    if (domCache.form.item.rabFile.download) {
-                        domCache.form.item.rabFile.download.remove();
-                        appState.rab.deleted = true;
-                    }
+                domCache.form.item.work.input.addEventListener('change', (event) => {
+                    handleFileInputChange('work', event);
                 });
-            }
 
-            if (domCache.form.item.rabFinalFile.input) {
-                domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
-                    const file = this.files[0];
-                    updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
-                });
-            }
+                if (domCache.form.item.rab && domCache.form.item.rabContainer) {
+                    domCache.form.item.rabContainer.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
+                    domCache.form.item.rab.addEventListener('change', (e) => {
+                        domCache.form.item.rabContainer.style.display = (e.target.value === '1') ? '' : 'none';
+                    });
+                }
 
-            if (domCache.form.item.rabFinalFile.remove) {
-                domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
-                    resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
+                if (domCache.form.item.rabFile.input) {
+                    domCache.form.item.rabFile.input.addEventListener('change', function() {
+                        const file = this.files[0];
+                        updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+                    });
+                }
 
-                    if (domCache.form.item.rabFinalFile.download) {
-                        domCache.form.item.rabFinalFile.download.remove();
-                        appState.rabFinal.deleted = true;
-                    }
-                });
+                if (domCache.form.item.rabFile.remove) {
+                    domCache.form.item.rabFile.remove.addEventListener('click', function() {
+                        resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
+
+                        if (domCache.form.item.rabFile.download) {
+                            domCache.form.item.rabFile.download.remove();
+                            appState.rab.deleted = true;
+                        }
+                    });
+                }
+
+                if (domCache.form.item.rabFinalFile.input) {
+                    domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
+                        const file = this.files[0];
+                        updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
+                    });
+                }
+
+                if (domCache.form.item.rabFinalFile.remove) {
+                    domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
+                        resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
+
+                        if (domCache.form.item.rabFinalFile.download) {
+                            domCache.form.item.rabFinalFile.download.remove();
+                            appState.rabFinal.deleted = true;
+                        }
+                    });
+                }
             }
         }
     }

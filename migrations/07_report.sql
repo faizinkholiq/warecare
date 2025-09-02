@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS report (
   CONSTRAINT fk_report_category    FOREIGN KEY (category_id)   REFERENCES category(id)   ON DELETE CASCADE
 );
 
-ALTER TABLE `report` ADD `no` VARCHAR(20) NOT NULL AFTER `id`, ADD UNIQUE `unique_report_no` (`no`); 
+-- ALTER TABLE `report` ADD `no` VARCHAR(20) NOT NULL AFTER `id`, ADD UNIQUE `unique_report_no` (`no`); 
 
 CREATE TABLE report_evidences (
     id INT PRIMARY KEY AUTO_INCREMENT,

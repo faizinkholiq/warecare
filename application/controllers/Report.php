@@ -145,10 +145,42 @@ class Report extends MY_Controller
         }
     }
 
+    public function detail($id)
+    {
+        $report = $this->Report_model->get($id);
+        if (!$report) {
+            $this->session->set_flashdata('error', 'Report not found');
+            if ($this->input->is_ajax_request()) {
+                $this->output->set_status_header(404);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Report not found.',
+                ]);
+                return;
+            } else {
+                redirect('report');
+            }
+        }
+
+        $data["report"] = $report;
+        $data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);;
+        $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
+        $data["list_data"]["entity"] = $this->Entity_model->get_all();
+        $data["list_data"]["project"] = $this->Project_model->get_all();
+        $data["list_data"]["company"] = $this->Company_model->get_all();
+        $data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
+        $data["list_data"]["category"] = $this->Category_model->get_all();
+
+        $data["title"] = "Pengaduan";
+        $data["menu_id"] = "report";
+        $data["current_user"] = $this->auth_lib->current_user();
+        $data["mode"] = "detail";
+        $data["view"] = "report/form";
+        $this->load->view('layouts/template', $data);
+    }
+
     public function edit($id)
     {
-        print_r("HALLO UR NUMBER IS {$this->MAX_FILE_COUNT}");
-        exit;
         $data["title"] = "Pengaduan";
         $data["menu_id"] = "report";
         $data["current_user"] = $this->auth_lib->current_user();

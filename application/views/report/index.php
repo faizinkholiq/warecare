@@ -4,30 +4,36 @@
         padding: 5px 10px;
         border-radius: 20px;
     }
+
     .status-pending {
         background-color: #ffc10721;
         color: #f0b400;
         font-weight: bold;
     }
+
     .status-approved {
         background-color: #007bff1a;
         color: #007bff;
         font-weight: bold;
     }
+
     .status-rejected {
         background-color: #dc354521;
         color: #dc3545;
         font-weight: bold;
     }
+
     .status-completed {
         background-color: #d4edda;
         color: #155724;
         font-weight: bold;
     }
+
     .action-btn {
         margin-right: 5px;
         margin-bottom: 5px;
     }
+
     .img-thumbnail {
         max-width: 60px;
         max-height: 60px;
@@ -43,25 +49,31 @@
         transition: all 0.3s;
         margin-bottom: 20px;
     }
-    .dropzone:hover, .dropzone.dragover {
+
+    .dropzone:hover,
+    .dropzone.dragover {
         background: #e9ecef;
         border-color: #999;
     }
+
     .dropzone i {
         font-size: 48px;
         color: #6c757d;
         margin-bottom: 10px;
     }
+
     .image-preview-container {
         display: flex;
         flex-wrap: wrap;
         margin-top: 15px;
     }
+
     .image-preview-item {
         position: relative;
         margin-right: 15px;
         margin-bottom: 15px;
     }
+
     .image-preview-item img {
         width: 100px;
         height: 100px;
@@ -69,6 +81,7 @@
         border-radius: 5px;
         border: 1px solid #ddd;
     }
+
     .btn-remove-image {
         position: absolute;
         top: -10px;
@@ -81,6 +94,7 @@
         align-items: center;
         justify-content: center;
     }
+
     .upload-progress {
         width: 100%;
         margin-top: 10px;
@@ -89,9 +103,11 @@
 </style>
 
 <div class="container-fluid">
-    <a href="<?= site_url('/report/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg text-navy font-weight-bold create-btn">
-        <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru
-    </a>
+    <?php if ($this->auth_lib->role() === 'pelapor'): ?>
+        <a href="<?= site_url('/report/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg text-navy font-weight-bold create-btn">
+            <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru
+        </a>
+    <?php endif; ?>
     <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg p-3">
         <table id="reportsTable" class="table table-bordered" style="width:100%">
             <thead>
@@ -106,6 +122,7 @@
                     <th class="dt-center">Nama Perusahaan</th>
                     <th class="dt-center">Kategori Pengaduan</th>
                     <th class="dt-center">Status Pengajuan</th>
+                    <th class="dt-center">Pelapor</th>
                     <th class="dt-center">Aksi</th>
                 </tr>
             </thead>
@@ -145,15 +162,16 @@
 
     const urls = {
         get_list_datatables: "<?= site_url('report/get_list_datatables') ?>",
+        detail: "<?= site_url('report/detail') ?>",
         edit: "<?= site_url('report/edit') ?>",
         delete: "<?= site_url('report/delete') ?>",
     }
 
     $(document).ready(function() {
         setTimeout(() => {
-            if(notifications.success) {
+            if (notifications.success) {
                 toastr.success(notifications.success);
-            }else if (notifications.error) {
+            } else if (notifications.error) {
                 toastr.error(notifications.error);
             }
         }, 500)
@@ -166,86 +184,98 @@
                 type: 'POST'
             },
             rowId: 'id',
-            columns: [
-                { 
-                    data: "id", 
+            columns: [{
+                    data: "id",
                     visible: false,
                     orderable: false,
-                    targets: 0 
+                    targets: 0
                 },
                 {
                     data: null,
                     width: "3%",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
                     searchable: false,
                     orderable: false,
                     targets: 1
                 },
-                { 
+                {
                     data: "title",
                     width: "15%",
                     className: "vertical-align-middle",
                     targets: 2
                 },
-                { 
+                {
                     data: "entity",
-                    width: "10%",
+                    width: "8%",
                     className: "vertical-align-middle",
                     targets: 3
                 },
-                { 
+                {
                     data: "project",
-                    width: "10%",
+                    width: "8%",
                     targets: 4
                 },
-                { 
+                {
                     data: "created_at",
                     width: "10%",
                     targets: 5
                 },
-                { 
+                {
                     data: "warehouse",
                     width: "10%",
                     targets: 6
                 },
-                { 
+                {
                     data: "company",
                     width: "15%",
                     targets: 7
                 },
-                
-                { 
+
+                {
                     data: "category",
                     width: "10%",
                     targets: 8
                 },
-                { 
+                {
                     data: null,
                     width: "6%",
                     className: "dt-center",
                     render: function(data, type, row) {
-                        return row.status? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` : '-';
+                        return row.status ? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` : '-';
                     },
                     targets: 9
+                },
+                {
+                    data: "created_by",
+                    width: "7%",
+                    targets: 10
                 },
                 {
                     data: null,
                     width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
+                        // return `
+                        //     <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
+                        //         <i class="text-xs fas fa-edit"></i>
+                        //     </a>
+                        //     <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
+                        //         <i class="text-xs fas fa-trash"></i>
+                        //     </button>
+                        // `;
                         return `
-                            <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
-                                <i class="text-xs fas fa-edit"></i>
+                            <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
+                                <i class="text-xs fa fa-info-circle"></i>
                             </a>
                             <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
-                                <i class="text-xs fas fa-trash"></i>
-                            </button>
+                                 <i class="text-xs fas fa-trash"></i>
+                             </button>
                         `;
                     },
                     orderable: false,
-                    targets: 10
+                    targets: 11
                 }
             ],
             scrollResize: true,
@@ -270,7 +300,7 @@
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
             var reportId = $('#deletereportId').val();
-            
+
             $.ajax({
                 url: urls.delete + '/' + reportId,
                 method: 'DELETE',

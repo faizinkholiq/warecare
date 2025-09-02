@@ -48,7 +48,9 @@ class Report_model extends CI_Model
             'warehouse.name as warehouse',
             'company.name as company',
             'category.name as category',
-            'report.status'
+            'report.status',
+            'CONCAT_WS(" ", created_by.first_name, created_by.last_name) created_by',
+            'report.created_at'
         ])
             ->from('report')
             ->join('entity', 'entity.id = report.entity_id', 'left')
@@ -56,6 +58,7 @@ class Report_model extends CI_Model
             ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
             ->join('category', 'category.id = report.category_id', 'left')
             ->join('company', 'company.id = report.company_id', 'left')
+            ->join('user created_by', 'created_by.id = report.created_by', 'left')
             ->order_by('report.id', 'desc')
             ->group_by('report.id');
 
