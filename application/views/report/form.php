@@ -335,18 +335,35 @@
                     </a>
                     <div>
                         <?php if ($mode === 'edit'): ?>
-                            <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
-                                <i class="fas fa-times mr-2"></i> Ditolak
-                            </button>
-                            <button type="button" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
-                                <i class="fas fa-print mr-2"></i> Cetak Memo
-                            </button>
-                            <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
-                                <i class="fas fa-check mr-2"></i> Setujui Pengaduan
-                            </button>
-                            <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
-                                <i class="far fa-check-circle mr-2"></i> Selesai Pengerjaan
-                            </button>
+                            <?php if (in_array($this->auth_lib->role(), ['kontraktor', 'rab'])): ?>
+                                <button onclick="declineReport()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                                    <i class="fas fa-times mr-2"></i> Ditolak
+                                </button>
+                                <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
+                                    <i class="fas fa-arrow-right mr-2"></i> Ajukan Pengaduan
+                                </button>
+                            <?php endif; ?>
+
+                            <?php if ($this->auth_lib->role() === 'manager'): ?>
+                                <button onclick="declineReport()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                                    <i class="fas fa-times mr-2"></i> Ditolak
+                                </button>
+                                <a href="<?= site_url('report/memo/' . $report['id']) ?>" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                    <i class="fas fa-print mr-2"></i> Cetak Memo
+                                </a>
+                                <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                    <i class="fas fa-check mr-2"></i> Setujui Pengaduan
+                                </button>
+                            <?php endif; ?>
+
+                            <?php if ($this->auth_lib->role() === 'pelapor'): ?>
+                                <a href="<?= site_url('report/memo/' . $report['id']) ?>" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                    <i class="fas fa-print mr-2"></i> Cetak Memo
+                                </a>
+                                <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                    <i class="fas fa-tasks mr-2"></i> Selesaikan Pengerjaan
+                                </button>
+                            <?php endif; ?>
                         <?php endif; ?>
                         <?php if ($mode === 'create'): ?>
                             <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
@@ -428,6 +445,7 @@
 
     const appState = {
         mode: "<?= $mode ?>",
+        userRole: "<?= $this->auth_lib->role() ?>",
         reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
         evidence: {
             files: [],
@@ -492,10 +510,10 @@
                     handleFileInputChange('work', event);
                 });
 
-                if (domCache.form.item.rab && domCache.form.item.rabContainer) {
-                    domCache.form.item.rabContainer.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
+                if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
+                    domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
                     domCache.form.item.rab.addEventListener('change', (e) => {
-                        domCache.form.item.rabContainer.style.display = (e.target.value === '1') ? '' : 'none';
+                        domCache.form.item.rabFile.container.style.display = (e.target.value === '1') ? '' : 'none';
                     });
                 }
 
@@ -688,6 +706,14 @@
         formData.append('title', domCache.form.item.title.value);
         formData.append('description', domCache.form.item.description.value);
 
+        if (appState.mode === 'edit') {
+            if (appState.userRole === 'manager') {
+                formData.append('status', 'Approved');
+            } else if (appState.userRole === 'pelapor') {
+                formData.append('status', 'Completed');
+            }
+        }
+
         appState.evidence.files.forEach((file, index) => {
             if (file instanceof File) {
                 formData.append(`evidence_files[${index}]`, file);
@@ -711,7 +737,6 @@
 
             formData.append('delete_rab_final_file', appState.rabFinal.deleted);
 
-
             appState.work.files.forEach((file, index) => {
                 if (file instanceof File) {
                     formData.append(`work_files[${index}]`, file);
@@ -719,7 +744,6 @@
             });
 
             formData.append('deleted_work_files', JSON.stringify(appState.work.deletedIds));
-
         }
 
         submitFormData(formData);
@@ -765,6 +789,28 @@
         if (fileNameElement) fileNameElement.textContent = "Belum ada file yang dipilih";
         if (removeBtn) removeBtn.style.display = 'none';
         if (selectBtn) selectBtn.style.display = '';
+    }
+
+    function declineReport() {
+        const formData = new FormData();
+        formData.append('status', 'Rejected');
+
+        fetch(`${URLS.edit}/${appState.reportData.id}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = URLS.default;
+                } else {
+                    throw new Error('Operation failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error("Failed to decline report.");
+            });
     }
 
     if (document.readyState === 'loading') {

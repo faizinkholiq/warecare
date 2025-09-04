@@ -30,6 +30,8 @@
     <link rel="stylesheet" href="<?= base_url('assets/modules/template/template.css') ?>">
     <!-- Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Tippy.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css" />
 
     <!-- jQuery -->
     <script src="<?= base_url('assets/plugins/jquery/jquery.min.js') ?>"></script>
@@ -68,6 +70,9 @@
     <script src="<?= base_url('assets/modules/template/template.js') ?>"></script>
     <!-- Toastr -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- Tippy.js Script -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <!-- Additional -->
     <?php
     if (!empty($js_files)) {
@@ -339,6 +344,12 @@
             preventDuplicates: true,
             timeOut: 3000,
         };
+
+        tippy('[data-tippy-content]', {
+            placement: 'bottom',
+            arrow: true,
+            animation: 'fade'
+        });
     });
 </script>
 

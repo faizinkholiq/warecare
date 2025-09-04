@@ -187,6 +187,13 @@
                 url: urls.get_list_datatables,
                 type: 'POST'
             },
+            drawCallback: function() {
+                tippy('[data-tippy-content]', {
+                    placement: 'bottom',
+                    arrow: true,
+                    animation: 'fade'
+                });
+            },
             rowId: 'id',
             columns: [{
                     data: "id",
@@ -274,38 +281,29 @@
                     width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
-                        // return `
-                        //     <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
-                        //         <i class="text-xs fas fa-edit"></i>
-                        //     </a>
-                        //     <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
-                        //         <i class="text-xs fas fa-trash"></i>
-                        //     </button>
-                        // `;
-
                         let buttons = `
-                            <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
-                                <i class="text-xs fa fa-info-circle"></i>
+                            <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn" data-tippy-content="View Details">
+                            <i class="text-xs fa fa-info-circle"></i>
                             </a>`
 
                         if (appState.userRole === 'administrator') {
                             buttons += `
-                                <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
-                                    <i class="text-xs fas fa-trash"></i>
-                                </button>`
+                            <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id} ml-2" data-tippy-content="Delete Report">
+                                <i class="text-xs fas fa-trash"></i>
+                            </button>`
                         } else {
                             if (appState.userRole === 'pelapor' && row.status === 'Pending') {
                                 buttons += `
-                                    <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
-                                        <i class="text-xs fas fa-trash"></i>
-                                    </button>`
+                                <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id} ml-2" data-tippy-content="Delete Report">
+                                <i class="text-xs fas fa-trash"></i>
+                                </button>`
                             }
 
                             if (appState.userRole === 'kontraktor' && row.status === 'Pending') {
                                 buttons += `
-                                    <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
-                                        <i class="text-xs fa fa-spinner"></i>
-                                    </a>`
+                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 edit-btn ml-2" data-tippy-content="Process Report">
+                                <i class="text-xs fa fa-play"></i>
+                                </a>`
                             }
                         }
 

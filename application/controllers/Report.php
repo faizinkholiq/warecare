@@ -15,6 +15,7 @@ class Report extends MY_Controller
             'Warehouse_model',
             'Category_model',
         ]);
+        $this->load->library('pdf');
     }
 
     public function index()
@@ -240,6 +241,7 @@ class Report extends MY_Controller
                 'title' => $this->input->post('title'),
                 'description' => $this->input->post('description'),
                 'is_rab' => (bool)$this->input->post('is_rab'),
+                'status' => $this->input->post('status') ?: 'Pending',
                 'updated_by'  => $this->auth_lib->user_id()
             ];
 
@@ -554,5 +556,26 @@ class Report extends MY_Controller
         if (file_exists($filepath)) {
             unlink($filepath);
         }
+    }
+
+    public function memo($id)
+    {
+        $report = $this->Report_model->get_detail($id);
+        if (!$report) {
+            $this->session->set_flashdata('error', 'Report not found');
+            redirect('report');
+            return;
+        }
+
+        $pdf = new Pdf();
+
+        $pdf->SetCreator('Waringin Group');
+        $pdf->SetAuthor('Waringin Group');
+        $pdf->SetTitle('Memo Pengaduan #' . $report['id']);
+
+        $data['title'] = 'PEMBERITAHUAN PEKERJAAN KURANG/TAMBAH';
+        $data['report'] = $report;
+
+        $pdf->generate_from_view('report/memo', $data, date('Y_m_d_h_i_s') . '_memo.pdf', true);
     }
 }

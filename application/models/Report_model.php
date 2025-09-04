@@ -46,7 +46,6 @@ class Report_model extends CI_Model
             'report.title',
             'entity.name as entity',
             'project.name as project',
-            'report.created_at',
             'warehouse.name as warehouse',
             'company.name as company',
             'category.name as category',
@@ -83,6 +82,36 @@ class Report_model extends CI_Model
     public function get($id)
     {
         return $this->db->get_where($this->table, ['id' => $id])->row_array();
+    }
+
+    public function get_detail($id)
+    {
+        $this->db->select([
+            'report.id',
+            'report.no',
+            'report.title',
+            'report.description',
+            'entity.name as entity',
+            'project.name as project',
+            'warehouse.name as warehouse',
+            'company.name as company',
+            'category.name as category',
+            'report.status',
+            'DATE_FORMAT(report.completed_at, "%Y-%m-%d %H:%i") as completed_at',
+            'CONCAT_WS(" ", created_by.first_name, created_by.last_name) created_by',
+            'DATE_FORMAT(report.created_at, "%Y-%m-%d %H:%i") as created_at'
+        ])
+            ->from('report')
+            ->join('entity', 'entity.id = report.entity_id', 'left')
+            ->join('project', 'project.id = report.project_id', 'left')
+            ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
+            ->join('category', 'category.id = report.category_id', 'left')
+            ->join('company', 'company.id = report.company_id', 'left')
+            ->join('user created_by', 'created_by.id = report.created_by', 'left')
+            ->where('report.id', $id)
+            ->group_by('report.id');
+
+        return $this->db->get()->row_array();
     }
 
     public function create($data)
