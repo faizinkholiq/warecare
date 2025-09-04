@@ -1,4 +1,34 @@
 <style>
+    .status-badge {
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .status-pending {
+        background-color: #ffc10721;
+        color: #f0b400;
+        font-weight: bold;
+    }
+
+    .status-approved {
+        background-color: #007bff1a;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .status-rejected {
+        background-color: #dc354521;
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+        font-weight: bold;
+    }
+
     .dropzone {
         border: 2px dashed #ced4da;
         border-radius: 5px;
@@ -121,14 +151,21 @@
     <div class="card rounded-lg shadow border-0">
         <form id="reportForm">
             <div class="card-body">
-                <div class="form-group col-md-6">
-                    <label for="reportEntity">Entity</label>
-                    <select class="form-control" id="reportEntity" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
-                        <option value="">- Pilih Entity -</option>
-                        <?php foreach ($list_data['entity'] as $key => $value): ?>
-                            <option value="<?= $value['id'] ?>" <?= isset($report) && $report['entity_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="row">
+                    <div class="form-group col-md-6" style="padding-left: 15px;">
+                        <label for="reportEntity">Entity</label>
+                        <select class="form-control" id="reportEntity" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                            <option value="">- Pilih Entity -</option>
+                            <?php foreach ($list_data['entity'] as $key => $value): ?>
+                                <option value="<?= $value['id'] ?>" <?= isset($report) && $report['entity_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php if ($mode !== 'create'): ?>
+                        <div class="col-md-6 text-right">
+                            <span class="status-badge status-<?= strtolower($report["status"]) ?>"><?= $report["status"] ?></span>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportProject">Project</label>
@@ -196,6 +233,10 @@
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php if ($mode === 'detail'): ?>
+                                <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -278,6 +319,10 @@
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php if ($mode === 'detail'): ?>
+                                    <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </div>

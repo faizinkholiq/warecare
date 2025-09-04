@@ -167,6 +167,10 @@
         delete: "<?= site_url('report/delete') ?>",
     }
 
+    const appState = {
+        userRole: "<?= $this->auth_lib->role() ?>"
+    };
+
     $(document).ready(function() {
         setTimeout(() => {
             if (notifications.success) {
@@ -243,12 +247,25 @@
                     width: "6%",
                     className: "dt-center",
                     render: function(data, type, row) {
-                        return row.status ? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status}</span>` : '-';
+                        let action_by = "";
+
+                        if (row.status === 'On Process') {
+                            action_by = row.processed_by;
+                        } else if (row.status === 'Approved') {
+                            action_by = row.approved_by;
+                        }
+
+                        if (action_by !== '') {
+                            action_by = ` (${action_by})`
+                        }
+
+                        return row.status ? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status+action_by}</span>` : '-';
                     },
                     targets: 9
                 },
                 {
                     data: "created_by",
+                    visible: (appState.userRole === 'pelapor') ? false : true,
                     width: "7%",
                     targets: 10
                 },
@@ -265,14 +282,34 @@
                         //         <i class="text-xs fas fa-trash"></i>
                         //     </button>
                         // `;
-                        return `
+
+                        let buttons = `
                             <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
                                 <i class="text-xs fa fa-info-circle"></i>
-                            </a>
-                            <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
-                                 <i class="text-xs fas fa-trash"></i>
-                             </button>
-                        `;
+                            </a>`
+
+                        if (appState.userRole === 'administrator') {
+                            buttons += `
+                                <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
+                                    <i class="text-xs fas fa-trash"></i>
+                                </button>`
+                        } else {
+                            if (appState.userRole === 'pelapor' && row.status === 'Pending') {
+                                buttons += `
+                                    <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id}">
+                                        <i class="text-xs fas fa-trash"></i>
+                                    </button>`
+                            }
+
+                            if (appState.userRole === 'kontraktor' && row.status === 'Pending') {
+                                buttons += `
+                                    <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn">
+                                        <i class="text-xs fa fa-spinner"></i>
+                                    </a>`
+                            }
+                        }
+
+                        return buttons;
                     },
                     orderable: false,
                     targets: 11

@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS report (
   id INT AUTO_INCREMENT PRIMARY KEY,
-
+  
+  no VARCHAR(20) NULL,
+  
   entity_id INT NOT NULL,
   project_id INT NOT NULL,
   company_id INT NOT NULL,
@@ -9,17 +11,23 @@ CREATE TABLE IF NOT EXISTS report (
 
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
-  status ENUM('Pending', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
+  status ENUM('Pending', 'On Process', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
 
   is_rab BOOLEAN DEFAULT FALSE,
   rab_file VARCHAR(255),
   rab_final_file VARCHAR(255),
 
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  processed_by INT NULL,
+  processed_at DATETIME NULL,
+
+  completed_by INT NULL,
+  completed_at DATETIME NULL,
 
   created_by INT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
   updated_by INT NULL,
+  updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_report_entity      FOREIGN KEY (entity_id)     REFERENCES entity(id)     ON DELETE CASCADE,
   CONSTRAINT fk_report_project     FOREIGN KEY (project_id)    REFERENCES project(id)     ON DELETE CASCADE,

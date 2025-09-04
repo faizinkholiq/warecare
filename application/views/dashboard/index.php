@@ -7,7 +7,7 @@
                 <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru
             </a>
         <?php else: ?>
-            <p class="lead text-sm">Anda telah berhasil masuk ke sistem</p>
+            <p class="lead">Anda telah berhasil masuk ke sistem</p>
         <?php endif; ?>
     </div>
 </div>
