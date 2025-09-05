@@ -20,6 +20,8 @@ class Report_model extends CI_Model
 
         if (!empty($p["reported_by"])) $this->db->where('report.created_by', $p['reported_by']);
 
+        if ($p['rab_only'] === true) $this->db->where('report.is_rab', true);
+
         if (!empty($search["value"])) {
             $col = [
                 "report.name"
@@ -44,6 +46,9 @@ class Report_model extends CI_Model
             'report.id',
             'report.no',
             'report.title',
+            'report.is_rab',
+            'report.rab_file',
+            'report.rab_final_file',
             'entity.name as entity',
             'project.name as project',
             'warehouse.name as warehouse',
@@ -51,6 +56,9 @@ class Report_model extends CI_Model
             'category.name as category',
             'report.status',
             'CONCAT_WS(" ", created_by.first_name, created_by.last_name) created_by',
+            'CONCAT_WS(" ", processed_by.first_name, processed_by.last_name) processed_by',
+            'CONCAT_WS(" ", approved_by.first_name, approved_by.last_name) approved_by',
+            'CONCAT_WS(" ", completed_by.first_name, completed_by.last_name) completed_by',
             'report.created_at'
         ])
             ->from('report')
@@ -60,6 +68,9 @@ class Report_model extends CI_Model
             ->join('category', 'category.id = report.category_id', 'left')
             ->join('company', 'company.id = report.company_id', 'left')
             ->join('user created_by', 'created_by.id = report.created_by', 'left')
+            ->join('user processed_by', 'processed_by.id = report.processed_by', 'left')
+            ->join('user approved_by', 'approved_by.id = report.approved_by', 'left')
+            ->join('user completed_by', 'completed_by.id = report.completed_by', 'left')
             ->order_by('report.id', 'desc')
             ->group_by('report.id');
 

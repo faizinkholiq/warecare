@@ -11,9 +11,15 @@
         font-weight: bold;
     }
 
-    .status-approved {
+    .status-on-process {
         background-color: #007bff1a;
         color: #007bff;
+        font-weight: bold;
+    }
+
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
         font-weight: bold;
     }
 
@@ -154,7 +160,7 @@
                 <div class="row">
                     <div class="form-group col-md-6" style="padding-left: 15px;">
                         <label for="reportEntity">Entity</label>
-                        <select class="form-control" id="reportEntity" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                        <select class="form-control" id="reportEntity" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                             <option value="">- Pilih Entity -</option>
                             <?php foreach ($list_data['entity'] as $key => $value): ?>
                                 <option value="<?= $value['id'] ?>" <?= isset($report) && $report['entity_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -163,13 +169,13 @@
                     </div>
                     <?php if ($mode !== 'create'): ?>
                         <div class="col-md-6 text-right">
-                            <span class="status-badge status-<?= strtolower($report["status"]) ?>"><?= $report["status"] ?></span>
+                            <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $report["status"])) ?>"><?= $report["status"] ?></span>
                         </div>
                     <?php endif; ?>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportProject">Project</label>
-                    <select class="form-control" id="reportProject" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                    <select class="form-control" id="reportProject" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                         <option value="">- Pilih Project -</option>
                         <?php foreach ($list_data['project'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['project_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -178,7 +184,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCompany">Nama Perusahaan</label>
-                    <select class="form-control" id="reportCompany" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                    <select class="form-control" id="reportCompany" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                         <option value="">- Pilih Perusahaan -</option>
                         <?php foreach ($list_data['company'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['company_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -187,7 +193,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportWarehouse">Nomor Gudang</label>
-                    <select class="form-control" id="reportWarehouse" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                    <select class="form-control" id="reportWarehouse" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                         <option value="">- Pilih Gudang -</option>
                         <?php foreach ($list_data['warehouse'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['warehouse_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -196,7 +202,7 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCategory">Kategori Pengaduan</label>
-                    <select class="form-control" id="reportCategory" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                    <select class="form-control" id="reportCategory" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                         <option value="">- Pilih Kategori -</option>
                         <?php foreach ($list_data['category'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['category_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -205,15 +211,15 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportTitle">Judul</label>
-                    <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                    <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                 </div>
                 <div class="form-group col-md-7">
                     <label for="reportDescription">Deskripsi</label>
-                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
+                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
                 </div>
                 <div class="form-group col-md-7">
                     <label>Lampiran Bukti</label>
-                    <?php if ($mode !== 'detail'): ?>
+                    <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
                         <div class="dropzone" id="reportEvidenceDropzone">
                             <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
                             <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
@@ -228,7 +234,7 @@
                             ?>
                                 <div id="evidenceItem<?= $evidence['id']; ?>" class="preview-item">
                                     <img src="<?= $file_path ?>" alt="Evidence Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                    <?php if ($mode !== 'detail'): ?>
+                                    <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
                                         <button type="button" class="remove-btn" onclick="removeFile('evidence', <?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
                                     <?php endif; ?>
                                 </div>
@@ -240,92 +246,102 @@
                         <?php endif; ?>
                     </div>
                 </div>
-                <?php if ($mode !== 'create'): ?>
+                <?php if (($mode === 'detail' || $mode === 'edit') && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))): ?>
                     <div class="form-group col-md-6">
                         <label for="reportRAB">RAB</label>
-                        <select class="form-control" id="reportRAB" required <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                        <select class="form-control" id="reportRAB" required <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
                             <option value="0" <?= isset($report) && $report['is_rab'] == 0 ? 'selected' : '' ?>>Tanpa RAB</option>
                             <option value="1" <?= isset($report) && $report['is_rab'] == 1 ? 'selected' : '' ?>>Dengan RAB</option>
                         </select>
                     </div>
-                    <div id="reportRABContainer" class="form-group col-md-6">
-                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
-                            <?php if ($mode !== 'detail'): ?>
-                                <input type="file" class="form-control" id="reportRABFile" hidden>
-                            <?php endif; ?>
-                            <div>
-                                <?php if (isset($report) && $report['rab_file']): ?>
-                                    <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
-                                        <i class="fas fa-download mr-1"></i> Download File
-                                    </a>
-                                <?php endif; ?>
+
+                    <?php if ($mode === 'edit' || ($mode === 'detail' && isset($report) && (bool)$report['is_rab'] === true)): ?>
+                        <div id="reportRABContainer" class="form-group col-md-6">
+                            <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
                                 <?php if ($mode !== 'detail'): ?>
-                                    <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file'] ? 'none' : '' ?>">
-                                        <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                    <input type="file" class="form-control" id="reportRABFile" hidden>
+                                <?php endif; ?>
+                                <div>
+                                    <?php if (isset($report) && $report['rab_file']): ?>
+                                        <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                            <i class="fas fa-download mr-1"></i> Download File
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if ($mode !== 'detail'): ?>
+                                        <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file'] ? 'none' : '' ?>">
+                                            <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                        </button>
+                                    <?php endif; ?>
+                                    <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file'] ? $report['rab_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                </div>
+                                <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'kontraktor'): ?>
+                                    <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file'] ? '' : 'none' ?>">
+                                        <i class="fa fa-times"></i>
                                     </button>
                                 <?php endif; ?>
-                                <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file'] ? $report['rab_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                             </div>
-                            <?php if ($mode !== 'detail'): ?>
-                                <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file'] ? '' : 'none' ?>">
-                                    <i class="fa fa-times"></i>
-                                </button>
-                            <?php endif; ?>
                         </div>
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="reportRABFinalFile">RAB Final</label>
-                        <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
-                            <?php if ($mode !== 'detail'): ?>
-                                <input type="file" class="form-control" id="reportRABFinalFile" hidden>
-                            <?php endif; ?>
-                            <div>
-                                <?php if (isset($report) && $report['rab_final_file']): ?>
-                                    <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab_final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
-                                        <i class="fas fa-download mr-1"></i> Download File
-                                    </a>
-                                <?php endif; ?>
-                                <?php if ($mode !== 'detail'): ?>
-                                    <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab_final_file'] ? 'none' : '' ?>">
-                                        <i class="fas fa-folder-open mr-1"></i> Pilih File
-                                    </button>
-                                <?php endif; ?>
-                                <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_final_file'] ? $report['rab_final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
-                            </div>
-                            <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_final_file'] ? '' : 'none' ?>">
-                                <i class="fa fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-group col-md-7">
-                        <label>Pengerjaan</label>
-                        <?php if ($mode !== 'detail'): ?>
-                            <div class="dropzone" id="reportWorkDropzone">
-                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                                <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                                <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
-                            </div>
-                            <div class="invalid-feedback" id="reportWorkError"></div>
-                        <?php endif; ?>
-                        <div class="preview-container" id="reportWorkPreview">
-                            <?php if (isset($report) && !empty($report['works'])): ?>
-                                <?php foreach ($report['works'] as $work):
-                                    $file_path = base_url('/uploads/' . $work['image_name']);
-                                ?>
-                                    <div id="workItem<?= $work['id']; ?>" class="preview-item">
-                                        <img src="<?= $file_path ?>" alt="Work Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                        <?php if ($mode !== 'detail'): ?>
-                                            <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
+                        <?php if (isset($report) && $report['rab_file'] && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
+                            <div class="form-group col-md-6">
+                                <label for="reportRABFinalFile">RAB Final</label>
+                                <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
+                                    <?php if ($mode !== 'detail'): ?>
+                                        <input type="file" class="form-control" id="reportRABFinalFile" hidden>
+                                    <?php endif; ?>
+                                    <div>
+                                        <?php if (isset($report) && $report['rab_final_file']): ?>
+                                            <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab_final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                                <i class="fas fa-download mr-1"></i> Download File
+                                            </a>
                                         <?php endif; ?>
+                                        <?php if ($mode !== 'detail'): ?>
+                                            <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab_final_file'] ? 'none' : '' ?>">
+                                                <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                            </button>
+                                        <?php endif; ?>
+                                        <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_final_file'] ? $report['rab_final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                                     </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <?php if ($mode === 'detail'): ?>
-                                    <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
-                                <?php endif; ?>
+                                    <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'rab'): ?>
+                                        <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_final_file'] ? '' : 'none' ?>">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php if (isset($report) && ($report['status'] === 'Approved' || $report['status'] === 'Completed') && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'pelapor'))): ?>
+                        <div class="form-group col-md-7">
+                            <label>Pengerjaan</label>
+                            <?php if ($mode !== 'detail'): ?>
+                                <div class="dropzone" id="reportWorkDropzone">
+                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
+                                    <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
+                                    <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
+                                </div>
+                                <div class="invalid-feedback" id="reportWorkError"></div>
                             <?php endif; ?>
+                            <div class="preview-container" id="reportWorkPreview">
+                                <?php if (isset($report) && !empty($report['works'])): ?>
+                                    <?php foreach ($report['works'] as $work):
+                                        $file_path = base_url('/uploads/' . $work['image_name']);
+                                    ?>
+                                        <div id="workItem<?= $work['id']; ?>" class="preview-item">
+                                            <img src="<?= $file_path ?>" alt="Work Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
+                                            <?php if ($mode !== 'detail'): ?>
+                                                <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <?php if ($mode === 'detail'): ?>
+                                        <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
             <div class="card-footer bg-white border-top rounded">
@@ -357,12 +373,18 @@
                             <?php endif; ?>
 
                             <?php if ($this->auth_lib->role() === 'pelapor'): ?>
-                                <a href="<?= site_url('report/memo/' . $report['id']) ?>" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
-                                    <i class="fas fa-print mr-2"></i> Cetak Memo
-                                </a>
-                                <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
-                                    <i class="fas fa-tasks mr-2"></i> Selesaikan Pengerjaan
-                                </button>
+                                <?php if (isset($report) && $report['status'] === 'Approved'): ?>
+                                    <a href="<?= site_url('report/memo/' . $report['id']) ?>" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                        <i class="fas fa-print mr-2"></i> Cetak Memo
+                                    </a>
+                                    <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                        <i class="fas fa-tasks mr-2"></i> Selesaikan Pengerjaan
+                                    </button>
+                                <?php else: ?>
+                                    <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                        <i class="fas fa-save mr-2"></i> Simpan Perubahan
+                                    </button>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                         <?php if ($mode === 'create'): ?>
@@ -483,21 +505,24 @@
         });
 
         if (appState.mode !== 'detail') {
-            domCache.form.item.evidence.dropzone.addEventListener('click', () => {
-                domCache.form.item.evidence.input.click();
-            });
-            domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
-            domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
-            domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
-                handleDrop('evidence', event);
-            });
-            domCache.form.item.evidence.input.addEventListener('change', (event) => {
-                handleFileInputChange('evidence', event);
-            });
-
             domCache.form.name.addEventListener('submit', handleFormSubmit);
 
-            if (appState.mode === 'edit') {
+            if (domCache.form.item.evidence.dropzone && domCache.form.item.evidence.input) {
+                domCache.form.item.evidence.dropzone.addEventListener('click', () => {
+                    domCache.form.item.evidence.input.click();
+                });
+                domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
+                domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
+                domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
+                    handleDrop('evidence', event);
+                });
+
+                domCache.form.item.evidence.input.addEventListener('change', (event) => {
+                    handleFileInputChange('evidence', event);
+                });
+            }
+
+            if (domCache.form.item.work.dropzone && domCache.form.item.work.input) {
                 domCache.form.item.work.dropzone.addEventListener('click', () => {
                     domCache.form.item.work.input.click();
                 });
@@ -509,49 +534,49 @@
                 domCache.form.item.work.input.addEventListener('change', (event) => {
                     handleFileInputChange('work', event);
                 });
+            }
 
-                if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
-                    domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
-                    domCache.form.item.rab.addEventListener('change', (e) => {
-                        domCache.form.item.rabFile.container.style.display = (e.target.value === '1') ? '' : 'none';
-                    });
-                }
+            if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
+                domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
+                domCache.form.item.rab.addEventListener('change', (e) => {
+                    domCache.form.item.rabFile.container.style.display = (e.target.value === '1') ? '' : 'none';
+                });
+            }
 
-                if (domCache.form.item.rabFile.input) {
-                    domCache.form.item.rabFile.input.addEventListener('change', function() {
-                        const file = this.files[0];
-                        updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
-                    });
-                }
+            if (domCache.form.item.rabFile.input) {
+                domCache.form.item.rabFile.input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+                });
+            }
 
-                if (domCache.form.item.rabFile.remove) {
-                    domCache.form.item.rabFile.remove.addEventListener('click', function() {
-                        resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
+            if (domCache.form.item.rabFile.remove) {
+                domCache.form.item.rabFile.remove.addEventListener('click', function() {
+                    resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
 
-                        if (domCache.form.item.rabFile.download) {
-                            domCache.form.item.rabFile.download.remove();
-                            appState.rab.deleted = true;
-                        }
-                    });
-                }
+                    if (domCache.form.item.rabFile.download) {
+                        domCache.form.item.rabFile.download.remove();
+                        appState.rab.deleted = true;
+                    }
+                });
+            }
 
-                if (domCache.form.item.rabFinalFile.input) {
-                    domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
-                        const file = this.files[0];
-                        updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
-                    });
-                }
+            if (domCache.form.item.rabFinalFile.input) {
+                domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
+                });
+            }
 
-                if (domCache.form.item.rabFinalFile.remove) {
-                    domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
-                        resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
+            if (domCache.form.item.rabFinalFile.remove) {
+                domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
+                    resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
 
-                        if (domCache.form.item.rabFinalFile.download) {
-                            domCache.form.item.rabFinalFile.download.remove();
-                            appState.rabFinal.deleted = true;
-                        }
-                    });
-                }
+                    if (domCache.form.item.rabFinalFile.download) {
+                        domCache.form.item.rabFinalFile.download.remove();
+                        appState.rabFinal.deleted = true;
+                    }
+                });
             }
         }
     }
@@ -706,14 +731,6 @@
         formData.append('title', domCache.form.item.title.value);
         formData.append('description', domCache.form.item.description.value);
 
-        if (appState.mode === 'edit') {
-            if (appState.userRole === 'manager') {
-                formData.append('status', 'Approved');
-            } else if (appState.userRole === 'pelapor') {
-                formData.append('status', 'Completed');
-            }
-        }
-
         appState.evidence.files.forEach((file, index) => {
             if (file instanceof File) {
                 formData.append(`evidence_files[${index}]`, file);
@@ -723,6 +740,22 @@
         formData.append('deleted_evidence_files', JSON.stringify(appState.evidence.deletedIds));
 
         if (appState.mode === 'edit') {
+            if (appState.userRole === 'pelapor' && appState.reportData.status === 'Pending') {
+                submitFormData(formData);
+                return;
+            }
+
+            const statusMap = {
+                'kontraktor': 'On Process',
+                'rab': 'On Process',
+                'manager': 'Approved',
+                'pelapor': 'Completed'
+            };
+
+            if (statusMap[appState.userRole]) {
+                formData.append('status', statusMap[appState.userRole]);
+            }
+
             formData.append('is_rab', domCache.form.item.rab.value);
 
             if (domCache.form.item.rabFile.input && domCache.form.item.rabFile.input.files[0]) {

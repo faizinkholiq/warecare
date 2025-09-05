@@ -1,8 +1,8 @@
 <style>
     .status-badge {
         font-size: 0.8rem;
-        padding: 5px 10px;
-        border-radius: 20px;
+        padding: 8px 10px;
+        border-radius: 10px;
     }
 
     .status-pending {
@@ -11,9 +11,15 @@
         font-weight: bold;
     }
 
-    .status-approved {
+    .status-on-process {
         background-color: #007bff1a;
         color: #007bff;
+        font-weight: bold;
+    }
+
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
         font-weight: bold;
     }
 
@@ -204,6 +210,7 @@
                 {
                     data: null,
                     width: "3%",
+                    className: "align-middle",
                     render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
@@ -214,45 +221,50 @@
                 {
                     data: "title",
                     width: "15%",
-                    className: "vertical-align-middle",
+                    className: "align-middle",
                     targets: 2
                 },
                 {
                     data: "entity",
                     width: "8%",
-                    className: "vertical-align-middle",
+                    className: "align-middle",
                     targets: 3
                 },
                 {
                     data: "project",
                     width: "8%",
+                    className: "align-middle",
                     targets: 4
                 },
                 {
                     data: "created_at",
                     width: "10%",
+                    className: "align-middle",
                     targets: 5
                 },
                 {
                     data: "warehouse",
                     width: "10%",
+                    className: "align-middle",
                     targets: 6
                 },
                 {
                     data: "company",
                     width: "15%",
+                    className: "align-middle",
                     targets: 7
                 },
 
                 {
                     data: "category",
-                    width: "10%",
+                    width: "8%",
+                    className: "align-middle",
                     targets: 8
                 },
                 {
                     data: null,
-                    width: "6%",
-                    className: "dt-center",
+                    width: "7%",
+                    className: "dt-center align-middle",
                     render: function(data, type, row) {
                         let action_by = "";
 
@@ -266,7 +278,11 @@
                             action_by = ` (${action_by})`
                         }
 
-                        return row.status ? `<span class="status-badge status-${row.status.toLowerCase()}">${row.status+action_by}</span>` : '-';
+                        return row.status ? `
+                            <div class="status-badge status-${row.status.toLowerCase().replaceAll(' ', '-')}">
+                                ${row.status}
+                                <span class="text-xs">${action_by}</span>
+                            </div>` : '-';
                     },
                     targets: 9
                 },
@@ -274,40 +290,60 @@
                     data: "created_by",
                     visible: (appState.userRole === 'pelapor') ? false : true,
                     width: "7%",
+                    className: "align-middle",
                     targets: 10
                 },
                 {
                     data: null,
-                    width: "10%",
-                    className: "dt-center",
+                    width: "8%",
+                    className: "dt-center align-middle",
                     render: function(data, type, row) {
-                        let buttons = `
-                            <a href="${urls.detail}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 edit-btn" data-tippy-content="View Details">
-                            <i class="text-xs fa fa-info-circle"></i>
+                        const buttons = [
+                            `<a href="${urls.detail}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="View Details">
+                                <i class="text-xs fa fa-info-circle"></i>
                             </a>`
+                        ];
 
                         if (appState.userRole === 'administrator') {
-                            buttons += `
-                            <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id} ml-2" data-tippy-content="Delete Report">
-                                <i class="text-xs fas fa-trash"></i>
-                            </button>`
-                        } else {
-                            if (appState.userRole === 'pelapor' && row.status === 'Pending') {
-                                buttons += `
-                                <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn" data-id="${row.id} ml-2" data-tippy-content="Delete Report">
-                                <i class="text-xs fas fa-trash"></i>
-                                </button>`
+                            buttons.push(`
+                                <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn mr-1" data-id="${row.id}" data-tippy-content="Delete Report">
+                                    <i class="text-xs fas fa-trash"></i>
+                                </button>
+                            `);
+                        } else if (appState.userRole === 'pelapor') {
+                            if (row.status === 'Pending') {
+                                buttons.push(`
+                                    <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-primary rounded-lg border-0 mr-1" data-tippy-content="Edit Report">
+                                        <i class="text-xs fa fa-edit"></i>
+                                    </a>
+                                `);
+                                buttons.push(`
+                                    <button class="btn btn-sm btn-danger rounded-lg border-0 delete-btn mr-1" data-id="${row.id}" data-tippy-content="Delete Report">
+                                        <i class="text-xs fas fa-trash"></i>
+                                    </button>
+                                `);
+                            } else if (row.status === 'Approved') {
+                                buttons.push(`
+                                    <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-success rounded-lg border-0 mr-1" data-tippy-content="Complete Report">
+                                        <i class="text-xs fa fa-check-circle"></i>
+                                    </a>
+                                `);
                             }
-
-                            if (appState.userRole === 'kontraktor' && row.status === 'Pending') {
-                                buttons += `
-                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 edit-btn ml-2" data-tippy-content="Process Report">
-                                <i class="text-xs fa fa-play"></i>
-                                </a>`
-                            }
+                        } else if ((appState.userRole === 'kontraktor' && row.status === 'Pending') || (appState.userRole === 'rab' && row.status === 'On Process' && !row.rab_final_file)) {
+                            buttons.push(`
+                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Process Report">
+                                    <i class="text-xs fa fa-play"></i>
+                                </a>
+                            `);
+                        } else if (appState.userRole === 'manager' && row.status === 'On Process') {
+                            buttons.push(`
+                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-success rounded-lg border-0 mr-1" data-tippy-content="Approve Report">
+                                    <i class="text-xs fa fa-check"></i>
+                                </a>
+                            `);
                         }
 
-                        return buttons;
+                        return buttons.join('');
                     },
                     orderable: false,
                     targets: 11

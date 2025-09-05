@@ -33,9 +33,12 @@ class Report extends MY_Controller
         $params["draw"] = $this->input->post("draw");
         $params["length"] = $this->input->post("length");
         $params["start"] = $this->input->post("start");
+        $params['rab_only'] = false;
 
         if ($this->auth_lib->role() === 'pelapor') {
             $params["reported_by"] = $this->auth_lib->user_id();
+        } else if ($this->auth_lib->role() === 'rab') {
+            $params['rab_only'] = true;
         }
 
         $reports = $this->Report_model->get_list_datatables($params);
@@ -339,6 +342,23 @@ class Report extends MY_Controller
                 $delete_rab_final_file = true;
                 $data['rab_file'] = null;
                 $data['rab_final_file'] = null;
+            }
+
+            switch ($data['status']) {
+                case 'On Process':
+                    $data['processed_by'] = $this->auth_lib->user_id();
+                    $data['processed_at'] = date('Y-m-d H:i:s');
+                    break;
+
+                case 'Approved':
+                    $data['approved_by'] = $this->auth_lib->user_id();
+                    $data['approved_at'] = date('Y-m-d H:i:s');
+                    break;
+
+                case 'Completed':
+                    $data['completed_by'] = $this->auth_lib->user_id();
+                    $data['completed_at'] = date('Y-m-d H:i:s');
+                    break;
             }
 
             if (!$this->Report_model->update($id, $data)) {

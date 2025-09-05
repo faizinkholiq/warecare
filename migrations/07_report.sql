@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS report (
   processed_by INT NULL,
   processed_at DATETIME NULL,
 
+  approved_by INT NULL,
+  approved_at DATETIME NULL,
+
   completed_by INT NULL,
   completed_at DATETIME NULL,
 
