@@ -562,7 +562,13 @@ class Report extends MY_Controller
     {
         $report = $this->Report_model->get_detail($id);
         if (!$report) {
-            $this->session->set_flashdata('error', 'Report not found');
+            $this->session->set_flashdata('error', 'The memo cannot be printed because the report not found.');
+            redirect('report');
+            return;
+        }
+
+        if ($report['status'] === 'Pending') {
+            $this->session->set_flashdata('error', 'The memo cannot be printed because it has not been processed.');
             redirect('report');
             return;
         }
@@ -576,6 +582,6 @@ class Report extends MY_Controller
         $data['title'] = 'PEMBERITAHUAN PEKERJAAN KURANG/TAMBAH';
         $data['report'] = $report;
 
-        $pdf->generate_from_view('report/memo', $data, date('Y_m_d_h_i_s') . '_memo.pdf', true);
+        $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', true);
     }
 }

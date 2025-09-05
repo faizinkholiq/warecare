@@ -53,14 +53,16 @@ class Pdf extends TCPDF
         // Logo
         $image_file = APPPATH . '../assets/images/logo.png';
         if (file_exists($image_file)) {
-            $this->Image($image_file, 10, 5, 25, '', 'PNG', '', 'T', false, 300, '', false, false, 0, false, false, false);
+            $this->Image($image_file, 10, 5, 25, '', 'PNG', '', 'T', false, 300, 'R', false, false, 0, false, false, false);
         }
+
+        $this->SetY(10);
+        $this->Cell(0, 15, "Tanggal: " . date('d-m-Y'), 0, false, 'L', 0, '', 0, false, 'M', 'M');
 
         // Set font
         $this->SetFont('helvetica', 'B', 20);
 
         // Title - centered on page
-        // $this->SetY(15);
         // $this->Cell(0, 15, 'WARINGIN GROUP', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
 
