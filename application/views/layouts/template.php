@@ -256,12 +256,6 @@
                                             <p>Entity</p>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a href="<?= site_url('category') ?>" id="menu_category" class="nav-link">
-                                            <i class="nav-icon far fa-circle"></i>
-                                            <p>Kategori</p>
-                                        </a>
-                                    </li>
                                 </ul>
                             </li>
                         <?php endif; ?>

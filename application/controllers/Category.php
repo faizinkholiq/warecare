@@ -31,7 +31,6 @@ class Category extends MY_Controller
             $data[] = [
                 'id'          => $category['id'],
                 'name'        => $category['name'],
-                'created_at'  => date('Y-m-d H:i:s', strtotime($category['created_at'])),
             ];
         }
 

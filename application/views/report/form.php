@@ -124,32 +124,81 @@
         overflow: auto;
     }
 
-    .modal-content {
-        margin: auto;
-        display: block;
-        width: 80%;
-        max-width: 700px;
-        max-height: 80vh;
-        object-fit: contain;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    /* Detail Table */
+
+    #detailTable tr th {
+        text-align: center;
     }
 
-    .close-modal {
-        position: absolute;
-        top: 10px;
-        right: 35px;
-        color: #f1f1f1;
-        font-size: 50px;
-        font-weight: bold;
-        transition: 0.3s;
+    #detailTable tr td,
+    #detailTable tr th {
+        vertical-align: middle;
+        border-right: 1px solid #dee2e6;
+    }
+
+    #detailTable tr td:last-child,
+    #detailTable tr th:last-child {
+        border-right: none;
+    }
+
+    #detailTable tbody tr.child-row td {
+        padding-left: 40px;
+    }
+
+    .detail-status-ok {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .detail-status-not-ok {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .radio-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.3rem 0;
+        margin-bottom: 12px;
+        margin-right: 0.5rem;
         cursor: pointer;
+        transition: all 0.2s ease;
+        width: 6rem;
+        text-align: center;
     }
 
-    .close-modal:hover {
-        color: #bbb;
+    .radio-card[for="statusOK"]:hover {
+        border: 1px solid #d1e7dd;
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .radio-card[for="statusNotOK"]:hover {
+        border: 1px solid #f8d7da;
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .radio-card[for="statusOK"].selected {
+        border: 1px solid #d1e7dd;
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .radio-card[for="statusNotOK"].selected {
+        border: 1px solid #f8d7da;
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .radio-input {
+        display: none;
+    }
+
+    .radio-card .status-label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
     }
 </style>
 
@@ -217,6 +266,33 @@
                     <label for="reportDescription">Deskripsi</label>
                     <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
                 </div>
+
+                <div class="col-md-12">
+                    <div style="margin: 2rem 0 3rem;">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" id="addRow" class="btn btn-default rounded-lg shadow border-0">
+                                <i class="fas fa-plus-circle mr-1"></i> Add New Row
+                            </button>
+                        </div>
+                        <div class="table-responsive shadow rounded-lg" style="margin-top: 1.5rem;">
+                            <table id="detailTable" class="table text-sm" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th width="3%">No</th>
+                                        <th width="25%">Uraian</th>
+                                        <th width="7%">Status</th>
+                                        <th width="12%">Kondisi</th>
+                                        <th>Keterangan</th>
+                                        <th width="8%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group col-md-7">
                     <label>Lampiran Bukti</label>
                     <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
@@ -402,12 +478,442 @@
     </div>
 </div>
 
+<div class="modal fade" id="rowModal" tabindex="-1" aria-labelledby="rowModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rowModalLabel">Add New Row</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="rowForm">
+                    <input type="hidden" id="rowId">
+                    <div class="row">
+                        <div class="form-group col-md-11">
+                            <label for="rowLevel">Level</label>
+                            <select class="form-control" id="rowLevel" required>
+                                <option value="1">Level 1 (Main Category)</option>
+                                <option value="2">Level 2 (Sub Item)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" id="parentItemGroup">
+                        <div class="form-group col-md-11">
+                            <label for="parentItem">Parent Item</label>
+                            <select class="form-control" id="parentItem">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-11">
+                            <label for="uraian">Uraian</label>
+                            <input type="text" class="form-control" id="uraian" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-11">
+                            <label for="status">Status</label>
+                            <div class="radio-group">
+                                <label class="radio-card" for="statusOK">
+                                    <input class="radio-input" type="radio" id="statusOK" name="status" value="OK" required checked>
+                                    <span class="status-label">OK</span>
+                                </label>
+
+                                <label class="radio-card" for="statusNotOK">
+                                    <input class="radio-input" type="radio" id="statusNotOK" name="status" value="Not OK" required>
+                                    <span class="status-label">Not OK</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-11">
+                            <label for="kondisi">Kondisi</label>
+                            <select class="form-control" id="kondisi" required>
+                                <option value="Butuh Perbaikan">Butuh Perbaikan</option>
+                                <option value="Tidak Butuh Perbaikan">Tidak Butuh Perbaikan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-11">
+                            <label for="keterangan">Keterangan</label>
+                            <textarea class="form-control" id="keterangan" style="height: 7rem;"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveRow">Save Row</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="image-modal" id="imageModal">
     <span class="close-modal">&times;</span>
     <img class="modal-content" id="zoomedImage">
 </div>
 
 <script>
+    // Data structure to hold our table data
+    let tableData = [{
+            id: 1,
+            no: "1",
+            uraian: "Main Category 1",
+            level: 1,
+            status: "OK",
+            kondisi: "Tidak Butuh Perbaikan",
+            keterangan: "Initial description"
+        },
+        {
+            id: 2,
+            no: "1.1",
+            uraian: "Sub Item 1.1",
+            level: 2,
+            status: "Not OK",
+            kondisi: "Butuh Perbaikan",
+            keterangan: "Needs attention",
+            parentId: 1
+        },
+        {
+            id: 3,
+            no: "2",
+            uraian: "Main Category 2",
+            level: 1,
+            status: "OK",
+            kondisi: "Tidak Butuh Perbaikan",
+            keterangan: "Working properly"
+        },
+        {
+            id: 4,
+            no: "2.1",
+            uraian: "Sub Item 2.1",
+            level: 2,
+            status: "OK",
+            kondisi: "Tidak Butuh Perbaikan",
+            keterangan: "No issues",
+            parentId: 3
+        }
+    ];
+
+    const detailTable = $('#detailTable').DataTable({
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false,
+        responsive: true,
+        autoWidth: false,
+        rowId: 'id',
+        columns: [{
+                data: "id",
+                visible: false,
+                orderable: false,
+                targets: 0
+            },
+            {
+                data: null,
+                render: function(data, type, row) {
+                    return row.no;
+                },
+                orderable: false,
+                targets: 1
+            },
+            {
+                data: "uraian",
+                render: function(data, type, row) {
+                    if (row.level === 2) {
+                        return `<span class="ms-4">${data}</span>`;
+                    }
+                    return data;
+                },
+                orderable: false,
+                targets: 2
+            },
+            {
+                data: "status",
+                orderable: false,
+                className: "dt-center",
+                render: function(data, type, row) {
+                    return `<span class="font-weight-bold rounded-lg px-2 py-1 ${data === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${data}</span>`;
+                },
+                targets: 3
+            },
+            {
+                data: "kondisi",
+                orderable: false,
+                targets: 4
+            },
+            {
+                data: "keterangan",
+                orderable: false,
+                targets: 5
+            },
+            {
+                data: null,
+                orderable: false,
+                className: "dt-center",
+                render: function(data, type, row) {
+                    return `
+                        <button type="button" class="btn btn-sm btn-primary edit-row mr-2" data-id="${row.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger remove-row" data-id="${row.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>`
+                },
+                targets: 6
+            }
+        ],
+        data: tableData,
+    });
+
+    // Initialize the DataTable
+    $(document).ready(function() {
+
+        function addRowToTable(item) {
+            detailTable.row.add([
+                item.no,
+                item.uraian,
+                `<span class="rounded-lg px-2 py-1 ${item.status === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${item.status}</span>`,
+                item.kondisi,
+                item.keterangan,
+                `<button type="button" class="btn btn-sm btn-primary edit-row mr-2" data-id="${item.id}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger remove-row" data-id="${item.id}">
+                    <i class="fas fa-trash"></i>
+                </button>`
+            ]);
+        }
+
+        // Function to update parent dropdown based on level selection
+        function updateParentDropdown() {
+            const level = parseInt($('#rowLevel').val());
+            const parentDropdown = $('#parentItem');
+
+            parentDropdown.empty();
+
+            if (level === 1) {
+                $('#parentItemGroup').hide();
+            } else {
+                $('#parentItemGroup').show();
+                // Add only level 1 items as parents
+                const parentItems = tableData.filter(item => item.level === 1);
+                if (parentItems.length === 0) {
+                    parentDropdown.append('<option value="">No parent items available</option>');
+                } else {
+                    parentItems.forEach(item => {
+                        parentDropdown.append(`<option value="${item.id}">${item.uraian}</option>`);
+                    });
+                }
+            }
+        }
+
+        // Update parent dropdown when level changes
+        $('#rowLevel').on('change', updateParentDropdown);
+
+        // Initialize modal state
+        const rowModal = $('#rowModal');
+
+        // Add new row button
+        $('#addRow').on('click', function() {
+            $('#rowForm')[0].reset();
+            $('#rowId').val('');
+            $('#rowModalLabel').text('Add New Row');
+            $('#parentItemGroup').hide();
+            rowModal.modal('show');
+        });
+
+        // Edit row
+        $('#detailTable').on('click', '.edit-row', function() {
+            const id = parseInt($(this).data('id'));
+            const item = tableData.find(item => item.id === id);
+
+            if (item) {
+                $('#rowId').val(item.id);
+                $('#rowLevel').val(item.level);
+                $('#uraian').val(item.uraian);
+                $('#status').val(item.status);
+                $('#kondisi').val(item.kondisi);
+                $('#keterangan').val(item.keterangan);
+
+                // Update parent dropdown and set value if level 2
+                updateParentDropdown();
+                if (item.level === 2) {
+                    $('#parentItem').val(item.parentId);
+                }
+
+                $('#rowModalLabel').text('Edit Row');
+                rowModal.modal('show');
+            }
+        });
+
+        // Save row
+        $('#saveRow').on('click', function() {
+            const id = $('#rowId').val();
+            const level = parseInt($('#rowLevel').val());
+            const uraian = $('#uraian').val();
+            const status = $('#status').val();
+            const kondisi = $('#kondisi').val();
+            const keterangan = $('#keterangan').val();
+
+            if (!uraian) {
+                showToast('Please enter Uraian', 'danger');
+                return;
+            }
+
+            if (level === 2) {
+                const parentId = parseInt($('#parentItem').val());
+                if (!parentId) {
+                    showToast('Please select a parent item for Level 2', 'danger');
+                    return;
+                }
+            }
+
+            if (id) {
+                // Editing existing row
+                const index = tableData.findIndex(item => item.id === parseInt(id));
+                if (index !== -1) {
+                    tableData[index].uraian = uraian;
+                    tableData[index].level = level;
+                    tableData[index].status = status;
+                    tableData[index].kondisi = kondisi;
+                    tableData[index].keterangan = keterangan;
+
+                    if (level === 2) {
+                        tableData[index].parentId = parseInt($('#parentItem').val());
+                        // Update the numbering
+                        const parent = tableData.find(item => item.id === tableData[index].parentId);
+                        if (parent) {
+                            const siblings = tableData.filter(i => i.parentId === tableData[index].parentId && i.id !== tableData[index].id);
+                            tableData[index].no = `${parent.no}.${siblings.length + 1}`;
+                        }
+                    } else {
+                        // If changing from level 2 to level 1, remove parentId
+                        delete tableData[index].parentId;
+                        // Renumber level 1 items
+                        const level1Items = tableData.filter(item => item.level === 1);
+                        tableData[index].no = (level1Items.length).toString();
+                    }
+
+                    showToast('Row updated successfully', 'success');
+                }
+            } else {
+                // Adding new row
+                const newId = tableData.length > 0 ? Math.max(...tableData.map(item => item.id)) + 1 : 1;
+                const newItem = {
+                    id: newId,
+                    uraian: uraian,
+                    level: level,
+                    status: status,
+                    kondisi: kondisi,
+                    keterangan: keterangan
+                };
+
+                if (level === 1) {
+                    // For level 1, generate the next number
+                    const level1Items = tableData.filter(item => item.level === 1);
+                    newItem.no = (level1Items.length + 1).toString();
+                } else {
+                    // For level 2, get the parent and generate the number
+                    const parentId = parseInt($('#parentItem').val());
+                    const parent = tableData.find(item => item.id === parentId);
+
+                    if (!parent) {
+                        showToast('Please select a valid parent', 'danger');
+                        return;
+                    }
+
+                    newItem.parentId = parentId;
+                    const parentChildren = tableData.filter(item => item.parentId === parentId);
+                    newItem.no = `${parent.no}.${parentChildren.length + 1}`;
+                }
+
+                tableData.push(newItem);
+                showToast('New row added successfully', 'success');
+            }
+
+            rowModal.modal('hide');
+        });
+
+        // Remove row
+        $('#detailTable').on('click', '.remove-row', function() {
+            const id = parseInt($(this).data('id'));
+            const index = tableData.findIndex(item => item.id === id);
+
+            if (index !== -1) {
+                const item = tableData[index];
+
+                // Check if this is a parent with children
+                const hasChildren = tableData.some(i => i.parentId === id);
+
+                if (hasChildren) {
+                    if (!confirm("This item has child rows. Delete all children as well?")) {
+                        return;
+                    }
+                    // Remove children
+                    tableData = tableData.filter(i => i.parentId !== id);
+                }
+
+                // Remove the item
+                tableData.splice(index, 1);
+
+                // Renumber items to maintain proper numbering
+                renumberItems();
+
+                showToast('Row removed successfully', 'info');
+            }
+        });
+
+        // Helper function to renumber items after deletion
+        function renumberItems() {
+            // Renumber level 1 items
+            const level1Items = tableData.filter(item => item.level === 1);
+            level1Items.forEach((item, index) => {
+                item.no = (index + 1).toString();
+            });
+
+            // Renumber level 2 items
+            const level2Items = tableData.filter(item => item.level === 2);
+            level2Items.forEach(item => {
+                const parent = tableData.find(p => p.id === item.parentId);
+                if (parent) {
+                    const siblings = tableData.filter(i => i.parentId === item.parentId);
+                    const siblingIndex = siblings.findIndex(i => i.id === item.id);
+                    item.no = `${parent.no}.${siblingIndex + 1}`;
+                }
+            });
+        }
+
+        // Helper function to show toast messages
+        function showToast(message, type) {
+            const toast = $(`
+                    <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" date-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `);
+
+            $('.toast-container').append(toast);
+            const bsToast = new bootstrap.Toast(toast[0]);
+            bsToast.show();
+
+            // Remove toast after it's hidden
+            toast.on('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+    });
+
+
     const URLS = {
         default: "<?= site_url('report') ?>",
         create: "<?= site_url('report/create') ?>",
@@ -579,6 +1085,23 @@
                 });
             }
         }
+
+        const radioCards = document.querySelectorAll('.radio-card');
+        radioCards.forEach(card => {
+            const radioInput = card.querySelector('.radio-input');
+
+            if (radioInput.checked) {
+                card.classList.add('selected');
+            }
+
+            card.addEventListener('click', () => {
+                radioCards.forEach(c => c.classList.remove('selected'));
+
+                card.classList.add('selected');
+
+                radioInput.checked = true;
+            });
+        });
     }
 
     function initializeExistingData() {
