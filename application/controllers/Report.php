@@ -92,6 +92,9 @@ class Report extends MY_Controller
                 'created_by'  => $this->auth_lib->user_id()
             ];
 
+            var_dump($this->input->post('detail'));
+            exit;
+
             $evidence_files = $_FILES['evidence_files'] ?? [];
             $file_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
 

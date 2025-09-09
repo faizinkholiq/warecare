@@ -197,7 +197,6 @@
 
     .radio-card .status-label {
         font-weight: 600;
-        margin-bottom: 5px;
         display: block;
     }
 </style>
@@ -258,16 +257,17 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="form-group col-md-6">
-                    <label for="reportTitle">Judul</label>
-                    <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                <div id="reportDescriptionContainer" class="col-md-12 row" style="display: <?= isset($report) && $report['category_id'] != 2 ? '' : 'none'; ?>;">
+                    <div class="form-group col-md-6">
+                        <label for="reportTitle">Judul</label>
+                        <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                    </div>
+                    <div class="form-group col-md-7 pr-0">
+                        <label for="reportDescription">Deskripsi</label>
+                        <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
+                    </div>
                 </div>
-                <div class="form-group col-md-7">
-                    <label for="reportDescription">Deskripsi</label>
-                    <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
-                </div>
-
-                <div class="col-md-12">
+                <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && $report['category_id'] == 2 ? '' : 'none'; ?>;">
                     <div style="margin: 2rem 0 3rem;">
                         <div class="d-flex justify-content-between">
                             <button type="button" id="addRow" class="btn btn-default rounded-lg shadow border-0">
@@ -292,7 +292,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="form-group col-md-7">
                     <label>Lampiran Bukti</label>
                     <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
@@ -532,8 +531,8 @@
                         <div class="form-group col-md-11">
                             <label for="kondisi">Kondisi</label>
                             <select class="form-control" id="kondisi" required>
-                                <option value="Butuh Perbaikan">Butuh Perbaikan</option>
                                 <option value="Tidak Butuh Perbaikan">Tidak Butuh Perbaikan</option>
+                                <option value="Butuh Perbaikan">Butuh Perbaikan</option>
                             </select>
                         </div>
                     </div>
@@ -560,45 +559,9 @@
 
 <script>
     // Data structure to hold our table data
-    let tableData = [{
-            id: 1,
-            no: "1",
-            uraian: "Main Category 1",
-            level: 1,
-            status: "OK",
-            kondisi: "Tidak Butuh Perbaikan",
-            keterangan: "Initial description"
-        },
-        {
-            id: 2,
-            no: "1.1",
-            uraian: "Sub Item 1.1",
-            level: 2,
-            status: "Not OK",
-            kondisi: "Butuh Perbaikan",
-            keterangan: "Needs attention",
-            parentId: 1
-        },
-        {
-            id: 3,
-            no: "2",
-            uraian: "Main Category 2",
-            level: 1,
-            status: "OK",
-            kondisi: "Tidak Butuh Perbaikan",
-            keterangan: "Working properly"
-        },
-        {
-            id: 4,
-            no: "2.1",
-            uraian: "Sub Item 2.1",
-            level: 2,
-            status: "OK",
-            kondisi: "Tidak Butuh Perbaikan",
-            keterangan: "No issues",
-            parentId: 3
-        }
-    ];
+    let tableData = [];
+
+    const rowModal = $('#rowModal');
 
     const detailTable = $('#detailTable').DataTable({
         paging: false,
@@ -617,7 +580,7 @@
             {
                 data: null,
                 render: function(data, type, row) {
-                    return row.no;
+                    return (row.level === 1) ? row.no : '';
                 },
                 orderable: false,
                 targets: 1
@@ -626,7 +589,7 @@
                 data: "uraian",
                 render: function(data, type, row) {
                     if (row.level === 2) {
-                        return `<span class="ms-4">${data}</span>`;
+                        return `<span class="ml-3" style="display: inline-flex; align-items: center;"><i class="fa fa-circle mr-2" style="font-size: 0.45rem;"></i><span>${data}</span></span>`;
                     }
                     return data;
                 },
@@ -674,20 +637,10 @@
     // Initialize the DataTable
     $(document).ready(function() {
 
-        function addRowToTable(item) {
-            detailTable.row.add([
-                item.no,
-                item.uraian,
-                `<span class="rounded-lg px-2 py-1 ${item.status === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${item.status}</span>`,
-                item.kondisi,
-                item.keterangan,
-                `<button type="button" class="btn btn-sm btn-primary edit-row mr-2" data-id="${item.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-danger remove-row" data-id="${item.id}">
-                    <i class="fas fa-trash"></i>
-                </button>`
-            ]);
+        function reloadDetailTable() {
+            detailTable.clear();
+            detailTable.rows.add(tableData);
+            detailTable.draw();
         }
 
         // Function to update parent dropdown based on level selection
@@ -716,13 +669,13 @@
         // Update parent dropdown when level changes
         $('#rowLevel').on('change', updateParentDropdown);
 
-        // Initialize modal state
-        const rowModal = $('#rowModal');
-
         // Add new row button
         $('#addRow').on('click', function() {
             $('#rowForm')[0].reset();
             $('#rowId').val('');
+            document.querySelector('input[name="status"]:checked').value = 'OK';
+            radioCards.forEach(c => c.classList.remove('selected'));
+            radioCards[0].classList.add('selected');
             $('#rowModalLabel').text('Add New Row');
             $('#parentItemGroup').hide();
             rowModal.modal('show');
@@ -757,19 +710,19 @@
             const id = $('#rowId').val();
             const level = parseInt($('#rowLevel').val());
             const uraian = $('#uraian').val();
-            const status = $('#status').val();
+            const status = document.querySelector('input[name="status"]:checked').value;
             const kondisi = $('#kondisi').val();
             const keterangan = $('#keterangan').val();
 
             if (!uraian) {
-                showToast('Please enter Uraian', 'danger');
+                toastr.error("Please enter Uraian");
                 return;
             }
 
             if (level === 2) {
                 const parentId = parseInt($('#parentItem').val());
                 if (!parentId) {
-                    showToast('Please select a parent item for Level 2', 'danger');
+                    toastr.error("Please select a parent item for Level 2");
                     return;
                 }
             }
@@ -800,7 +753,7 @@
                         tableData[index].no = (level1Items.length).toString();
                     }
 
-                    showToast('Row updated successfully', 'success');
+                    toastr.success("Row updated successfully");
                 }
             } else {
                 // Adding new row
@@ -814,6 +767,8 @@
                     keterangan: keterangan
                 };
 
+                console.log(newItem);
+
                 if (level === 1) {
                     // For level 1, generate the next number
                     const level1Items = tableData.filter(item => item.level === 1);
@@ -824,7 +779,7 @@
                     const parent = tableData.find(item => item.id === parentId);
 
                     if (!parent) {
-                        showToast('Please select a valid parent', 'danger');
+                        toastr.error("Please select a valid parent");
                         return;
                     }
 
@@ -834,8 +789,12 @@
                 }
 
                 tableData.push(newItem);
-                showToast('New row added successfully', 'success');
+                toastr.success("New row added successfully");
             }
+
+            renumberDetailData();
+
+            reloadDetailTable();
 
             rowModal.modal('hide');
         });
@@ -862,54 +821,136 @@
                 // Remove the item
                 tableData.splice(index, 1);
 
-                // Renumber items to maintain proper numbering
-                renumberItems();
+                renumberDetailData();
 
-                showToast('Row removed successfully', 'info');
+                reloadDetailTable();
+
+                toastr.success("Row removed successfully");
             }
         });
 
-        // Helper function to renumber items after deletion
-        function renumberItems() {
-            // Renumber level 1 items
-            const level1Items = tableData.filter(item => item.level === 1);
-            level1Items.forEach((item, index) => {
-                item.no = (index + 1).toString();
-            });
-
-            // Renumber level 2 items
-            const level2Items = tableData.filter(item => item.level === 2);
-            level2Items.forEach(item => {
-                const parent = tableData.find(p => p.id === item.parentId);
-                if (parent) {
-                    const siblings = tableData.filter(i => i.parentId === item.parentId);
-                    const siblingIndex = siblings.findIndex(i => i.id === item.id);
-                    item.no = `${parent.no}.${siblingIndex + 1}`;
+        function renumberDetailData() {
+            // First, ensure all items have a 'no' property
+            tableData.forEach(item => {
+                if (!item.no) {
+                    console.warn(`Item with id ${item.id} is missing 'no' property`);
                 }
             });
-        }
 
-        // Helper function to show toast messages
-        function showToast(message, type) {
-            const toast = $(`
-                    <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                ${message}
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" date-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                    </div>
-                `);
+            // Create a copy and sort by 'no'
+            const sortedArray = tableData.slice().sort((a, b) => {
+                if (!a.no && !b.no) return 0;
+                if (!a.no) return 1;
+                if (!b.no) return -1;
 
-            $('.toast-container').append(toast);
-            const bsToast = new bootstrap.Toast(toast[0]);
-            bsToast.show();
+                const aParts = a.no.split('.').map(Number);
+                const bParts = b.no.split('.').map(Number);
 
-            // Remove toast after it's hidden
-            toast.on('hidden.bs.toast', function() {
-                toast.remove();
+                const maxLength = Math.max(aParts.length, bParts.length);
+
+                for (let i = 0; i < maxLength; i++) {
+                    const aVal = aParts[i] || 0;
+                    const bVal = bParts[i] || 0;
+
+                    if (aVal !== bVal) {
+                        return aVal - bVal;
+                    }
+                }
+
+                return 0;
             });
+
+            // Fix parent numbers first (level 1 items)
+            fixNumberGroup(sortedArray.filter(item => item.level === 1), 1);
+
+            // Then fix child numbers for each parent group
+            const parents = sortedArray.filter(item => item.level === 1);
+            parents.forEach(parent => {
+                const children = sortedArray.filter(item =>
+                    item.level > 1 && item.no.startsWith(`${parent.no}.`)
+                );
+                fixNumberGroup(children, 2, parent.no);
+            });
+
+            // Fix deeper levels if they exist
+            fixDeeperLevels(sortedArray);
+
+            tableData = sortedArray;
+
+            // Helper function to fix numbering for a group of items
+            function fixNumberGroup(group, level, parentPrefix = '') {
+                if (group.length === 0) return;
+
+                // Extract and sort the numbers
+                const numbers = group.map(item => {
+                    const parts = item.no.split('.');
+                    return parseInt(parts[level - 1]);
+                }).sort((a, b) => a - b);
+
+                // Check for gaps and fix them
+                let expectedNumber = 1;
+                const fixedItems = [];
+
+                numbers.forEach((currentNumber, index) => {
+                    const item = group.find(it => {
+                        const parts = it.no.split('.');
+                        return parseInt(parts[level - 1]) === currentNumber;
+                    });
+
+                    if (item && currentNumber !== expectedNumber) {
+                        const oldNo = item.no;
+                        const parts = item.no.split('.');
+                        parts[level - 1] = expectedNumber.toString();
+
+                        // Update the prefix for children if this is a parent
+                        if (level === 1) {
+                            const newPrefix = parts.join('.');
+                            updateChildrenPrefix(sortedArray, oldNo, newPrefix);
+                        }
+
+                        item.no = parts.join('.');
+                    }
+
+                    fixedItems.push(item);
+                    expectedNumber++;
+                });
+
+                return fixedItems;
+            }
+
+            // Helper function to update children's prefix when parent number changes
+            function updateChildrenPrefix(array, oldParentNo, newParentNo) {
+                array.forEach(item => {
+                    if (item.no && item.no.startsWith(`${oldParentNo}.`)) {
+                        const oldNo = item.no;
+                        item.no = item.no.replace(`${oldParentNo}.`, `${newParentNo}.`);
+                        console.log(`Updated child prefix: ${oldNo} → ${item.no}`);
+                    }
+                });
+            }
+
+            // Helper function to fix deeper levels recursively
+            function fixDeeperLevels(array) {
+                const maxLevel = Math.max(...array.map(item => item.level || 1));
+
+                for (let level = 3; level <= maxLevel; level++) {
+                    const itemsByParent = {};
+
+                    // Group items by their parent's number
+                    array.filter(item => item.level === level).forEach(item => {
+                        const parentNo = item.no.split('.').slice(0, -1).join('.');
+                        if (!itemsByParent[parentNo]) {
+                            itemsByParent[parentNo] = [];
+                        }
+                        itemsByParent[parentNo].push(item);
+                    });
+
+                    // Fix numbering for each parent group
+                    Object.keys(itemsByParent).forEach(parentNo => {
+                        fixNumberGroup(itemsByParent[parentNo], level, parentNo);
+                    });
+                }
+            }
         }
     });
 
@@ -930,7 +971,13 @@
                 warehouse: document.getElementById('reportWarehouse'),
                 category: document.getElementById('reportCategory'),
                 title: document.getElementById('reportTitle'),
-                description: document.getElementById('reportDescription'),
+                description: {
+                    input: document.getElementById('reportDescription'),
+                    container: document.getElementById('reportDescriptionContainer'),
+                },
+                detail: {
+                    container: document.getElementById('reportDetailContainer'),
+                },
                 rab: document.getElementById('reportRAB'),
                 evidence: {
                     input: document.getElementById('reportEvidenceFiles'),
@@ -991,6 +1038,8 @@
         },
     };
 
+    const radioCards = document.querySelectorAll('.radio-card');
+
     function init() {
         setupEventListeners();
 
@@ -1042,6 +1091,19 @@
                 });
             }
 
+            if (domCache.form.item.category) {
+                if (appState.reportData.category_id) {
+                    domCache.form.item.description.container.style.display = (appState.reportData.category_id != 2) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = (appState.reportData.category_id == 2) ? '' : 'none';
+                }
+
+                domCache.form.item.category.addEventListener('change', (e) => {
+                    domCache.form.item.description.container.style.display = (e.target.value != 2) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = (e.target.value == 2) ? '' : 'none';
+                });
+            }
+
+
             if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
                 domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
                 domCache.form.item.rab.addEventListener('change', (e) => {
@@ -1086,7 +1148,6 @@
             }
         }
 
-        const radioCards = document.querySelectorAll('.radio-card');
         radioCards.forEach(card => {
             const radioInput = card.querySelector('.radio-input');
 
@@ -1251,8 +1312,18 @@
         formData.append('company_id', domCache.form.item.company.value);
         formData.append('warehouse_id', domCache.form.item.warehouse.value);
         formData.append('category_id', domCache.form.item.category.value);
-        formData.append('title', domCache.form.item.title.value);
-        formData.append('description', domCache.form.item.description.value);
+
+        if (domCache.form.item.category.value != 2) {
+            formData.append('title', domCache.form.item.title.value);
+            formData.append('description', domCache.form.item.description.input.value);
+        } else {
+            if (tableData.length === 0) {
+                toastr.error("Uraian tidak boleh kosong. setidaknya tambahkan satu uraian.");
+                return;
+            }
+
+            formData.append('detail', JSON.stringify(tableData));
+        }
 
         appState.evidence.files.forEach((file, index) => {
             if (file instanceof File) {
