@@ -56,3 +56,16 @@ CREATE TABLE report_works (
     image_name VARCHAR(255) NOT NULL,
     FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
 );
+
+CREATE TABLE report_details (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    report_id INT NOT NULL,
+    level SMALLINT NOT NULL DEFAULT 1,
+    parent_id INT DEFAULT NULL,
+    no VARCHAR(20) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    status ENUM('OK', 'Not OK') DEFAULT 'OK',
+    `condition` ENUM('Tidak Butuh Perbaikan', 'Butuh Perbaikan') DEFAULT 'Tidak Butuh Perbaikan',
+    information TEXT,
+    FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
+);

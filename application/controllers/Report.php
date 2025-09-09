@@ -66,8 +66,6 @@ class Report extends MY_Controller
         $this->form_validation->set_rules('company_id', 'Company', 'required');
         $this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
         $this->form_validation->set_rules('category_id', 'Category', 'required');
-        $this->form_validation->set_rules('title', 'Title', 'required');
-        $this->form_validation->set_rules('description', 'Description', 'required');
 
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
@@ -87,12 +85,13 @@ class Report extends MY_Controller
                 'category_id' => $this->input->post('category_id'),
                 'title' => $this->input->post('title'),
                 'description' => $this->input->post('description'),
+                'detail' => json_decode($this->input->post('detail'), true) ?? [],
                 'status' => 'Pending',
                 'is_rab' => (bool)$this->input->post('is_rab'),
                 'created_by'  => $this->auth_lib->user_id()
             ];
 
-            var_dump($this->input->post('detail'));
+            var_dump($data['detail']);
             exit;
 
             $evidence_files = $_FILES['evidence_files'] ?? [];

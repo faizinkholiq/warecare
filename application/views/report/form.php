@@ -126,22 +126,22 @@
 
     /* Detail Table */
 
-    #detailTable tr th {
+    #reportDetailTable tr th {
         text-align: center;
     }
 
-    #detailTable tr td,
-    #detailTable tr th {
+    #reportDetailTable tr td,
+    #reportDetailTable tr th {
         vertical-align: middle;
         border-right: 1px solid #dee2e6;
     }
 
-    #detailTable tr td:last-child,
-    #detailTable tr th:last-child {
+    #reportDetailTable tr td:last-child,
+    #reportDetailTable tr th:last-child {
         border-right: none;
     }
 
-    #detailTable tbody tr.child-row td {
+    #reportDetailTable tbody tr.child-row td {
         padding-left: 40px;
     }
 
@@ -155,7 +155,7 @@
         color: #842029;
     }
 
-    .radio-card {
+    .status-radio-card {
         border: 1px solid #e9ecef;
         border-radius: 8px;
         padding: 0.3rem 0;
@@ -167,35 +167,35 @@
         text-align: center;
     }
 
-    .radio-card[for="statusOK"]:hover {
+    .status-radio-card[for="reportDetailStatusOK"]:hover {
         border: 1px solid #d1e7dd;
         background-color: #d1e7dd;
         color: #0f5132;
     }
 
-    .radio-card[for="statusNotOK"]:hover {
+    .status-radio-card[for="reportDetailStatusNotOK"]:hover {
         border: 1px solid #f8d7da;
         background-color: #f8d7da;
         color: #842029;
     }
 
-    .radio-card[for="statusOK"].selected {
+    .status-radio-card[for="reportDetailStatusOK"].selected {
         border: 1px solid #d1e7dd;
         background-color: #d1e7dd;
         color: #0f5132;
     }
 
-    .radio-card[for="statusNotOK"].selected {
+    .status-radio-card[for="reportDetailStatusNotOK"].selected {
         border: 1px solid #f8d7da;
         background-color: #f8d7da;
         color: #842029;
     }
 
-    .radio-input {
+    .status-radio-input {
         display: none;
     }
 
-    .radio-card .status-label {
+    .status-radio-card .status-label {
         font-weight: 600;
         display: block;
     }
@@ -270,12 +270,12 @@
                 <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && $report['category_id'] == 2 ? '' : 'none'; ?>;">
                     <div style="margin: 2rem 0 3rem;">
                         <div class="d-flex justify-content-between">
-                            <button type="button" id="addRow" class="btn btn-default rounded-lg shadow border-0">
+                            <button type="button" id="reportDetailAddButton" class="btn btn-default rounded-lg shadow border-0">
                                 <i class="fas fa-plus-circle mr-1"></i> Add New Row
                             </button>
                         </div>
                         <div class="table-responsive shadow rounded-lg" style="margin-top: 1.5rem;">
-                            <table id="detailTable" class="table text-sm" style="width:100%">
+                            <table id="reportDetailTable" class="table text-sm" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -477,51 +477,50 @@
     </div>
 </div>
 
-<div class="modal fade" id="rowModal" tabindex="-1" aria-labelledby="rowModalLabel" aria-hidden="true">
+<div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="rowModalLabel">Add New Row</h5>
+                <h5 class="modal-title" id="reportDetailModalLabel">Add New Row</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="rowForm">
-                    <input type="hidden" id="rowId">
+                <form id="reportDetailForm">
+                    <input type="hidden" id="reportDetailID">
                     <div class="row">
                         <div class="form-group col-md-11">
-                            <label for="rowLevel">Level</label>
-                            <select class="form-control" id="rowLevel" required>
+                            <label for="reportDetailLevel">Level</label>
+                            <select name="level" class="form-control" id="reportDetailLevel" required>
                                 <option value="1">Level 1 (Main Category)</option>
                                 <option value="2">Level 2 (Sub Item)</option>
                             </select>
                         </div>
                     </div>
-                    <div class="row" id="parentItemGroup">
+                    <div class="row" id="reportDetailParentItemContainer">
                         <div class="form-group col-md-11">
-                            <label for="parentItem">Parent Item</label>
-                            <select class="form-control" id="parentItem">
+                            <label for="reportDetailParent">Parent Item</label>
+                            <select class="form-control" id="reportDetailParent">
                             </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-md-11">
-                            <label for="uraian">Uraian</label>
-                            <input type="text" class="form-control" id="uraian" required>
+                            <label for="reportDetailDescription">Uraian</label>
+                            <input name="description" type="text" class="form-control" id="reportDetailDescription" required>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-md-11">
                             <label for="status">Status</label>
                             <div class="radio-group">
-                                <label class="radio-card" for="statusOK">
-                                    <input class="radio-input" type="radio" id="statusOK" name="status" value="OK" required checked>
+                                <label class="status-radio-card" for="reportDetailStatusOK">
+                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusOK" value="OK" required checked>
                                     <span class="status-label">OK</span>
                                 </label>
-
-                                <label class="radio-card" for="statusNotOK">
-                                    <input class="radio-input" type="radio" id="statusNotOK" name="status" value="Not OK" required>
+                                <label class="status-radio-card" for="reportDetailStatusNotOK">
+                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusNotOK" value="Not OK" required>
                                     <span class="status-label">Not OK</span>
                                 </label>
                             </div>
@@ -529,8 +528,8 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-md-11">
-                            <label for="kondisi">Kondisi</label>
-                            <select class="form-control" id="kondisi" required>
+                            <label for="reportDetailCondition">Kondisi</label>
+                            <select name="condition" class="form-control" id="reportDetailCondition" required>
                                 <option value="Tidak Butuh Perbaikan">Tidak Butuh Perbaikan</option>
                                 <option value="Butuh Perbaikan">Butuh Perbaikan</option>
                             </select>
@@ -538,15 +537,15 @@
                     </div>
                     <div class="row">
                         <div class="form-group col-md-11">
-                            <label for="keterangan">Keterangan</label>
-                            <textarea class="form-control" id="keterangan" style="height: 7rem;"></textarea>
+                            <label for="reportDetailInformation">Keterangan</label>
+                            <textarea name="information" class="form-control" id="reportDetailInformation" style="height: 7rem;"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveRow">Save Row</button>
+                <button type="button" class="btn btn-primary" id="reportDetailSaveBtn">Save Row</button>
             </div>
         </div>
     </div>
@@ -558,403 +557,6 @@
 </div>
 
 <script>
-    // Data structure to hold our table data
-    let tableData = [];
-
-    const rowModal = $('#rowModal');
-
-    const detailTable = $('#detailTable').DataTable({
-        paging: false,
-        searching: false,
-        ordering: false,
-        info: false,
-        responsive: true,
-        autoWidth: false,
-        rowId: 'id',
-        columns: [{
-                data: "id",
-                visible: false,
-                orderable: false,
-                targets: 0
-            },
-            {
-                data: null,
-                render: function(data, type, row) {
-                    return (row.level === 1) ? row.no : '';
-                },
-                orderable: false,
-                targets: 1
-            },
-            {
-                data: "uraian",
-                render: function(data, type, row) {
-                    if (row.level === 2) {
-                        return `<span class="ml-3" style="display: inline-flex; align-items: center;"><i class="fa fa-circle mr-2" style="font-size: 0.45rem;"></i><span>${data}</span></span>`;
-                    }
-                    return data;
-                },
-                orderable: false,
-                targets: 2
-            },
-            {
-                data: "status",
-                orderable: false,
-                className: "dt-center",
-                render: function(data, type, row) {
-                    return `<span class="font-weight-bold rounded-lg px-2 py-1 ${data === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${data}</span>`;
-                },
-                targets: 3
-            },
-            {
-                data: "kondisi",
-                orderable: false,
-                targets: 4
-            },
-            {
-                data: "keterangan",
-                orderable: false,
-                targets: 5
-            },
-            {
-                data: null,
-                orderable: false,
-                className: "dt-center",
-                render: function(data, type, row) {
-                    return `
-                        <button type="button" class="btn btn-sm btn-primary edit-row mr-2" data-id="${row.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger remove-row" data-id="${row.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>`
-                },
-                targets: 6
-            }
-        ],
-        data: tableData,
-    });
-
-    // Initialize the DataTable
-    $(document).ready(function() {
-
-        function reloadDetailTable() {
-            detailTable.clear();
-            detailTable.rows.add(tableData);
-            detailTable.draw();
-        }
-
-        // Function to update parent dropdown based on level selection
-        function updateParentDropdown() {
-            const level = parseInt($('#rowLevel').val());
-            const parentDropdown = $('#parentItem');
-
-            parentDropdown.empty();
-
-            if (level === 1) {
-                $('#parentItemGroup').hide();
-            } else {
-                $('#parentItemGroup').show();
-                // Add only level 1 items as parents
-                const parentItems = tableData.filter(item => item.level === 1);
-                if (parentItems.length === 0) {
-                    parentDropdown.append('<option value="">No parent items available</option>');
-                } else {
-                    parentItems.forEach(item => {
-                        parentDropdown.append(`<option value="${item.id}">${item.uraian}</option>`);
-                    });
-                }
-            }
-        }
-
-        // Update parent dropdown when level changes
-        $('#rowLevel').on('change', updateParentDropdown);
-
-        // Add new row button
-        $('#addRow').on('click', function() {
-            $('#rowForm')[0].reset();
-            $('#rowId').val('');
-            document.querySelector('input[name="status"]:checked').value = 'OK';
-            radioCards.forEach(c => c.classList.remove('selected'));
-            radioCards[0].classList.add('selected');
-            $('#rowModalLabel').text('Add New Row');
-            $('#parentItemGroup').hide();
-            rowModal.modal('show');
-        });
-
-        // Edit row
-        $('#detailTable').on('click', '.edit-row', function() {
-            const id = parseInt($(this).data('id'));
-            const item = tableData.find(item => item.id === id);
-
-            if (item) {
-                $('#rowId').val(item.id);
-                $('#rowLevel').val(item.level);
-                $('#uraian').val(item.uraian);
-                $('#status').val(item.status);
-                $('#kondisi').val(item.kondisi);
-                $('#keterangan').val(item.keterangan);
-
-                // Update parent dropdown and set value if level 2
-                updateParentDropdown();
-                if (item.level === 2) {
-                    $('#parentItem').val(item.parentId);
-                }
-
-                $('#rowModalLabel').text('Edit Row');
-                rowModal.modal('show');
-            }
-        });
-
-        // Save row
-        $('#saveRow').on('click', function() {
-            const id = $('#rowId').val();
-            const level = parseInt($('#rowLevel').val());
-            const uraian = $('#uraian').val();
-            const status = document.querySelector('input[name="status"]:checked').value;
-            const kondisi = $('#kondisi').val();
-            const keterangan = $('#keterangan').val();
-
-            if (!uraian) {
-                toastr.error("Please enter Uraian");
-                return;
-            }
-
-            if (level === 2) {
-                const parentId = parseInt($('#parentItem').val());
-                if (!parentId) {
-                    toastr.error("Please select a parent item for Level 2");
-                    return;
-                }
-            }
-
-            if (id) {
-                // Editing existing row
-                const index = tableData.findIndex(item => item.id === parseInt(id));
-                if (index !== -1) {
-                    tableData[index].uraian = uraian;
-                    tableData[index].level = level;
-                    tableData[index].status = status;
-                    tableData[index].kondisi = kondisi;
-                    tableData[index].keterangan = keterangan;
-
-                    if (level === 2) {
-                        tableData[index].parentId = parseInt($('#parentItem').val());
-                        // Update the numbering
-                        const parent = tableData.find(item => item.id === tableData[index].parentId);
-                        if (parent) {
-                            const siblings = tableData.filter(i => i.parentId === tableData[index].parentId && i.id !== tableData[index].id);
-                            tableData[index].no = `${parent.no}.${siblings.length + 1}`;
-                        }
-                    } else {
-                        // If changing from level 2 to level 1, remove parentId
-                        delete tableData[index].parentId;
-                        // Renumber level 1 items
-                        const level1Items = tableData.filter(item => item.level === 1);
-                        tableData[index].no = (level1Items.length).toString();
-                    }
-
-                    toastr.success("Row updated successfully");
-                }
-            } else {
-                // Adding new row
-                const newId = tableData.length > 0 ? Math.max(...tableData.map(item => item.id)) + 1 : 1;
-                const newItem = {
-                    id: newId,
-                    uraian: uraian,
-                    level: level,
-                    status: status,
-                    kondisi: kondisi,
-                    keterangan: keterangan
-                };
-
-                console.log(newItem);
-
-                if (level === 1) {
-                    // For level 1, generate the next number
-                    const level1Items = tableData.filter(item => item.level === 1);
-                    newItem.no = (level1Items.length + 1).toString();
-                } else {
-                    // For level 2, get the parent and generate the number
-                    const parentId = parseInt($('#parentItem').val());
-                    const parent = tableData.find(item => item.id === parentId);
-
-                    if (!parent) {
-                        toastr.error("Please select a valid parent");
-                        return;
-                    }
-
-                    newItem.parentId = parentId;
-                    const parentChildren = tableData.filter(item => item.parentId === parentId);
-                    newItem.no = `${parent.no}.${parentChildren.length + 1}`;
-                }
-
-                tableData.push(newItem);
-                toastr.success("New row added successfully");
-            }
-
-            renumberDetailData();
-
-            reloadDetailTable();
-
-            rowModal.modal('hide');
-        });
-
-        // Remove row
-        $('#detailTable').on('click', '.remove-row', function() {
-            const id = parseInt($(this).data('id'));
-            const index = tableData.findIndex(item => item.id === id);
-
-            if (index !== -1) {
-                const item = tableData[index];
-
-                // Check if this is a parent with children
-                const hasChildren = tableData.some(i => i.parentId === id);
-
-                if (hasChildren) {
-                    if (!confirm("This item has child rows. Delete all children as well?")) {
-                        return;
-                    }
-                    // Remove children
-                    tableData = tableData.filter(i => i.parentId !== id);
-                }
-
-                // Remove the item
-                tableData.splice(index, 1);
-
-                renumberDetailData();
-
-                reloadDetailTable();
-
-                toastr.success("Row removed successfully");
-            }
-        });
-
-        function renumberDetailData() {
-            // First, ensure all items have a 'no' property
-            tableData.forEach(item => {
-                if (!item.no) {
-                    console.warn(`Item with id ${item.id} is missing 'no' property`);
-                }
-            });
-
-            // Create a copy and sort by 'no'
-            const sortedArray = tableData.slice().sort((a, b) => {
-                if (!a.no && !b.no) return 0;
-                if (!a.no) return 1;
-                if (!b.no) return -1;
-
-                const aParts = a.no.split('.').map(Number);
-                const bParts = b.no.split('.').map(Number);
-
-                const maxLength = Math.max(aParts.length, bParts.length);
-
-                for (let i = 0; i < maxLength; i++) {
-                    const aVal = aParts[i] || 0;
-                    const bVal = bParts[i] || 0;
-
-                    if (aVal !== bVal) {
-                        return aVal - bVal;
-                    }
-                }
-
-                return 0;
-            });
-
-            // Fix parent numbers first (level 1 items)
-            fixNumberGroup(sortedArray.filter(item => item.level === 1), 1);
-
-            // Then fix child numbers for each parent group
-            const parents = sortedArray.filter(item => item.level === 1);
-            parents.forEach(parent => {
-                const children = sortedArray.filter(item =>
-                    item.level > 1 && item.no.startsWith(`${parent.no}.`)
-                );
-                fixNumberGroup(children, 2, parent.no);
-            });
-
-            // Fix deeper levels if they exist
-            fixDeeperLevels(sortedArray);
-
-            tableData = sortedArray;
-
-            // Helper function to fix numbering for a group of items
-            function fixNumberGroup(group, level, parentPrefix = '') {
-                if (group.length === 0) return;
-
-                // Extract and sort the numbers
-                const numbers = group.map(item => {
-                    const parts = item.no.split('.');
-                    return parseInt(parts[level - 1]);
-                }).sort((a, b) => a - b);
-
-                // Check for gaps and fix them
-                let expectedNumber = 1;
-                const fixedItems = [];
-
-                numbers.forEach((currentNumber, index) => {
-                    const item = group.find(it => {
-                        const parts = it.no.split('.');
-                        return parseInt(parts[level - 1]) === currentNumber;
-                    });
-
-                    if (item && currentNumber !== expectedNumber) {
-                        const oldNo = item.no;
-                        const parts = item.no.split('.');
-                        parts[level - 1] = expectedNumber.toString();
-
-                        // Update the prefix for children if this is a parent
-                        if (level === 1) {
-                            const newPrefix = parts.join('.');
-                            updateChildrenPrefix(sortedArray, oldNo, newPrefix);
-                        }
-
-                        item.no = parts.join('.');
-                    }
-
-                    fixedItems.push(item);
-                    expectedNumber++;
-                });
-
-                return fixedItems;
-            }
-
-            // Helper function to update children's prefix when parent number changes
-            function updateChildrenPrefix(array, oldParentNo, newParentNo) {
-                array.forEach(item => {
-                    if (item.no && item.no.startsWith(`${oldParentNo}.`)) {
-                        const oldNo = item.no;
-                        item.no = item.no.replace(`${oldParentNo}.`, `${newParentNo}.`);
-                        console.log(`Updated child prefix: ${oldNo} → ${item.no}`);
-                    }
-                });
-            }
-
-            // Helper function to fix deeper levels recursively
-            function fixDeeperLevels(array) {
-                const maxLevel = Math.max(...array.map(item => item.level || 1));
-
-                for (let level = 3; level <= maxLevel; level++) {
-                    const itemsByParent = {};
-
-                    // Group items by their parent's number
-                    array.filter(item => item.level === level).forEach(item => {
-                        const parentNo = item.no.split('.').slice(0, -1).join('.');
-                        if (!itemsByParent[parentNo]) {
-                            itemsByParent[parentNo] = [];
-                        }
-                        itemsByParent[parentNo].push(item);
-                    });
-
-                    // Fix numbering for each parent group
-                    Object.keys(itemsByParent).forEach(parentNo => {
-                        fixNumberGroup(itemsByParent[parentNo], level, parentNo);
-                    });
-                }
-            }
-        }
-    });
-
-
     const URLS = {
         default: "<?= site_url('report') ?>",
         create: "<?= site_url('report/create') ?>",
@@ -1022,6 +624,7 @@
         mode: "<?= $mode ?>",
         userRole: "<?= $this->auth_lib->role() ?>",
         reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
+        details: [],
         evidence: {
             files: [],
             deletedIds: []
@@ -1038,7 +641,396 @@
         },
     };
 
-    const radioCards = document.querySelectorAll('.radio-card');
+    const statusRadioCards = document.querySelectorAll('.status-radio-card');
+
+    const reportDetailModal = $('#reportDetailModal');
+
+    const reportDetailTable = $('#reportDetailTable').DataTable({
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false,
+        responsive: true,
+        autoWidth: false,
+        rowId: 'id',
+        columns: [{
+                data: "id",
+                visible: false,
+                orderable: false,
+                targets: 0
+            },
+            {
+                data: null,
+                render: function(data, type, row) {
+                    return (row.level === 1) ? row.no : '';
+                },
+                orderable: false,
+                targets: 1
+            },
+            {
+                data: "description",
+                render: function(data, type, row) {
+                    if (row.level === 2) {
+                        return `<span class="ml-3" style="display: inline-flex; align-items: center;"><i class="fa fa-circle mr-2" style="font-size: 0.45rem;"></i><span>${data}</span></span>`;
+                    }
+                    return data;
+                },
+                orderable: false,
+                targets: 2
+            },
+            {
+                data: "status",
+                orderable: false,
+                className: "dt-center",
+                render: function(data, type, row) {
+                    return `<span class="font-weight-bold rounded-lg px-2 py-1 ${data === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${data}</span>`;
+                },
+                targets: 3
+            },
+            {
+                data: "condition",
+                orderable: false,
+                targets: 4
+            },
+            {
+                data: "information",
+                orderable: false,
+                targets: 5
+            },
+            {
+                data: null,
+                orderable: false,
+                className: "dt-center",
+                render: function(data, type, row) {
+                    return `
+                        <button type="button" class="btn btn-sm btn-primary edit-row mr-2" data-id="${row.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger remove-row" data-id="${row.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>`
+                },
+                targets: 6
+            }
+        ],
+        data: appState.details,
+    });
+
+    // Initialize the DataTable
+    $(document).ready(function() {
+        function reloadDetailTable() {
+            reportDetailTable.clear();
+            reportDetailTable.rows.add(appState.details);
+            reportDetailTable.draw();
+        }
+
+        // Function to update parent dropdown based on level selection
+        function updateParentDropdown() {
+            const level = parseInt($('#reportDetailLevel').val());
+            const parentDropdown = $('#reportDetailParent');
+
+            parentDropdown.empty();
+
+            if (level === 1) {
+                $('#reportDetailParentItemContainer').hide();
+            } else {
+                $('#reportDetailParentItemContainer').show();
+                // Add only level 1 items as parents
+                const parentItems = appState.details.filter(item => item.level === 1);
+                if (parentItems.length === 0) {
+                    parentDropdown.append('<option value="">No parent items available</option>');
+                } else {
+                    parentItems.forEach(item => {
+                        parentDropdown.append(`<option value="${item.id}">${item.description}</option>`);
+                    });
+                }
+            }
+        }
+
+        // Update parent dropdown when level changes
+        $('#reportDetailLevel').on('change', updateParentDropdown);
+
+        // Add new row button
+        $('#reportDetailAddButton').on('click', function() {
+            $('#reportDetailForm')[0].reset();
+            $('#reportDetailID').val('');
+            document.querySelector('.status-radio-input:checked').value = 'OK';
+            statusRadioCards.forEach(c => c.classList.remove('selected'));
+            statusRadioCards[0].classList.add('selected');
+            $('#reportDetailModalLabel').text('Add New Row');
+            $('#reportDetailParentItemContainer').hide();
+            reportDetailModal.modal('show');
+        });
+
+        // Edit row
+        $('#reportDetailTable').on('click', '.edit-row', function() {
+            const id = parseInt($(this).data('id'));
+            const item = appState.details.find(item => item.id === id);
+
+            if (item) {
+                $('#reportDetailID').val(item.id);
+                $('#reportDetailLevel').val(item.level);
+                $('#reportDetailDescription').val(item.description);
+                $('#reportDetailStatus').val(item.status);
+                $('#reportDetailCondition').val(item.condition);
+                $('#reportDetailInformation').val(item.information);
+
+                // Update parent dropdown and set value if level 2
+                updateParentDropdown();
+                if (item.level === 2) {
+                    $('#reportDetailParent').val(item.parent_id);
+                }
+
+                $('#reportDetailModalLabel').text('Edit Row');
+                reportDetailModal.modal('show');
+            }
+        });
+
+        // Save row
+        $('#reportDetailSaveBtn').on('click', function() {
+            const id = $('#reportDetailID').val();
+            const level = parseInt($('#reportDetailLevel').val());
+            const description = $('#reportDetailDescription').val();
+            const status = document.querySelector('.status-radio-input:checked').value;
+            const condition = $('#reportDetailCondition').val();
+            const information = $('#reportDetailInformation').val();
+
+            if (!description) {
+                toastr.error("Please enter Uraian");
+                return;
+            }
+
+            if (level === 2) {
+                const parentId = parseInt($('#reportDetailParent').val());
+                if (!parentId) {
+                    toastr.error("Please select a parent item for Level 2");
+                    return;
+                }
+            }
+
+            if (id) {
+                // Editing existing row
+                const index = appState.details.findIndex(item => item.id === parseInt(id));
+                if (index !== -1) {
+                    appState.details[index].description = description;
+                    appState.details[index].level = level;
+                    appState.details[index].status = status;
+                    appState.details[index].condition = condition;
+                    appState.details[index].information = information;
+
+                    if (level === 2) {
+                        appState.details[index].parent_id = parseInt($('#reportDetailParent').val());
+                        // Update the numbering
+                        const parent = appState.details.find(item => item.id === appState.details[index].parent_id);
+                        if (parent) {
+                            const siblings = appState.details.filter(i => i.parent_id === appState.details[index].parent_id && i.id !== appState.details[index].id);
+                            appState.details[index].no = `${parent.no}.${siblings.length + 1}`;
+                        }
+                    } else {
+                        // If changing from level 2 to level 1, remove parentId
+                        delete appState.details[index].parent_id;
+                        // Renumber level 1 items
+                        const level1Items = appState.details.filter(item => item.level === 1);
+                        appState.details[index].no = (level1Items.length).toString();
+                    }
+
+                    toastr.success("Row updated successfully");
+                }
+            } else {
+                // Adding new row
+                const newId = appState.details.length > 0 ? Math.max(...appState.details.map(item => item.id)) + 1 : 1;
+                const newItem = {
+                    id: newId,
+                    description: description,
+                    level: level,
+                    status: status,
+                    condition: condition,
+                    information: information
+                };
+
+                if (level === 1) {
+                    // For level 1, generate the next number
+                    const level1Items = appState.details.filter(item => item.level === 1);
+                    newItem.no = (level1Items.length + 1).toString();
+                } else {
+                    // For level 2, get the parent and generate the number
+                    const parentId = parseInt($('#reportDetailParent').val());
+                    const parent = appState.details.find(item => item.id === parentId);
+
+                    if (!parent) {
+                        toastr.error("Please select a valid parent");
+                        return;
+                    }
+
+                    newItem.parent_id = parentId;
+                    const parentChildren = appState.details.filter(item => item.parent_id === parentId);
+                    newItem.no = `${parent.no}.${parentChildren.length + 1}`;
+                }
+
+                appState.details.push(newItem);
+                toastr.success("New row added successfully");
+            }
+
+            renumberDetails();
+
+            reloadDetailTable();
+
+            reportDetailModal.modal('hide');
+        });
+
+        // Remove row
+        $('#reportDetailTable').on('click', '.remove-row', function() {
+            const id = parseInt($(this).data('id'));
+            const index = appState.details.findIndex(item => item.id === id);
+
+            if (index !== -1) {
+                const item = appState.details[index];
+
+                // Check if this is a parent with children
+                const hasChildren = appState.details.some(i => i.parent_id === id);
+
+                if (hasChildren) {
+                    if (!confirm("This item has child rows. Delete all children as well?")) {
+                        return;
+                    }
+                    // Remove children
+                    appState.details = appState.details.filter(i => i.parent_id !== id);
+                }
+
+                // Remove the item
+                appState.details.splice(index, 1);
+
+                renumberDetails();
+
+                reloadDetailTable();
+
+                toastr.success("Row removed successfully");
+            }
+        });
+
+        function renumberDetails() {
+            // First, ensure all items have a 'no' property
+            appState.details.forEach(item => {
+                if (!item.no) {
+                    console.warn(`Item with id ${item.id} is missing 'no' property`);
+                }
+            });
+
+            // Create a copy and sort by 'no'
+            const sortedArray = appState.details.slice().sort((a, b) => {
+                if (!a.no && !b.no) return 0;
+                if (!a.no) return 1;
+                if (!b.no) return -1;
+
+                const aParts = a.no.split('.').map(Number);
+                const bParts = b.no.split('.').map(Number);
+
+                const maxLength = Math.max(aParts.length, bParts.length);
+
+                for (let i = 0; i < maxLength; i++) {
+                    const aVal = aParts[i] || 0;
+                    const bVal = bParts[i] || 0;
+
+                    if (aVal !== bVal) {
+                        return aVal - bVal;
+                    }
+                }
+
+                return 0;
+            });
+
+            // Fix parent numbers first (level 1 items)
+            fixNumberGroup(sortedArray.filter(item => item.level === 1), 1);
+
+            // Then fix child numbers for each parent group
+            const parents = sortedArray.filter(item => item.level === 1);
+            parents.forEach(parent => {
+                const children = sortedArray.filter(item =>
+                    item.level > 1 && item.no.startsWith(`${parent.no}.`)
+                );
+                fixNumberGroup(children, 2, parent.no);
+            });
+
+            // Fix deeper levels if they exist
+            fixDeeperLevels(sortedArray);
+
+            appState.details = sortedArray;
+
+            // Helper function to fix numbering for a group of items
+            function fixNumberGroup(group, level, parentPrefix = '') {
+                if (group.length === 0) return;
+
+                // Extract and sort the numbers
+                const numbers = group.map(item => {
+                    const parts = item.no.split('.');
+                    return parseInt(parts[level - 1]);
+                }).sort((a, b) => a - b);
+
+                // Check for gaps and fix them
+                let expectedNumber = 1;
+                const fixedItems = [];
+
+                numbers.forEach((currentNumber, index) => {
+                    const item = group.find(it => {
+                        const parts = it.no.split('.');
+                        return parseInt(parts[level - 1]) === currentNumber;
+                    });
+
+                    if (item && currentNumber !== expectedNumber) {
+                        const oldNo = item.no;
+                        const parts = item.no.split('.');
+                        parts[level - 1] = expectedNumber.toString();
+
+                        // Update the prefix for children if this is a parent
+                        if (level === 1) {
+                            const newPrefix = parts.join('.');
+                            updateChildrenPrefix(sortedArray, oldNo, newPrefix);
+                        }
+
+                        item.no = parts.join('.');
+                    }
+
+                    fixedItems.push(item);
+                    expectedNumber++;
+                });
+
+                return fixedItems;
+            }
+
+            // Helper function to update children's prefix when parent number changes
+            function updateChildrenPrefix(array, oldParentNo, newParentNo) {
+                array.forEach(item => {
+                    if (item.no && item.no.startsWith(`${oldParentNo}.`)) {
+                        const oldNo = item.no;
+                        item.no = item.no.replace(`${oldParentNo}.`, `${newParentNo}.`);
+                    }
+                });
+            }
+
+            // Helper function to fix deeper levels recursively
+            function fixDeeperLevels(array) {
+                const maxLevel = Math.max(...array.map(item => item.level || 1));
+
+                for (let level = 3; level <= maxLevel; level++) {
+                    const itemsByParent = {};
+
+                    // Group items by their parent's number
+                    array.filter(item => item.level === level).forEach(item => {
+                        const parentNo = item.no.split('.').slice(0, -1).join('.');
+                        if (!itemsByParent[parentNo]) {
+                            itemsByParent[parentNo] = [];
+                        }
+                        itemsByParent[parentNo].push(item);
+                    });
+
+                    // Fix numbering for each parent group
+                    Object.keys(itemsByParent).forEach(parentNo => {
+                        fixNumberGroup(itemsByParent[parentNo], level, parentNo);
+                    });
+                }
+            }
+        }
+    });
 
     function init() {
         setupEventListeners();
@@ -1148,15 +1140,15 @@
             }
         }
 
-        radioCards.forEach(card => {
-            const radioInput = card.querySelector('.radio-input');
+        statusRadioCards.forEach(card => {
+            const radioInput = card.querySelector('.status-radio-input');
 
             if (radioInput.checked) {
                 card.classList.add('selected');
             }
 
             card.addEventListener('click', () => {
-                radioCards.forEach(c => c.classList.remove('selected'));
+                statusRadioCards.forEach(c => c.classList.remove('selected'));
 
                 card.classList.add('selected');
 
@@ -1317,12 +1309,12 @@
             formData.append('title', domCache.form.item.title.value);
             formData.append('description', domCache.form.item.description.input.value);
         } else {
-            if (tableData.length === 0) {
+            if (appState.details.length === 0) {
                 toastr.error("Uraian tidak boleh kosong. setidaknya tambahkan satu uraian.");
                 return;
             }
 
-            formData.append('detail', JSON.stringify(tableData));
+            formData.append('detail', JSON.stringify(appState.details));
         }
 
         appState.evidence.files.forEach((file, index) => {
@@ -1385,7 +1377,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data)
                 if (data.success) {
                     window.location.href = URLS.default;
                 } else {
