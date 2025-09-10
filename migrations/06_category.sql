@@ -8,7 +8,9 @@ CREATE TABLE `warecare`.`category` (
     `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ); 
 
-INSERT INTO `warecare`.`category` (`code`, `name`) VALUES
-('CM', 'Complain'),
-('STGS', 'Serah Terima Gudang Sewa'),
-('KT', 'Kerja Tambah');
+INSERT INTO `warecare`.`category` (`id`, `code`, `name`) VALUES
+(1, 'CM', 'Complain'),
+(2, 'STGS', 'Serah Terima Gudang Sewa'),
+(3, 'STGT', 'Serah Terima Gudang Terjual'),
+(4, 'KT', 'Kerja Tambah'),
+(5, 'STK', 'Serah Terima Kembali');

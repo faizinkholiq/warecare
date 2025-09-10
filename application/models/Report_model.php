@@ -202,4 +202,20 @@ class Report_model extends CI_Model
     {
         return $this->db->delete('report_works', ['id' => $id]);
     }
+
+    public function get_details_by_report($report_id)
+    {
+        return $this->db->get_where('report_details', ['report_id' => $report_id])->result_array();
+    }
+
+    public function add_detail($data)
+    {
+        $this->db->insert('report_details', $data);
+        return $this->db->insert_id();
+    }
+
+    public function delete_details_by_report($report_id)
+    {
+        return $this->db->delete('report_details', ['report_id' => $report_id]);
+    }
 }

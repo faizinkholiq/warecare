@@ -2,6 +2,7 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 class Report extends MY_Controller
 {
+    private $CATEGORY_WITH_DETAIL = [2, 3];
     private $MAX_FILE_COUNT = 10;
 
     public function __construct()
@@ -85,14 +86,10 @@ class Report extends MY_Controller
                 'category_id' => $this->input->post('category_id'),
                 'title' => $this->input->post('title'),
                 'description' => $this->input->post('description'),
-                'detail' => json_decode($this->input->post('detail'), true) ?? [],
                 'status' => 'Pending',
                 'is_rab' => (bool)$this->input->post('is_rab'),
                 'created_by'  => $this->auth_lib->user_id()
             ];
-
-            var_dump($data['detail']);
-            exit;
 
             $evidence_files = $_FILES['evidence_files'] ?? [];
             $file_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
@@ -140,6 +137,23 @@ class Report extends MY_Controller
                 return;
             }
 
+            $details = json_decode($this->input->post('details'), true) ?? [];
+            if (!empty($details)) {
+                foreach ($details as $item) {
+                    $item_data = [
+                        'report_id' => $report_id,
+                        'level' => $item['level'],
+                        'parent_id' => $item['parent_id'] ?? null,
+                        'no' => $item['no'],
+                        'description' => $item['description'],
+                        'status' => $item['status'],
+                        'condition' => $item['condition'],
+                        'information' => $item['information'],
+                    ];
+                    $this->Report_model->add_detail($item_data);
+                }
+            }
+
             if (!empty($uploaded_evidences)) {
                 foreach ($uploaded_evidences as $file) {
                     $this->Report_model->add_evidence($report_id, $file['file_path'], $file['file_name']);
@@ -175,6 +189,7 @@ class Report extends MY_Controller
         $data["report"] = $report;
         $data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);;
         $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
+        $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
         $data["list_data"]["entity"] = $this->Entity_model->get_all();
         $data["list_data"]["project"] = $this->Project_model->get_all();
         $data["list_data"]["company"] = $this->Company_model->get_all();
@@ -222,19 +237,19 @@ class Report extends MY_Controller
         $this->form_validation->set_rules('company_id', 'Company', 'required');
         $this->form_validation->set_rules('warehouse_id', 'Warehouse', 'required');
         $this->form_validation->set_rules('category_id', 'Category', 'required');
-        $this->form_validation->set_rules('title', 'Title', 'required');
-        $this->form_validation->set_rules('description', 'Description', 'required');
 
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["report"] = $report;
             $data["report"]["evidences"] = $existing_evidences;
             $data["report"]["works"] = $existing_works;
+            $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
             $data["list_data"]["project"] = $this->Project_model->get_all();
             $data["list_data"]["company"] = $this->Company_model->get_all();
             $data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
             $data["list_data"]["category"] = $this->Category_model->get_all();
             $data["view"] = "report/form";
+
             $this->load->view('layouts/template', $data);
         } else {
             $data = [
@@ -361,6 +376,27 @@ class Report extends MY_Controller
                     $data['completed_by'] = $this->auth_lib->user_id();
                     $data['completed_at'] = date('Y-m-d H:i:s');
                     break;
+            }
+
+            if ($this->Report_model->delete_details_by_report($id)) {
+                if (in_array($data['category_id'], $this->CATEGORY_WITH_DETAIL)) {
+                    $details = json_decode($this->input->post('details'), true) ?? [];
+                    if (!empty($details)) {
+                        foreach ($details as $item) {
+                            $item_data = [
+                                'report_id' => $id,
+                                'level' => $item['level'],
+                                'parent_id' => $item['parent_id'] ?? null,
+                                'no' => $item['no'],
+                                'description' => $item['description'],
+                                'status' => $item['status'],
+                                'condition' => $item['condition'],
+                                'information' => $item['information'],
+                            ];
+                            $this->Report_model->add_detail($item_data);
+                        }
+                    }
+                }
             }
 
             if (!$this->Report_model->update($id, $data)) {

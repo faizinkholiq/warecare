@@ -1,3 +1,7 @@
+<?php
+$category_with_detail = [2, 3];
+?>
+
 <style>
     .status-badge {
         font-size: 1.2rem;
@@ -257,7 +261,7 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div id="reportDescriptionContainer" class="col-md-12 row" style="display: <?= isset($report) && $report['category_id'] != 2 ? '' : 'none'; ?>;">
+                <div id="reportDescriptionContainer" class="col-md-12 row" style="display: <?= isset($report) && !in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
                     <div class="form-group col-md-6">
                         <label for="reportTitle">Judul</label>
                         <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
@@ -267,7 +271,7 @@
                         <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
                     </div>
                 </div>
-                <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && $report['category_id'] == 2 ? '' : 'none'; ?>;">
+                <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
                     <div style="margin: 2rem 0 3rem;">
                         <div class="d-flex justify-content-between">
                             <button type="button" id="reportDetailAddButton" class="btn btn-default rounded-lg shadow border-0">
@@ -624,7 +628,7 @@
         mode: "<?= $mode ?>",
         userRole: "<?= $this->auth_lib->role() ?>",
         reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
-        details: [],
+        details: <?= !empty($report) ? json_encode($report['details']) : '[]' ?>,
         evidence: {
             files: [],
             deletedIds: []
@@ -661,8 +665,8 @@
             },
             {
                 data: null,
-                render: function(data, type, row) {
-                    return (row.level === 1) ? row.no : '';
+                render: function(data, type, row, meta) {
+                    return row.level == 1 ? row.no : '';
                 },
                 orderable: false,
                 targets: 1
@@ -670,7 +674,7 @@
             {
                 data: "description",
                 render: function(data, type, row) {
-                    if (row.level === 2) {
+                    if (row.level == 2) {
                         return `<span class="ml-3" style="display: inline-flex; align-items: center;"><i class="fa fa-circle mr-2" style="font-size: 0.45rem;"></i><span>${data}</span></span>`;
                     }
                     return data;
@@ -736,7 +740,7 @@
             } else {
                 $('#reportDetailParentItemContainer').show();
                 // Add only level 1 items as parents
-                const parentItems = appState.details.filter(item => item.level === 1);
+                const parentItems = appState.details.filter(item => item.level == 1);
                 if (parentItems.length === 0) {
                     parentDropdown.append('<option value="">No parent items available</option>');
                 } else {
@@ -777,7 +781,7 @@
 
                 // Update parent dropdown and set value if level 2
                 updateParentDropdown();
-                if (item.level === 2) {
+                if (item.level == 2) {
                     $('#reportDetailParent').val(item.parent_id);
                 }
 
@@ -800,7 +804,7 @@
                 return;
             }
 
-            if (level === 2) {
+            if (level == 2) {
                 const parentId = parseInt($('#reportDetailParent').val());
                 if (!parentId) {
                     toastr.error("Please select a parent item for Level 2");
@@ -810,27 +814,27 @@
 
             if (id) {
                 // Editing existing row
-                const index = appState.details.findIndex(item => item.id === parseInt(id));
-                if (index !== -1) {
+                const index = appState.details.findIndex(item => item.id == parseInt(id));
+                if (index != -1) {
                     appState.details[index].description = description;
                     appState.details[index].level = level;
                     appState.details[index].status = status;
                     appState.details[index].condition = condition;
                     appState.details[index].information = information;
 
-                    if (level === 2) {
+                    if (level == 2) {
                         appState.details[index].parent_id = parseInt($('#reportDetailParent').val());
                         // Update the numbering
-                        const parent = appState.details.find(item => item.id === appState.details[index].parent_id);
+                        const parent = appState.details.find(item => item.id == appState.details[index].parent_id);
                         if (parent) {
-                            const siblings = appState.details.filter(i => i.parent_id === appState.details[index].parent_id && i.id !== appState.details[index].id);
+                            const siblings = appState.details.filter(i => i.parent_id == appState.details[index].parent_id && i.id != appState.details[index].id);
                             appState.details[index].no = `${parent.no}.${siblings.length + 1}`;
                         }
                     } else {
                         // If changing from level 2 to level 1, remove parentId
                         delete appState.details[index].parent_id;
                         // Renumber level 1 items
-                        const level1Items = appState.details.filter(item => item.level === 1);
+                        const level1Items = appState.details.filter(item => item.level == 1);
                         appState.details[index].no = (level1Items.length).toString();
                     }
 
@@ -848,14 +852,14 @@
                     information: information
                 };
 
-                if (level === 1) {
+                if (level == 1) {
                     // For level 1, generate the next number
-                    const level1Items = appState.details.filter(item => item.level === 1);
+                    const level1Items = appState.details.filter(item => item.level == 1);
                     newItem.no = (level1Items.length + 1).toString();
                 } else {
                     // For level 2, get the parent and generate the number
                     const parentId = parseInt($('#reportDetailParent').val());
-                    const parent = appState.details.find(item => item.id === parentId);
+                    const parent = appState.details.find(item => item.id == parentId);
 
                     if (!parent) {
                         toastr.error("Please select a valid parent");
@@ -863,7 +867,7 @@
                     }
 
                     newItem.parent_id = parentId;
-                    const parentChildren = appState.details.filter(item => item.parent_id === parentId);
+                    const parentChildren = appState.details.filter(item => item.parent_id == parentId);
                     newItem.no = `${parent.no}.${parentChildren.length + 1}`;
                 }
 
@@ -881,20 +885,20 @@
         // Remove row
         $('#reportDetailTable').on('click', '.remove-row', function() {
             const id = parseInt($(this).data('id'));
-            const index = appState.details.findIndex(item => item.id === id);
+            const index = appState.details.findIndex(item => item.id == id);
 
-            if (index !== -1) {
+            if (index != -1) {
                 const item = appState.details[index];
 
                 // Check if this is a parent with children
-                const hasChildren = appState.details.some(i => i.parent_id === id);
+                const hasChildren = appState.details.some(i => i.parent_id == id);
 
                 if (hasChildren) {
                     if (!confirm("This item has child rows. Delete all children as well?")) {
                         return;
                     }
                     // Remove children
-                    appState.details = appState.details.filter(i => i.parent_id !== id);
+                    appState.details = appState.details.filter(i => i.parent_id != id);
                 }
 
                 // Remove the item
@@ -912,7 +916,7 @@
             // First, ensure all items have a 'no' property
             appState.details.forEach(item => {
                 if (!item.no) {
-                    console.warn(`Item with id ${item.id} is missing 'no' property`);
+                    return;
                 }
             });
 
@@ -931,7 +935,7 @@
                     const aVal = aParts[i] || 0;
                     const bVal = bParts[i] || 0;
 
-                    if (aVal !== bVal) {
+                    if (aVal != bVal) {
                         return aVal - bVal;
                     }
                 }
@@ -940,7 +944,7 @@
             });
 
             // Fix parent numbers first (level 1 items)
-            fixNumberGroup(sortedArray.filter(item => item.level === 1), 1);
+            fixNumberGroup(sortedArray.filter(item => item.level == 1), 1);
 
             // Then fix child numbers for each parent group
             const parents = sortedArray.filter(item => item.level === 1);
@@ -958,7 +962,7 @@
 
             // Helper function to fix numbering for a group of items
             function fixNumberGroup(group, level, parentPrefix = '') {
-                if (group.length === 0) return;
+                if (group.length == 0) return;
 
                 // Extract and sort the numbers
                 const numbers = group.map(item => {
@@ -973,16 +977,16 @@
                 numbers.forEach((currentNumber, index) => {
                     const item = group.find(it => {
                         const parts = it.no.split('.');
-                        return parseInt(parts[level - 1]) === currentNumber;
+                        return parseInt(parts[level - 1]) == currentNumber;
                     });
 
-                    if (item && currentNumber !== expectedNumber) {
+                    if (item && currentNumber != expectedNumber) {
                         const oldNo = item.no;
                         const parts = item.no.split('.');
                         parts[level - 1] = expectedNumber.toString();
 
                         // Update the prefix for children if this is a parent
-                        if (level === 1) {
+                        if (level == 1) {
                             const newPrefix = parts.join('.');
                             updateChildrenPrefix(sortedArray, oldNo, newPrefix);
                         }
@@ -1015,7 +1019,7 @@
                     const itemsByParent = {};
 
                     // Group items by their parent's number
-                    array.filter(item => item.level === level).forEach(item => {
+                    array.filter(item => item.level == level).forEach(item => {
                         const parentNo = item.no.split('.').slice(0, -1).join('.');
                         if (!itemsByParent[parentNo]) {
                             itemsByParent[parentNo] = [];
@@ -1084,14 +1088,15 @@
             }
 
             if (domCache.form.item.category) {
+                const categoryWithDetail = [2, 3];
                 if (appState.reportData.category_id) {
-                    domCache.form.item.description.container.style.display = (appState.reportData.category_id != 2) ? '' : 'none';
-                    domCache.form.item.detail.container.style.display = (appState.reportData.category_id == 2) ? '' : 'none';
+                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
                 }
 
                 domCache.form.item.category.addEventListener('change', (e) => {
-                    domCache.form.item.description.container.style.display = (e.target.value != 2) ? '' : 'none';
-                    domCache.form.item.detail.container.style.display = (e.target.value == 2) ? '' : 'none';
+                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(e.target.value)) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(e.target.value)) ? '' : 'none';
                 });
             }
 
@@ -1314,7 +1319,7 @@
                 return;
             }
 
-            formData.append('detail', JSON.stringify(appState.details));
+            formData.append('details', JSON.stringify(appState.details));
         }
 
         appState.evidence.files.forEach((file, index) => {

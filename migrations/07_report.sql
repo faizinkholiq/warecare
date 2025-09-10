@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS report (
   warehouse_id INT NOT NULL,
   category_id INT NOT NULL,
 
-  title VARCHAR(255) NOT NULL,
-  description TEXT NOT NULL,
+  title VARCHAR(255) DEFAULT NULL,
+  description TEXT DEFAULT NULL,
   status ENUM('Pending', 'On Process', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
 
   is_rab BOOLEAN DEFAULT FALSE,
