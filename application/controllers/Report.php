@@ -646,11 +646,11 @@ class Report extends MY_Controller
             return;
         }
 
-        if ($report['status'] === 'Pending') {
-            $this->session->set_flashdata('error', 'The memo cannot be printed because it has not been processed.');
-            redirect('report');
-            return;
-        }
+        // if ($report['status'] === 'Pending') {
+        //     $this->session->set_flashdata('error', 'The memo cannot be printed because it has not been processed.');
+        //     redirect('report');
+        //     return;
+        // }
 
         $pdf = new Pdf();
 
@@ -658,9 +658,9 @@ class Report extends MY_Controller
         $pdf->SetAuthor('Waringin Group');
         $pdf->SetTitle('Memo Pengaduan #' . $report['id']);
 
-        $data['title'] = 'PEMBERITAHUAN PEKERJAAN KURANG/TAMBAH';
+        $data['title'] = 'PEKERJAAN KURANG/TAMBAH';
         $data['report'] = $report;
 
-        $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', true);
+        $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', false);
     }
 }

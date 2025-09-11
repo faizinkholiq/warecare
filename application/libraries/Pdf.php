@@ -33,7 +33,7 @@ class Pdf extends TCPDF
         $this->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
         // Set margins
-        $this->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+        $this->SetMargins(PDF_MARGIN_LEFT, 40, PDF_MARGIN_RIGHT);
         $this->SetHeaderMargin(PDF_MARGIN_HEADER);
         $this->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -56,11 +56,18 @@ class Pdf extends TCPDF
             $this->Image($image_file, 10, 5, 25, '', 'PNG', '', 'T', false, 300, 'R', false, false, 0, false, false, false);
         }
 
-        $this->SetY(10);
-        $this->Cell(0, 15, "Tanggal: " . date('d-m-Y'), 0, false, 'L', 0, '', 0, false, 'M', 'M');
-
         // Set font
-        $this->SetFont('helvetica', 'B', 20);
+        $this->SetFont('helvetica', '', 10);
+
+        $this->SetY(10);
+        $this->Cell(0, 15, "Yth,", 0, false, 'L', 0, '', 0, false, 'M', 'M');
+        $this->SetY(15);
+        $this->Cell(0, 15, "Bp. Yulianto", 0, false, 'L', 0, '', 0, false, 'M', 'M');
+        $this->SetY(20);
+        $this->Cell(0, 15, "Kontraktor", 0, false, 'L', 0, '', 0, false, 'M', 'M');
+        $this->SetY(30);
+        $this->Cell(0, 15, "Tanggal: " . date('d F Y'), 0, false, 'L', 0, '', 0, false, 'M', 'M');
+
 
         // Title - centered on page
         // $this->Cell(0, 15, 'WARINGIN GROUP', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -76,7 +83,7 @@ class Pdf extends TCPDF
         $this->SetFont('helvetica', 'I', 8);
 
         // Page number
-        $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        // $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
     }
 
     // Simple HTML to PDF method
