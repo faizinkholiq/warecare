@@ -106,6 +106,34 @@
         margin-top: 10px;
         display: none;
     }
+
+    .my-dropdown-container {
+        display: inline-block;
+        margin-right: 2rem;
+    }
+
+    .my-dropdown-select {
+        display: inline-block;
+        width: auto;
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: #6e707e;
+        vertical-align: middle;
+        background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%235a5c69' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .my-dropdown-select:focus {
+        border-color: #bac8f3;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
 </style>
 
 <div class="container-fluid">
@@ -191,7 +219,12 @@
             serverSide: true,
             ajax: {
                 url: urls.get_list_datatables,
-                type: 'POST'
+                type: 'POST',
+                data: function(d) {
+                    d.start_date = $('#startDate').val();
+                    d.end_date = $('#endDate').val();
+                    return d;
+                }
             },
             drawCallback: function() {
                 tippy('[data-tippy-content]', {
@@ -262,6 +295,7 @@
                     targets: 8
                 },
                 {
+                    name: "status",
                     data: null,
                     width: "7%",
                     className: "dt-center align-middle",
@@ -358,7 +392,69 @@
             autoWidth: false,
             searching: true,
             select: false,
-            dom: 'lftipr'
+            dom: 'lftipr',
+            initComplete: function() {
+                this.api().columns().every(function() {
+                    var column = this;
+                    if (column.index() === 9) {
+                        var filterContainer = $('<div class="d-flex align-items-center justify-content-between w-100"></div>')
+                            .prependTo($('#reportsTable_wrapper'));
+
+                        // Left side filters
+                        var leftFilters = $('<div class="d-flex align-items-center"></div>').appendTo(filterContainer);
+
+                        // Status filter with label
+                        var statusFilter = $(`
+                            <div class="my-dropdown-container">
+                                <label class="mr-2">Status:</label>
+                                <select id="statusFilter" class="my-dropdown-select">
+                                    <option value="">All Status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="On Process">On Process</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>`)
+                            .appendTo(leftFilters);
+
+                        // Date range filter
+                        var dateFilter = $(`
+                            <div class="my-dropdown-container">
+                                <input type="date" id="startDate" class="my-dropdown-select" style="width: 150px;">
+                                <span class="mx-2">to</span>
+                                <input type="date" id="endDate" class="my-dropdown-select" style="width: 150px;">
+                            </div>
+                        `).appendTo(leftFilters);
+
+                        // Clear button
+                        var clearButton = $(`
+                            <div class="my-dropdown-container">
+                                <button id="clearFilters" class="btn btn-sm btn-default">
+                                    <i class="fas fa-undo mr-1"></i> Clear Filters
+                                </button>
+                            </div>
+                        `).appendTo(leftFilters);
+
+                        // Move search box to right side of filterContainer
+                        $('.dataTables_filter').appendTo(filterContainer).css('margin', '0');
+
+                        $('#startDate, #endDate').on('change', function() {
+                            table.draw();
+                        });
+
+                        $('#statusFilter').on('change', function() {
+                            var status = $(this).val();
+                            table.column(9).search(status).draw();
+                        });
+
+                        $('#clearFilters').on('click', function() {
+                            $('#startDate, #endDate').val('');
+                            $('#statusFilter').val('');
+                            table.column(9).search('').draw();
+                        });
+                    }
+                });
+            }
         });
 
         // Delete Report Button

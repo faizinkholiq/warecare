@@ -30,11 +30,22 @@ class Report extends MY_Controller
 
     public function get_list_datatables()
     {
+        $params["columns"] = $this->input->post("columns");
         $params["search"] = $this->input->post("search");
         $params["draw"] = $this->input->post("draw");
         $params["length"] = $this->input->post("length");
         $params["start"] = $this->input->post("start");
         $params['rab_only'] = false;
+        $params["start_date"] = $this->input->post("start_date");
+        $params["end_date"] = $this->input->post("end_date");
+
+        if (!empty($params["start_date"])) {
+            $params["start_date"] = date('Y-m-d', strtotime($params["start_date"]));
+        }
+
+        if (!empty($params["end_date"])) {
+            $params["end_date"] = date('Y-m-d', strtotime($params["end_date"]));
+        }
 
         if ($this->auth_lib->role() === 'pelapor') {
             $params["reported_by"] = $this->auth_lib->user_id();

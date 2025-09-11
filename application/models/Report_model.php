@@ -11,37 +11,64 @@ class Report_model extends CI_Model
 
     public function get_list_datatables($p)
     {
+        $columns = $p['columns'];
         $search = $p["search"];
-
-        $this->db->start_cache();
+        $order = !empty($p["order"]) ? $p["order"][0] : null;
 
         $limit = $p["length"];
         $offset = $p["start"];
 
-        if (!empty($p["reported_by"])) $this->db->where('report.created_by', $p['reported_by']);
+        if (!empty($p["reported_by"])) {
+            $this->db->where('report.created_by', $p['reported_by']);
+        }
 
-        if ($p['rab_only'] === true) $this->db->where('report.is_rab', true);
+        if (!empty($p["rab_only"])) {
+            $this->db->where('report.is_rab', true);
+        }
 
-        if (!empty($search["value"])) {
-            $col = [
-                "report.name"
-            ];
-            $src = $search["value"];
-            $src_arr = explode(" ", $src);
+        if (!empty($p["start_date"])) {
+            $this->db->where('DATE(report.created_at) >=', $p["start_date"]);
+        }
 
-            if ($src) {
-                $this->db->group_start();
-                foreach ($col as $key => $val) {
-                    $this->db->or_group_start();
-                    foreach ($src_arr as $k => $v) {
-                        $this->db->like($val, $v, 'both');
-                    }
-                    $this->db->group_end();
+        if (!empty($p["end_date"])) {
+            $this->db->where('DATE(report.created_at) <=', $p["end_date"]);
+        }
+
+        if (!empty($columns)) {
+            foreach ($columns as $column) {
+                if (!empty($column['search']['value'])) {
+                    $this->db->like($column['name'], $column['search']['value']);
                 }
-                $this->db->group_end();
             }
         }
 
+        if (!empty($search["value"])) {
+            $searchable_fields = [
+                "report.no",
+                "report.title",
+                "entity.name",
+                "project.name",
+                "warehouse.name",
+                "company.name",
+                "category.name",
+                "report.status",
+                "report.created_at"
+            ];
+
+            $search_terms = explode(" ", $search["value"]);
+
+            $this->db->group_start();
+            foreach ($searchable_fields as $field) {
+                $this->db->or_group_start();
+                foreach ($search_terms as $term) {
+                    $this->db->like($field, $term);
+                }
+                $this->db->group_end();
+            }
+            $this->db->group_end();
+        }
+
+        // Base query
         $this->db->select([
             'report.id',
             'report.no',
@@ -70,24 +97,33 @@ class Report_model extends CI_Model
             ->join('user created_by', 'created_by.id = report.created_by', 'left')
             ->join('user processed_by', 'processed_by.id = report.processed_by', 'left')
             ->join('user approved_by', 'approved_by.id = report.approved_by', 'left')
-            ->join('user completed_by', 'completed_by.id = report.completed_by', 'left')
-            ->order_by('report.id', 'desc')
-            ->group_by('report.id');
+            ->join('user completed_by', 'completed_by.id = report.completed_by', 'left');
 
-        $q = $this->db->get();
-        $data["recordsTotal"] = $q->num_rows();
-        $data["recordsFiltered"] = $q->num_rows();
+        // Handle ordering
+        if (!empty($order)) {
+            $this->db->order_by($columns[$order['column']]['data'], $order['dir']);
+        } else {
+            $this->db->order_by('report.id', 'desc');
+        }
 
-        $this->db->stop_cache();
+        $this->db->group_by('report.id');
 
+        // Clone the current query before getting the count
+        $total_records = $this->db->count_all_results(null, false);
+
+        // Get the records with limit and offset
         $this->db->limit($limit, $offset);
+        $result = $this->db->get();
 
-        $data["data"] = $this->db->get()->result_array();
-        $data["draw"] = intval($p["draw"]);
+        $filtered_records = $total_records;
+        $data = $result->result_array();
 
-        $this->db->flush_cache();
-
-        return $data;
+        return [
+            "draw" => intval($p["draw"]),
+            "recordsTotal" => $total_records,
+            "recordsFiltered" => $filtered_records,
+            "data" => $data
+        ];
     }
 
     public function get($id)
