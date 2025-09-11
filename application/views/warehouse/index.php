@@ -10,6 +10,9 @@
                     <th class="dt-center">No</th>
                     <th class="dt-center">Perusahaan</th>
                     <th class="dt-center">Nama</th>
+                    <th class="dt-center">Status</th>
+                    <th class="dt-center">Tgl. Sewa/Beli</th>
+                    <th class="dt-center">Tgl. Serah Terima</th>
                     <th class="dt-center">Aksi</th>
                 </tr>
             </thead>
@@ -35,14 +38,29 @@
                         <label for="warehouseCompany">Perusahaan</label>
                         <select id="warehouseCompany" class="form-control" name="company_id" required>
                             <option value="">- Pilih Perusahaan -</option>
-                            <?php foreach($list_data['company'] as $key => $value): ?>    
-                            <option value="<?=$value['id']  ?>"><?= $value['name']  ?></option>
+                            <?php foreach ($list_data['company'] as $key => $value): ?>
+                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group col-md-10">
                         <label for="warehouseName">Name</label>
                         <input id="warehouseName" type="text" class="form-control" name="name" placeholder="Name" required />
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="warehouseStatus">Status</label>
+                        <select id="warehouseStatus" class="form-control" name="status">
+                            <option value="Jual">Jual</option>
+                            <option value="Sewa">Sewa</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="warehouseOwnedAt">Tgl. Sewa/Beli</label>
+                        <input id="warehouseOwnedAt" type="date" class="form-control" name="owned_at" placeholder="" />
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="warehouseHandoveredAt">Tgl. Serah Terima</label>
+                        <input id="warehouseHandoveredAt" type="date" class="form-control" name="handovered_at" placeholder="" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -93,9 +111,9 @@
 
     $(document).ready(function() {
         setTimeout(() => {
-            if(notifications.success) {
+            if (notifications.success) {
                 toastr.success(notifications.success);
-            }else if (notifications.error) {
+            } else if (notifications.error) {
                 toastr.error(notifications.error);
             }
         }, 500)
@@ -108,31 +126,42 @@
                 type: 'POST'
             },
             rowId: 'id',
-            columns: [
-                { 
-                    data: "id", 
+            columns: [{
+                    data: "id",
                     visible: false,
                     orderable: false,
-                    targets: 0 
+                    targets: 0
                 },
                 {
                     data: null,
                     width: "3%",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
                     searchable: false,
                     orderable: false,
                     targets: 1
                 },
-                { 
+                {
                     data: "company",
                     width: "30%",
                     targets: 2
                 },
-                { 
+                {
                     data: "name",
                     targets: 3
+                },
+                {
+                    data: "status",
+                    targets: 4
+                },
+                {
+                    data: "owned_at",
+                    targets: 5
+                },
+                {
+                    data: "handovered_at",
+                    targets: 6
                 },
                 {
                     data: null,
@@ -149,7 +178,7 @@
                         `;
                     },
                     orderable: false,
-                    targets: 4
+                    targets: 7
                 }
             ],
             scrollResize: true,
@@ -178,7 +207,7 @@
         // Edit Warehouse Button
         $(document).on('click', '.edit-btn', function() {
             resetForm();
-            
+
             var warehouse = $(this).data('id');
             $('#warehouseId').val(warehouse);
 
@@ -191,6 +220,9 @@
 
                 $('#warehouseCompany').val(data.company_id).trigger('change');
                 $('#warehouseName').val(data.name);
+                $('#warehouseStatus').val(data.status);
+                $('#warehouseOwnedAt').val(data.owned_at);
+                $('#warehouseHandovered').val(data.handovered_at);
                 $('#inputModalIcon').removeClass('fa-plus').addClass('fa-edit');
                 $('#inputModalIcon').removeClass('text-success').addClass('text-primary');
                 $('#inputModalIcon').removeClass('bg-light-success').addClass('bg-light-primary');
@@ -204,14 +236,17 @@
             e.preventDefault();
 
             const id = $('#warehouseId').val();
-            
+
             const formData = new FormData();
             formData.append('name', $('#warehouseName').val());
             formData.append('company_id', $('#warehouseCompany').val());
-            
+            formData.append('status', $('#warehouseStatus').val());
+            formData.append('owned_at', $('#warehouseOwnedAt').val());
+            formData.append('handovered_at', $('#warehouseHandoveredAt').val());
+
             // Submit form
             $.ajax({
-                url: !(id)? urls.create : urls.edit + '/' + id,
+                url: !(id) ? urls.create : urls.edit + '/' + id,
                 method: 'POST',
                 data: formData,
                 processData: false,
@@ -237,7 +272,7 @@
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
             var warehouse = $('#deleteWarehouseId').val();
-            
+
             $.ajax({
                 url: urls.delete + '/' + warehouse,
                 method: 'DELETE',
