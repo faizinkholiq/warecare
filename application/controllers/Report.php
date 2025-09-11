@@ -91,6 +91,16 @@ class Report extends MY_Controller
                 'created_by'  => $this->auth_lib->user_id()
             ];
 
+            $entity = $this->Entity_model->get($data['entity_id']);
+            if ($entity) {
+                if (preg_match_all('/\d+/', $entity["name"], $matches)) {
+                    $numbers = $matches[0];
+                    if (count($numbers) > 0) {
+                        $data["no"] = end($numbers) . '-' . date('Ym') . '-' . str_pad($this->Report_model->get_next_id(), 4, '0', STR_PAD_LEFT);
+                    }
+                }
+            }
+
             $evidence_files = $_FILES['evidence_files'] ?? [];
             $file_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
 

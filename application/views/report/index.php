@@ -120,7 +120,7 @@
                 <tr>
                     <th>ID</th>
                     <th class="dt-center">No</th>
-                    <th class="dt-center">Judul Pengaduan</th>
+                    <th class="dt-center">No Pengaduan</th>
                     <th class="dt-center">Entity</th>
                     <th class="dt-center">Project</th>
                     <th class="dt-center">Tgl. Pengaduan</th>
@@ -219,8 +219,8 @@
                     targets: 1
                 },
                 {
-                    data: "title",
-                    width: "15%",
+                    data: "no",
+                    width: "12%",
                     className: "align-middle",
                     targets: 2
                 },

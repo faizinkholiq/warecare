@@ -125,6 +125,14 @@ class Report_model extends CI_Model
         return $this->db->get()->row_array();
     }
 
+    function get_next_id()
+    {
+        $this->db->select_max('id');
+        $query = $this->db->get($this->table);
+        $row = $query->row_array();
+        return $row['id'] + 1;
+    }
+
     public function create($data)
     {
         $this->db->insert($this->table, $data);

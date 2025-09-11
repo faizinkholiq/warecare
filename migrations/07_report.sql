@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS report (
   id INT AUTO_INCREMENT PRIMARY KEY,
   
-  no VARCHAR(20) NULL,
+  no VARCHAR(50) NULL,
   
   entity_id INT NOT NULL,
   project_id INT NOT NULL,
