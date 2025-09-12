@@ -1,7 +1,3 @@
-<?php
-$category_with_detail = [2, 3];
-?>
-
 <style>
     .status-badge {
         font-size: 1.2rem;

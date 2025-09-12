@@ -148,6 +148,7 @@ class Report_model extends CI_Model
             'project.name as project',
             'warehouse.name as warehouse',
             'company.name as company',
+            'category.id as category_id',
             'category.name as category',
             'report.status',
             'DATE_FORMAT(report.completed_at, "%Y-%m-%d %H:%i") as completed_at',
@@ -255,7 +256,7 @@ class Report_model extends CI_Model
 
     public function get_details_by_report($report_id)
     {
-        return $this->db->get_where('report_details', ['report_id' => $report_id])->result_array();
+        return $this->db->order_by('no')->get_where('report_details', ['report_id' => $report_id])->result_array();
     }
 
     public function add_detail($data)

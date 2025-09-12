@@ -1,3 +1,35 @@
+<?php
+$description = nl2br($report['description']);
+if (in_array($report['category_id'], $category_with_detail)) {
+    if (!empty($report['details'])) {
+        $description = "<ul>";
+        $new_parent = true;
+        foreach ($report['details'] as $detail) {
+            if ($detail["level"] == 1) {
+                if (!$new_parent) {
+                    $description .= "</ul></li>";
+                    $new_parent = true;
+                }
+
+                $description .= "<li>" . $detail['description'];
+            } else if ($detail["level"] == 2) {
+                if ($new_parent) {
+                    $description .= "<ul>";
+                }
+                $description .= "<li>" . $detail['description'] . "</li>";
+
+                $new_parent = false;
+            }
+        }
+
+        if (!$new_parent) {
+            $description .= "</ul></li></ul>";
+        } else {
+            $description .= "</ul>";
+        }
+    }
+}
+?>
 <div>
     <h3 style="text-align: center;"><?= $title ?></h3>
 </div>
@@ -10,7 +42,7 @@
     </tr>
     <tr>
         <td valign="middle"><?= $report['warehouse'] ?></td>
-        <td valign="middle"><?= $report['description'] ?></td>
+        <td valign="middle"><?= $description ?></td>
         <td valign="middle"><?= $report['completed_at'] ?></td>
         <td valign="middle"></td>
     </tr>

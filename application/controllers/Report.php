@@ -89,6 +89,8 @@ class Report extends MY_Controller
             $data["list_data"]["company"] = $this->Company_model->get_all();
             $data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
             $data["list_data"]["category"] = $this->Category_model->get_all();
+            $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
+
             $data["view"] = "report/form";
 
             $this->load->view('layouts/template', $data);
@@ -211,6 +213,11 @@ class Report extends MY_Controller
             }
         }
 
+        $data["title"] = "Pengaduan";
+        $data["menu_id"] = "report";
+        $data["current_user"] = $this->auth_lib->current_user();
+        $data["mode"] = "detail";
+
         $data["report"] = $report;
         $data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);;
         $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
@@ -220,12 +227,10 @@ class Report extends MY_Controller
         $data["list_data"]["company"] = $this->Company_model->get_all();
         $data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
         $data["list_data"]["category"] = $this->Category_model->get_all();
+        $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
 
-        $data["title"] = "Pengaduan";
-        $data["menu_id"] = "report";
-        $data["current_user"] = $this->auth_lib->current_user();
-        $data["mode"] = "detail";
         $data["view"] = "report/form";
+
         $this->load->view('layouts/template', $data);
     }
 
@@ -273,6 +278,8 @@ class Report extends MY_Controller
             $data["list_data"]["company"] = $this->Company_model->get_all();
             $data["list_data"]["warehouse"] = $this->Warehouse_model->get_all();
             $data["list_data"]["category"] = $this->Category_model->get_all();
+            $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
+
             $data["view"] = "report/form";
 
             $this->load->view('layouts/template', $data);
@@ -656,6 +663,10 @@ class Report extends MY_Controller
             return;
         }
 
+        if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
+            $report["details"] = $this->Report_model->get_details_by_report($id);
+        }
+
         $pdf = new Pdf();
 
         $pdf->SetCreator('Waringin Group');
@@ -664,6 +675,7 @@ class Report extends MY_Controller
 
         $data['title'] = 'PEMBERITAHUAN PEKERJAAN KURANG/TAMBAH';
         $data['report'] = $report;
+        $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
 
         $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', false);
     }
