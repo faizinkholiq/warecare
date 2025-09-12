@@ -126,6 +126,26 @@ $category_with_detail = [2, 3];
         height: 100%;
         background-color: rgba(0, 0, 0, 0.8);
         overflow: auto;
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .image-modal .close-modal {
+        font-size: 2.5rem;
+        color: white;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+        top: 0.5rem;
+        right: 2rem;
+        position: fixed;
+    }
+
+    .image-modal img {
+        width: 100%;
+        height: 100%;
+        max-width: fit-content;
+        max-height: fit-content;
     }
 
     /* Detail Table */
@@ -556,8 +576,8 @@ $category_with_detail = [2, 3];
 </div>
 
 <div class="image-modal" id="imageModal">
-    <span class="close-modal">&times;</span>
-    <img class="modal-content" id="zoomedImage">
+    <span class="close-modal"><i class="fa fa-times"></i></span>
+    <img id="zoomedImage">
 </div>
 
 <script>

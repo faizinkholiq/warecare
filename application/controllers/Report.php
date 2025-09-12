@@ -21,10 +21,14 @@ class Report extends MY_Controller
 
     public function index()
     {
-        $data["current_user"] = $this->auth_lib->current_user();
         $data["title"] = "Pengaduan";
         $data["menu_id"] = "report";
+
+        $data["current_user"] = $this->auth_lib->current_user();
+        $data["list_data"]["category"] = $this->Category_model->get_all();
+
         $data["view"] = "report/index";
+
         $this->load->view('layouts/template', $data);
     }
 

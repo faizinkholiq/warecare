@@ -37,7 +37,13 @@ class Report_model extends CI_Model
         if (!empty($columns)) {
             foreach ($columns as $column) {
                 if (!empty($column['search']['value'])) {
-                    $this->db->like($column['name'], $column['search']['value']);
+                    switch ($column['name']) {
+                        case 'category':
+                            $this->db->where('category_id', $column['search']['value']);
+                            break;
+                        default:
+                            $this->db->like($column['name'], $column['search']['value']);
+                    }
                 }
             }
         }

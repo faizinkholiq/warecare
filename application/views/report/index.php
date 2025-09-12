@@ -195,14 +195,17 @@
     };
 
     const urls = {
-        get_list_datatables: "<?= site_url('report/get_list_datatables') ?>",
+        get: "<?= site_url('report/get_list_datatables') ?>",
         detail: "<?= site_url('report/detail') ?>",
         edit: "<?= site_url('report/edit') ?>",
         delete: "<?= site_url('report/delete') ?>",
     }
 
     const appState = {
-        userRole: "<?= $this->auth_lib->role() ?>"
+        userRole: "<?= $this->auth_lib->role() ?>",
+        listData: {
+            category: <?= json_encode($list_data['category']) ?>,
+        }
     };
 
     $(document).ready(function() {
@@ -218,7 +221,7 @@
         var table = $('#reportsTable').DataTable({
             serverSide: true,
             ajax: {
-                url: urls.get_list_datatables,
+                url: urls.get,
                 type: 'POST',
                 data: function(d) {
                     d.start_date = $('#startDate').val();
@@ -289,6 +292,7 @@
                 },
 
                 {
+                    name: "category",
                     data: "category",
                     width: "8%",
                     className: "align-middle",
@@ -404,6 +408,19 @@
                         var leftFilters = $('<div class="d-flex align-items-center"></div>').appendTo(filterContainer);
 
                         // Status filter with label
+                        var categoryFilter = $(`
+                            <div class="my-dropdown-container">
+                                <label class="mr-2">Kategori:</label>
+                                <select id="categoryFilter" class="my-dropdown-select">
+                                    <option value="">All Categories</option>
+                                    ${appState.listData.category.map(cat => `
+                                        <option value="${cat.id}">${cat.name}</option>
+                                    `).join('')}
+                                </select>
+                            </div>`)
+                            .appendTo(leftFilters);
+
+                        // Status filter with label
                         var statusFilter = $(`
                             <div class="my-dropdown-container">
                                 <label class="mr-2">Status:</label>
@@ -442,6 +459,11 @@
                             table.draw();
                         });
 
+                        $('#categoryFilter').on('change', function() {
+                            var category = $(this).val();
+                            table.column(8).search(category).draw();
+                        });
+
                         $('#statusFilter').on('change', function() {
                             var status = $(this).val();
                             table.column(9).search(status).draw();
@@ -450,6 +472,7 @@
                         $('#clearFilters').on('click', function() {
                             $('#startDate, #endDate').val('');
                             $('#statusFilter').val('');
+                            table.column(8).search('').draw();
                             table.column(9).search('').draw();
                         });
                     }
