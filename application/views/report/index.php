@@ -136,7 +136,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid my-container">
     <?php if ($this->auth_lib->role() === 'pelapor'): ?>
         <a href="<?= site_url('/report/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg text-navy font-weight-bold create-btn">
             <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru

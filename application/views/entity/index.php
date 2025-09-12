@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid my-container">
     <button type="button" class="create-btn btn btn-default border shadow-sm rounded-lg border-0 font-weight-bold">
         <i class="fas fa-plus text-success mr-2"></i> Tambah Entity Baru
     </button>
@@ -83,9 +83,9 @@
 
     $(document).ready(function() {
         setTimeout(() => {
-            if(notifications.success) {
+            if (notifications.success) {
                 toastr.success(notifications.success);
-            }else if (notifications.error) {
+            } else if (notifications.error) {
                 toastr.error(notifications.error);
             }
         }, 500)
@@ -98,24 +98,23 @@
                 type: 'POST'
             },
             rowId: 'id',
-            columns: [
-                { 
-                    data: "id", 
+            columns: [{
+                    data: "id",
                     visible: false,
                     orderable: false,
-                    targets: 0 
+                    targets: 0
                 },
                 {
                     data: null,
                     width: "3%",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
                     searchable: false,
                     orderable: false,
                     targets: 1
                 },
-                { 
+                {
                     data: "name",
                     targets: 2
                 },
@@ -163,7 +162,7 @@
         // Edit Entity Button
         $(document).on('click', '.edit-btn', function() {
             resetForm();
-            
+
             var entity = $(this).data('id');
             $('#entityId').val(entity);
 
@@ -188,13 +187,13 @@
             e.preventDefault();
 
             const id = $('#entityId').val();
-            
+
             const formData = new FormData();
             formData.append('name', $('#entityName').val());
-            
+
             // Submit form
             $.ajax({
-                url: !(id)? urls.create : urls.edit + '/' + id,
+                url: !(id) ? urls.create : urls.edit + '/' + id,
                 method: 'POST',
                 data: formData,
                 processData: false,
@@ -220,7 +219,7 @@
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
             var entity = $('#deleteEntityId').val();
-            
+
             $.ajax({
                 url: urls.delete + '/' + entity,
                 method: 'DELETE',

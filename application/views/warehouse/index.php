@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid my-container">
     <button type="button" class="create-btn btn btn-default border shadow-sm rounded-lg border-0 font-weight-bold">
         <i class="fas fa-plus text-success mr-2"></i> Tambah Gudang Baru
     </button>

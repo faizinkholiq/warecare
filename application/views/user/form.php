@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid my-container">
     <div class="card rounded-lg shadow border-0">
         <form id="userForm">
             <div class="card-body">
@@ -7,7 +7,7 @@
                     <input type="text" class="form-control col-md-6 <?= form_error('username') ? 'is-invalid' : '' ?>" id="userUserName" name="username" value="<?= isset($user) ? $user['username'] : set_value('username'); ?>" required>
                     <div class="invalid-feedback"><?= form_error('username') ?></div>
                 </div>
-               <div class="form-group">
+                <div class="form-group">
                     <label for="userPassword">Password</label>
                     <input type="password" class="form-control col-md-6" id="userPassword" value="" required>
                     <div class="invalid-feedback" id="userPasswordError"></div>
@@ -31,11 +31,11 @@
                     <label for="userRole">Role</label>
                     <select class="form-control col-md-6" id="userRole" required>
                         <option value="">- Pilih Role -</option>
-                        <option <?= isset($user) && $user['role'] === 'administrator'? 'selected' : '' ?> value="administrator">Administrator</option>
-                        <option <?= isset($user) && $user['role'] === 'manager'? 'selected' : '' ?> value="manager">Manager</option>
-                        <option <?= isset($user) && $user['role'] === 'rab'? 'selected' : '' ?> value="rab">RAB</option>
-                        <option <?= isset($user) && $user['role'] === 'kontraktor'? 'selected' : '' ?> value="kontraktor">Kontraktor</option>
-                        <option <?= isset($user) && $user['role'] === 'pelapor'? 'selected' : '' ?> value="pelapor">Pelapor</option>
+                        <option <?= isset($user) && $user['role'] === 'administrator' ? 'selected' : '' ?> value="administrator">Administrator</option>
+                        <option <?= isset($user) && $user['role'] === 'manager' ? 'selected' : '' ?> value="manager">Manager</option>
+                        <option <?= isset($user) && $user['role'] === 'rab' ? 'selected' : '' ?> value="rab">RAB</option>
+                        <option <?= isset($user) && $user['role'] === 'kontraktor' ? 'selected' : '' ?> value="kontraktor">Kontraktor</option>
+                        <option <?= isset($user) && $user['role'] === 'pelapor' ? 'selected' : '' ?> value="pelapor">Pelapor</option>
                     </select>
                 </div>
             </div>
@@ -46,12 +46,12 @@
                     </a>
                     <div>
                         <?php if ($mode === 'create'): ?>
-                        <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
-                            <i class="fas fa-trash mr-2"></i> Clear
-                        </button>
+                            <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                                <i class="fas fa-trash mr-2"></i> Clear
+                            </button>
                         <?php endif; ?>
                         <button type="submit" class="btn btn-success rounded-lg border-0 shadow-sm ml-2">
-                            <i class="fas fa-save mr-2"></i> Simpan User 
+                            <i class="fas fa-save mr-2"></i> Simpan User
                         </button>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
         edit: "<?= site_url('user/edit') ?>",
     };
 
-    let user = <?= !empty($user)? json_encode($user) : 'null' ?>;
+    let user = <?= !empty($user) ? json_encode($user) : 'null' ?>;
 
     $(document).ready(function() {
         if (mode === 'edit' && user) {
@@ -113,17 +113,17 @@
             if (!validatePassword()) {
                 return false;
             }
-            
+
             const formData = new FormData();
             formData.append('username', $('#userUserName').val());
             formData.append('password', $('#userPassword').val());
             formData.append('first_name', $('#userFirstName').val());
             formData.append('last_name', $('#userLastName').val());
             formData.append('role', $('#userRole').val());
-            
+
             // Submit form
             $.ajax({
-                url: mode == 'create'? urls.create : urls.edit + '/' + user.id,
+                url: mode == 'create' ? urls.create : urls.edit + '/' + user.id,
                 method: 'POST',
                 data: formData,
                 processData: false,
@@ -141,7 +141,7 @@
                             input.next('.invalid-feedback').html(errors[field]);
                         }
                     } else {
-                        toastr.error("Failed to "+ mode +" user.");
+                        toastr.error("Failed to " + mode + " user.");
                     }
                 }
             });
@@ -152,7 +152,7 @@
         });
     });
 
-    
+
     function resetForm() {
         $('#userForm')[0].reset();
         $('#userPassword, #userConfirmPassword').removeClass('is-invalid');

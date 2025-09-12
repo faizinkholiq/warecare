@@ -140,6 +140,14 @@
         .content-wrapper {
             height: auto !important;
         }
+
+        .content-wrapper>.content {
+            padding: 0 !important;
+        }
+
+        .my-container {
+            padding: 1rem;
+        }
     </style>
 </head>
 
@@ -269,7 +277,7 @@
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper bg-white">
             <!-- Main content -->
-            <section class="content p-3" style="height: 100%;">
+            <section class="content" style="height: 100%;">
                 <?php
                 if ($view) {
                     $this->load->view($view);
@@ -281,9 +289,15 @@
         <!-- /.content-wrapper -->
 
         <!-- Footer -->
-        <footer class="main-footer text-center">
-            <strong>Copyright &copy; Waringin Group</strong>
-            All rights reserved.
+        <footer class="main-footer">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <strong>Copyright &copy; <?= date('Y') ?> Waringin Group</strong>
+                        All rights reserved.
+                    </div>
+                </div>
+            </div>
         </footer>
         <!-- /.footer -->
 

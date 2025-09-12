@@ -4,18 +4,22 @@
         padding: 5px 10px;
         border-radius: 20px;
     }
+
     .status-active {
         background-color: #d4edda;
         color: #155724;
     }
+
     .status-inactive {
         background-color: #f8d7da;
         color: #721c24;
     }
+
     .action-btn {
         margin-right: 5px;
         margin-bottom: 5px;
     }
+
     .img-thumbnail {
         max-width: 60px;
         max-height: 60px;
@@ -31,25 +35,31 @@
         transition: all 0.3s;
         margin-bottom: 20px;
     }
-    .dropzone:hover, .dropzone.dragover {
+
+    .dropzone:hover,
+    .dropzone.dragover {
         background: #e9ecef;
         border-color: #999;
     }
+
     .dropzone i {
         font-size: 48px;
         color: #6c757d;
         margin-bottom: 10px;
     }
+
     .image-preview-container {
         display: flex;
         flex-wrap: wrap;
         margin-top: 15px;
     }
+
     .image-preview-item {
         position: relative;
         margin-right: 15px;
         margin-bottom: 15px;
     }
+
     .image-preview-item img {
         width: 100px;
         height: 100px;
@@ -57,6 +67,7 @@
         border-radius: 5px;
         border: 1px solid #ddd;
     }
+
     .btn-remove-image {
         position: absolute;
         top: -10px;
@@ -69,6 +80,7 @@
         align-items: center;
         justify-content: center;
     }
+
     .upload-progress {
         width: 100%;
         margin-top: 10px;
@@ -76,7 +88,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid my-container">
     <a href="<?= site_url('/user/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold create-btn">
         <i class="fas fa-plus mr-2 text-success"></i> Tambahkan User Baru
     </a>
@@ -110,11 +122,11 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="statusUserId">
-                 <p id="statusModalContent"></p>
+                <p id="statusModalContent"></p>
             </div>
             <div class="modal-footer d-flex">
                 <button type="button" style="flex: 1 1 auto;" class="btn btn-default bg-white" data-dismiss="modal">Cancel</button>
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-success"  id="confirmStatusBtn">Yes, Set Active</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-success" id="confirmStatusBtn">Yes, Set Active</button>
             </div>
         </div>
     </div>
@@ -158,9 +170,9 @@
 
     $(document).ready(function() {
         setTimeout(() => {
-            if(notifications.success) {
+            if (notifications.success) {
                 toastr.success(notifications.success);
-            }else if (notifications.error) {
+            } else if (notifications.error) {
                 toastr.error(notifications.error);
             }
         }, 500)
@@ -173,40 +185,39 @@
                 type: 'POST'
             },
             rowId: 'id',
-            columns: [
-                { 
-                    data: "id", 
+            columns: [{
+                    data: "id",
                     visible: false,
                     orderable: false,
-                    targets: 0 
+                    targets: 0
                 },
                 {
                     data: null,
                     width: "3%",
-                    render: function (data, type, row, meta) {
+                    render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
                     searchable: false,
                     orderable: false,
                     targets: 1
                 },
-                { 
+                {
                     data: "username",
                     className: "vertical-align-middle",
                     width: "15%",
                     targets: 2
                 },
-                { 
+                {
                     data: "name",
                     className: "vertical-align-middle",
                     targets: 3
                 },
-                { 
+                {
                     data: "role",
                     className: "vertical-align-middle dt-center",
                     width: "15%",
-                     render: function(data, type, row) {
-                        switch(data) {
+                    render: function(data, type, row) {
+                        switch (data) {
                             case 'administrator':
                                 return '<span class="px-2 py-1 rounded-lg shadow-sm font-weight-bold text-primary">Administrator</span>';
                             case 'pelapor':
@@ -223,14 +234,14 @@
                     },
                     targets: 4
                 },
-                { 
+                {
                     data: null,
                     width: "10%",
                     className: "dt-center vertical-align-middle",
                     render: function(data, type, row) {
-                        return row.is_active == 1 
-                            ? '<span class="status-badge status-active">Active</span>'
-                            : '<span class="status-badge status-inactive">Inactive</span>';
+                        return row.is_active == 1 ?
+                            '<span class="status-badge status-active">Active</span>' :
+                            '<span class="status-badge status-inactive">Inactive</span>';
                     },
                     targets: 5
                 },
@@ -267,14 +278,14 @@
             dom: 'lftipr'
         });
 
-        
+
         // Status Toggle Button
         $(document).on('click', '.status-btn', function() {
             var userId = $(this).data('id');
             var currentStatus = $(this).data('status');
             var newStatus = currentStatus == 1 ? 0 : 1;
 
-            $('#statusModalTitle').text('Set '+ (newStatus == 1 ? 'Active' : 'Deactive') + ' status')
+            $('#statusModalTitle').text('Set ' + (newStatus == 1 ? 'Active' : 'Deactive') + ' status')
             $('#statusModalIcon').removeClass('fa-eye text-success bg-light-success fa-eye-slash text-warning bg-light-warning').addClass(newStatus == 1 ? 'fa-eye text-success bg-light-success' : 'fa-eye-slash text-warning bg-light-warning')
             $('#statusModalContent').text('Are you sure you want to ' + (newStatus == 1 ? 'activate' : 'deactivate') + ' this user?')
             $('#confirmStatusBtn').text(newStatus == 1 ? 'Yes, set active' : 'Yes, set deactive')
@@ -286,7 +297,7 @@
         // Confirm Set Status
         $('#confirmStatusBtn').click(function() {
             var userId = $('#statusUserId').val();
-            
+
             $.ajax({
                 url: urls.set_status + '/' + userId,
                 method: 'POST',
@@ -311,7 +322,7 @@
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
             var userId = $('#deleteUserId').val();
-            
+
             $.ajax({
                 url: urls.delete + '/' + userId,
                 method: 'DELETE',

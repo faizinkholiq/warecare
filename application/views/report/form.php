@@ -221,7 +221,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid my-container">
     <div class="card rounded-lg shadow border-0">
         <form id="reportForm">
             <div class="card-body">
