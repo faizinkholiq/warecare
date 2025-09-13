@@ -11,6 +11,7 @@ class Category_model extends CI_Model
             "id",
             "CONCAT_WS(' - ', code, name) name",
         ]);
+        $this->db->order_by('id', 'ASC');
 
         return $this->db->get($this->table)->result_array();
     }

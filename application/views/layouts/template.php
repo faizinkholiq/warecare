@@ -241,15 +241,9 @@
                                 </a>
                                 <ul class="nav nav-treeview" style="display: block;">
                                     <li class="nav-item">
-                                        <a href="<?= site_url('company') ?>" id="menu_company" class="nav-link">
+                                        <a href="<?= site_url('entity') ?>" id="menu_entity" class="nav-link">
                                             <i class="nav-icon far fa-circle"></i>
-                                            <p>Perusahaan</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="<?= site_url('warehouse') ?>" id="menu_warehouse" class="nav-link">
-                                            <i class="nav-icon far fa-circle"></i>
-                                            <p>Gudang</p>
+                                            <p>Entity</p>
                                         </a>
                                     </li>
                                     <li class="nav-item">
@@ -259,9 +253,15 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="<?= site_url('entity') ?>" id="menu_entity" class="nav-link">
+                                        <a href="<?= site_url('company') ?>" id="menu_company" class="nav-link">
                                             <i class="nav-icon far fa-circle"></i>
-                                            <p>Entity</p>
+                                            <p>Perusahaan</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="<?= site_url('warehouse') ?>" id="menu_warehouse" class="nav-link">
+                                            <i class="nav-icon far fa-circle"></i>
+                                            <p>Gudang</p>
                                         </a>
                                     </li>
                                 </ul>

@@ -7,9 +7,10 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th class="dt-center">No</th>
+                    <th class="dt-center" width="3%">No</th>
+                    <th class="dt-center" width="20%">Entity</th>
                     <th class="dt-center">Nama</th>
-                    <th class="dt-center">Aksi</th>
+                    <th class="dt-center" width="10%">Aksi</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -30,6 +31,15 @@
             <form id="projectForm">
                 <div class="modal-body">
                     <input id="projectId" type="hidden" name="id">
+                    <div class="form-group col-md-10">
+                        <label for="projectEntity">Entity</label>
+                        <select id="projectEntity" class="form-control" name="entity_id" required>
+                            <option value="">- Pilih Entity -</option>
+                            <?php foreach ($list_data['entity'] as $key => $value): ?>
+                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     <div class="form-group col-md-10">
                         <label for="projectName">Name</label>
                         <input id="projectName" type="text" class="form-control" name="name" placeholder="Name" required />
@@ -106,7 +116,6 @@
                 },
                 {
                     data: null,
-                    width: "3%",
                     render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
@@ -115,12 +124,15 @@
                     targets: 1
                 },
                 {
-                    data: "name",
+                    data: "entity",
                     targets: 2
                 },
                 {
+                    data: "name",
+                    targets: 3
+                },
+                {
                     data: null,
-                    width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `
@@ -133,7 +145,7 @@
                         `;
                     },
                     orderable: false,
-                    targets: 3
+                    targets: 4
                 }
             ],
             scrollResize: true,
@@ -173,6 +185,7 @@
                     return;
                 }
 
+                $('#projectEntity').val(data.entity_id).trigger('change');
                 $('#projectName').val(data.name);
                 $('#inputModalIcon').removeClass('fa-plus').addClass('fa-edit');
                 $('#inputModalIcon').removeClass('text-success').addClass('text-primary');
@@ -190,6 +203,7 @@
 
             const formData = new FormData();
             formData.append('name', $('#projectName').val());
+            formData.append('entity_id', $('#projectEntity').val());
 
             // Submit form
             $.ajax({

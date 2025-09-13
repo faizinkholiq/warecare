@@ -7,9 +7,9 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th class="dt-center">No</th>
+                    <th class="dt-center" width="3%">No</th>
                     <th class="dt-center">Nama</th>
-                    <th class="dt-center">Aksi</th>
+                    <th class="dt-center" width="10%">Aksi</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -106,7 +106,6 @@
                 },
                 {
                     data: null,
-                    width: "3%",
                     render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
@@ -120,7 +119,6 @@
                 },
                 {
                     data: null,
-                    width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `

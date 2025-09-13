@@ -7,13 +7,13 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th class="dt-center">No</th>
-                    <th class="dt-center">Perusahaan</th>
+                    <th class="dt-center" width="3%">No</th>
+                    <th class="dt-center" width="20%">Perusahaan</th>
                     <th class="dt-center">Nama</th>
-                    <th class="dt-center">Status</th>
-                    <th class="dt-center">Tgl. Sewa/Beli</th>
-                    <th class="dt-center">Tgl. Serah Terima</th>
-                    <th class="dt-center">Aksi</th>
+                    <th class="dt-center" width="10%">Status</th>
+                    <th class="dt-center" width="15%">Tgl. Sewa/Beli</th>
+                    <th class="dt-center" width="15%">Tgl. Serah Terima</th>
+                    <th class="dt-center" width="10%">Aksi</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -134,7 +134,6 @@
                 },
                 {
                     data: null,
-                    width: "3%",
                     render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
@@ -144,7 +143,6 @@
                 },
                 {
                     data: "company",
-                    width: "30%",
                     targets: 2
                 },
                 {
@@ -153,19 +151,21 @@
                 },
                 {
                     data: "status",
+                    className: "dt-center",
                     targets: 4
                 },
                 {
                     data: "owned_at",
+                    className: "dt-center",
                     targets: 5
                 },
                 {
                     data: "handovered_at",
+                    className: "dt-center",
                     targets: 6
                 },
                 {
                     data: null,
-                    width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `

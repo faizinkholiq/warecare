@@ -7,9 +7,10 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th class="dt-center">No</th>
+                    <th class="dt-center" width="3%">No</th>
+                    <th class="dt-center" width="20%">Project</th>
                     <th class="dt-center">Nama</th>
-                    <th class="dt-center">Aksi</th>
+                    <th class="dt-center" width="10%">Aksi</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -30,6 +31,15 @@
             <form id="companyForm">
                 <div class="modal-body">
                     <input id="companyId" type="hidden" name="id">
+                    <div class="form-group col-md-10">
+                        <label for="companyProject">Project</label>
+                        <select id="companyProject" class="form-control" name="project_id" required>
+                            <option value="">- Pilih Project -</option>
+                            <?php foreach ($list_data['project'] as $key => $value): ?>
+                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     <div class="form-group col-md-10">
                         <label for="companyName">Name</label>
                         <input id="companyName" type="text" class="form-control" name="name" placeholder="Name" required />
@@ -106,7 +116,6 @@
                 },
                 {
                     data: null,
-                    width: "3%",
                     render: function(data, type, row, meta) {
                         return meta.row + meta.settings._iDisplayStart + 1;
                     },
@@ -115,12 +124,15 @@
                     targets: 1
                 },
                 {
-                    data: "name",
+                    data: "project",
                     targets: 2
                 },
                 {
+                    data: "name",
+                    targets: 3
+                },
+                {
                     data: null,
-                    width: "10%",
                     className: "dt-center",
                     render: function(data, type, row) {
                         return `
@@ -133,7 +145,7 @@
                         `;
                     },
                     orderable: false,
-                    targets: 3
+                    targets: 4
                 }
             ],
             scrollResize: true,
@@ -173,6 +185,7 @@
                     return;
                 }
 
+                $('#companyProject').val(data.project_id).trigger('change');
                 $('#companyName').val(data.name);
                 $('#inputModalIcon').removeClass('fa-plus').addClass('fa-edit');
                 $('#inputModalIcon').removeClass('text-success').addClass('text-primary');
@@ -190,6 +203,7 @@
 
             const formData = new FormData();
             formData.append('name', $('#companyName').val());
+            formData.append('project_id', $('#companyProject').val());
 
             // Submit form
             $.ajax({

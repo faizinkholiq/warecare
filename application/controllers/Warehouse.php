@@ -18,9 +18,9 @@ class Warehouse extends MY_Controller
     {
         $data["current_user"] = $this->auth_lib->current_user();
         $data["title"] = "Warehouse";
-        $data["view"] = "warehouse/index";
         $data["menu_id"] = "warehouse";
         $data["list_data"]["company"] = $this->Company_model->get_all();
+        $data["view"] = "warehouse/index";
         $this->load->view('layouts/template', $data);
     }
 
