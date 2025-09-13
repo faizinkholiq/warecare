@@ -275,7 +275,7 @@
         </aside>
 
         <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper bg-white">
+        <div class="content-wrapper" style="background: whitesmoke;">
             <!-- Main content -->
             <section class="content" style="height: 100%;">
                 <?php
