@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS report (
   status ENUM('Pending', 'On Process', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
 
   is_rab BOOLEAN DEFAULT FALSE,
-  rab_file VARCHAR(255),
-  rab_final_file VARCHAR(255),
 
   processed_by INT NULL,
   processed_at DATETIME NULL,
@@ -25,6 +23,10 @@ CREATE TABLE IF NOT EXISTS report (
 
   completed_by INT NULL,
   completed_at DATETIME NULL,
+  
+  rejected_reason VARCHAR(255) NULL,
+  rejected_by INT NULL,
+  rejected_at DATETIME NULL,
 
   created_by INT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -67,5 +69,30 @@ CREATE TABLE report_details (
     status ENUM('OK', 'Not OK') DEFAULT 'OK',
     `condition` ENUM('Tidak Butuh Perbaikan', 'Butuh Perbaikan') DEFAULT 'Tidak Butuh Perbaikan',
     information TEXT,
+    FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
+);
+
+CREATE TABLE report_rab (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    report_id INT NOT NULL,
+    no VARCHAR(20) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    budget DECIMAL(10, 2),
+    description VARCHAR(255),
+    file VARCHAR(255),
+    final_file VARCHAR(255),
+    FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
+);
+
+CREATE TABLE report_manager (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    report_id INT NOT NULL,
+    evidence VARCHAR(255),
+    rab_budget DECIMAL(10, 2),
+    paid_by ENUM('Customer', 'Waringin') ,
+    bill DECIMAL(10, 2),
+    name VARCHAR(50),
+    date DATE,
+    tax_report BOOLEAN DEFAULT false,
     FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
 );

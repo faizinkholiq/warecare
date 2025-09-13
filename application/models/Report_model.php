@@ -80,8 +80,6 @@ class Report_model extends CI_Model
             'report.no',
             'report.title',
             'report.is_rab',
-            'report.rab_file',
-            'report.rab_final_file',
             'entity.name as entity',
             'project.name as project',
             'warehouse.name as warehouse',
@@ -140,22 +138,22 @@ class Report_model extends CI_Model
     public function get_detail($id)
     {
         $this->db->select([
-            'report.id',
-            'report.no',
-            'report.title',
-            'report.description',
+            $this->table . '.id',
+            $this->table . '.no',
+            $this->table . '.title',
+            $this->table . '.description',
             'entity.name as entity',
             'project.name as project',
             'warehouse.name as warehouse',
             'company.name as company',
             'category.id as category_id',
             'category.name as category',
-            'report.status',
+            $this->table . '.status',
             'DATE_FORMAT(report.completed_at, "%Y-%m-%d %H:%i") as completed_at',
             'CONCAT_WS(" ", created_by.first_name, created_by.last_name) created_by',
             'DATE_FORMAT(report.created_at, "%Y-%m-%d %H:%i") as created_at'
         ])
-            ->from('report')
+            ->from($this->table)
             ->join('entity', 'entity.id = report.entity_id', 'left')
             ->join('project', 'project.id = report.project_id', 'left')
             ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
@@ -168,7 +166,31 @@ class Report_model extends CI_Model
         return $this->db->get()->row_array();
     }
 
-    function get_next_id()
+    public function summary($user)
+    {
+        $this->db->select([
+            "COUNT(*) as all_count",
+            "SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending_count",
+            "SUM(CASE WHEN status = 'On Process' THEN 1 ELSE 0 END) as on_process_count",
+            "SUM(CASE WHEN status = 'Completed' OR status = 'Approved' THEN 1 ELSE 0 END) as completed_count"
+        ]);
+
+        if (!empty($user)) {
+            $this->db->where('created_by', $user);
+        }
+
+        $query = $this->db->get($this->table);
+        $result = $query->row_array();
+
+        return [
+            "all" => $result['all_count'] ?? 0,
+            "pending" => $result['pending_count'] ?? 0,
+            "on_process" => $result['on_process_count'] ?? 0,
+            "completed" => $result['completed_count'] ?? 0
+        ];
+    }
+
+    public function get_next_id()
     {
         $this->db->select_max('id');
         $query = $this->db->get($this->table);
@@ -268,5 +290,47 @@ class Report_model extends CI_Model
     public function delete_details_by_report($report_id)
     {
         return $this->db->delete('report_details', ['report_id' => $report_id]);
+    }
+
+    public function get_rab($report_id)
+    {
+        return $this->db->get_where('report_rab', ['report_id' => $report_id])->row_array();
+    }
+
+    public function create_rab($data)
+    {
+        $this->db->insert('report_rab', $data);
+        return $this->db->insert_id();
+    }
+
+    public function update_rab($id, $data)
+    {
+        return $this->db->where('report_id', $id)->update('report_rab', $data);
+    }
+
+    public function delete_rab($report_id)
+    {
+        return $this->db->delete('report_rab', ['report_id' => $report_id]);
+    }
+
+    public function get_manager($report_id)
+    {
+        return $this->db->get_where('report_manager', ['report_id' => $report_id])->row_array();
+    }
+
+    public function create_manager($data)
+    {
+        $this->db->insert('report_manager', $data);
+        return $this->db->insert_id();
+    }
+
+    public function update_manager($id, $data)
+    {
+        return $this->db->where('report_id', $id)->update('report_manager', $data);
+    }
+
+    public function delete_manager($report_id)
+    {
+        return $this->db->delete('report_manager', ['report_id' => $report_id]);
     }
 }

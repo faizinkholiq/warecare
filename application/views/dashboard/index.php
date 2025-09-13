@@ -4,9 +4,9 @@
         --secondary-color: #0074D9;
         --accent-color: #007dff;
         --text-light: #ffffff;
-        --total-color: #3498db;
-        --processed-color: #27ae60;
-        --pending-color: #e74c3c;
+        --completed-color: #27ae60;
+        --on-process-color: #0074D9;
+        --pending-color: #e6a53dff;
     }
 
     .dashboard-container {
@@ -118,8 +118,12 @@
         color: var(--total-color);
     }
 
-    .processed-color {
-        color: var(--processed-color);
+    .completed-color {
+        color: var(--completed-color);
+    }
+
+    .on-process-color {
+        color: var(--on-process-color);
     }
 
     .pending-color {
@@ -169,16 +173,20 @@
         </div>
         <div class="stats-container" id="statsContainer">
             <div class="stat-card text-navy">
-                <div class="stat-value total-color" id="totalReports">24</div>
+                <div class="stat-value total-color" id="totalReports"><?= $summary['all'] ?></div>
                 <div class="stat-label">Total Pengaduan</div>
             </div>
             <div class="stat-card text-navy">
-                <div class="stat-value processed-color" id="processedReports">18</div>
-                <div class="stat-label">Telah Diproses</div>
+                <div class="stat-value completed-color" id="completedReports"><?= $summary['completed'] ?></div>
+                <div class="stat-label">Completed</div>
             </div>
             <div class="stat-card text-navy">
-                <div class="stat-value pending-color" id="pendingReports">6</div>
-                <div class="stat-label">Dalam Proses</div>
+                <div class="stat-value on-process-color" id="onProcessReports"><?= $summary['on_process'] ?></div>
+                <div class="stat-label">On Process</div>
+            </div>
+            <div class="stat-card text-navy">
+                <div class="stat-value pending-color" id="pendingReports"><?= $summary['pending'] ?></div>
+                <div class="stat-label">Pending</div>
             </div>
         </div>
     </div>

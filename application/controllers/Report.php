@@ -297,6 +297,23 @@ class Report extends MY_Controller
                 'updated_by'  => $this->auth_lib->user_id()
             ];
 
+            switch ($data['status']) {
+                case 'On Process':
+                    $data['processed_by'] = $this->auth_lib->user_id();
+                    $data['processed_at'] = date('Y-m-d H:i:s');
+                    break;
+
+                case 'Approved':
+                    $data['approved_by'] = $this->auth_lib->user_id();
+                    $data['approved_at'] = date('Y-m-d H:i:s');
+                    break;
+
+                case 'Completed':
+                    $data['completed_by'] = $this->auth_lib->user_id();
+                    $data['completed_at'] = date('Y-m-d H:i:s');
+                    break;
+            }
+
             $evidence_files = $_FILES['evidence_files'] ?? [];
             $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
             $deleted_evidences = json_decode($this->input->post('deleted_evidence_files'), true) ?? [];
@@ -355,59 +372,6 @@ class Report extends MY_Controller
                 }
 
                 $uploaded_works = $this->handle_bulk_upload_files($work_files, 'work');
-            }
-
-            $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
-            $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
-
-            if ($data['is_rab']) {
-                if ($delete_rab_file) {
-                    $data['rab_file'] = null;
-                } else {
-                    $rab_file = $_FILES['rab_file'] ?? [];
-                    if ($rab_file) {
-                        $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
-                        if ($uploaded_rab) {
-                            $data['rab_file'] = $uploaded_rab['file_name'];
-                            $this->handle_delete_file('./uploads/', $report['rab_file']);
-                        }
-                    }
-                }
-
-                if ($delete_rab_final_file) {
-                    $data['rab_final_file'] = null;
-                } else {
-                    $rab_final_file = $_FILES['rab_final_file'] ?? [];
-                    if ($rab_final_file) {
-                        $uploaded_rab_final = $this->handle_upload_file($rab_final_file, 'rab_final');
-                        if ($uploaded_rab_final) {
-                            $data['rab_final_file'] = $uploaded_rab_final['file_name'];
-                            $this->handle_delete_file('./uploads/', $report['rab_final_file']);
-                        }
-                    }
-                }
-            } else {
-                $delete_rab_file = true;
-                $delete_rab_final_file = true;
-                $data['rab_file'] = null;
-                $data['rab_final_file'] = null;
-            }
-
-            switch ($data['status']) {
-                case 'On Process':
-                    $data['processed_by'] = $this->auth_lib->user_id();
-                    $data['processed_at'] = date('Y-m-d H:i:s');
-                    break;
-
-                case 'Approved':
-                    $data['approved_by'] = $this->auth_lib->user_id();
-                    $data['approved_at'] = date('Y-m-d H:i:s');
-                    break;
-
-                case 'Completed':
-                    $data['completed_by'] = $this->auth_lib->user_id();
-                    $data['completed_at'] = date('Y-m-d H:i:s');
-                    break;
             }
 
             if ($this->Report_model->delete_details_by_report($id)) {
@@ -473,14 +437,90 @@ class Report extends MY_Controller
                 }
             }
 
+            $rab = $this->Report_model->get_rab($id);
+            $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
+            $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
 
-            if ($delete_rab_file) {
-                $this->handle_delete_file('./uploads/', $report['rab_file']);
+            if ($rab) {
+                if ($delete_rab_file && !empty($rab['file'])) {
+                    $this->handle_delete_file('./uploads/', $rab['file']);
+                }
+
+
+                if ($delete_rab_final_file && !empty($rab['final_file'])) {
+                    $this->handle_delete_file('./uploads/', $rab['final_file']);
+                }
             }
 
+            if ($data['is_rab']) {
+                $new_rab = [
+                    'report_id' => $id,
+                    'no' => $this->input->post('rab_no'),
+                    'name' => $this->input->post('rab_name'),
+                    'budget' => $this->input->post('rab_budget'),
+                    'description' => $this->input->post('rab_description'),
+                ];
 
-            if ($delete_rab_final_file) {
-                $this->handle_delete_file('./uploads/', $report['rab_final_file']);
+                $rab_file = $_FILES['rab_file'] ?? [];
+                if ($rab_file) {
+                    $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
+                    if ($uploaded_rab) {
+                        $new_rab['file'] = $uploaded_rab['file_name'];
+                    }
+                }
+
+                $rab_final_file = $_FILES['rab_final_file'] ?? [];
+                if ($rab_final_file) {
+                    $uploaded_rab = $this->handle_upload_file($rab_final_file, 'rab_final');
+                    if ($uploaded_rab) {
+                        $new_rab['final_file'] = $uploaded_rab['file_name'];
+                    }
+                }
+
+                if ($rab) {
+                    if (!empty($new_rab['file'])) {
+                        $this->handle_delete_file('./uploads/', $rab['file']);
+                    }
+
+                    if (!empty($new_rab['final_file'])) {
+                        $this->handle_delete_file('./uploads/', $rab['final_file']);
+                    }
+
+                    $this->Report_model->update_rab($id, $new_rab);
+                } else {
+                    $this->Report_model->create_rab($new_rab);
+                }
+            } else {
+                if ($rab) {
+                    $this->Report_model->delete_rab($id);
+                }
+            }
+
+            if ($data['status'] === 'Approved') {
+                $new_manager = [
+                    'report_id' => $id,
+                    'rab_budget' => $this->input->post('manager_rab_budget'),
+                    'paid_by' => $this->input->post('manager_paid_by'),
+                    'bill' => $this->input->post('manager_bill'),
+                    'name' => $this->input->post('manager_name'),
+                    'date' => $this->input->post('manager_date'),
+                    'tax_report' => $this->input->post('manager_tax_report'),
+                ];
+
+                $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
+                if ($manager_payment_file) {
+                    $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
+                    if ($uploaded_manager_payment) {
+                        $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
+                    }
+                }
+
+                $manager = $this->Report_model->get_manager($id);
+                if ($manager) {
+                    $this->Report_model->update($id, $new_manager);
+                } else {
+                    $this->Report_model->create($new_manager);
+                }
             }
 
             $this->session->set_flashdata('success', 'Report updated successfully');
@@ -490,6 +530,47 @@ class Report extends MY_Controller
                 "message" => "Report updated successfully"
             ]);
         }
+    }
+
+    public function reject($id)
+    {
+        $report = $this->Report_model->get($id);
+        if (!$report) {
+            $this->session->set_flashdata('error', 'Report not found');
+            if ($this->input->is_ajax_request()) {
+                $this->output->set_status_header(404);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Report not found.',
+                ]);
+                return;
+            } else {
+                redirect('report');
+            }
+        }
+
+        $data = [
+            'rejected_by' => $this->auth_lib->user_id(),
+            'rejected_at' => date('Y-m-d H:i:s'),
+            'rejected_reason' => $this->input->post('rejected_reason')
+        ];
+
+        if (!$this->Report_model->update($id, $data)) {
+            $this->session->set_flashdata('error', 'Failed to update report');
+            $this->output->set_status_header(500);
+            echo json_encode([
+                "success" => false,
+                "error" => "Failed to update report"
+            ]);
+            return;
+        }
+
+        $this->session->set_flashdata('success', 'Report rejected successfully');
+        $this->output->set_status_header(200);
+        echo json_encode([
+            "success" => true,
+            "message" => "Report rejected successfully"
+        ]);
     }
 
     public function delete($id)
@@ -513,6 +594,10 @@ class Report extends MY_Controller
             ]);
             return;
         }
+
+        $this->Report_model->delete_rab($id);
+
+        $this->Report_model->delete_manager($id);
 
         $evidences = $this->Report_model->get_evidences_by_report($id);
         foreach ($evidences as $evidence) {
