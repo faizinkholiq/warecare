@@ -14,6 +14,19 @@ class Warehouse_model extends CI_Model
         return $this->db->get()->result_array();
     }
 
+    public function get_list($p)
+    {
+        if (!empty($p['company'])) {
+            $this->db->where("company_id", $p['company']);
+        }
+
+        $this->db->select($this->table . '.*, company.name AS company_name');
+        $this->db->from($this->table);
+        $this->db->join('company', 'company.id = ' . $this->table . '.company_id');
+        $this->db->order_by($this->table . '.created_at', 'DESC');
+        return $this->db->get()->result_array();
+    }
+
     public function get($id)
     {
         return $this->db->get_where($this->table, ['id' => $id])->row_array();

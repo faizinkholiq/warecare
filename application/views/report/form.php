@@ -244,29 +244,21 @@
                 <div class="form-group col-md-6">
                     <label for="reportProject">Project</label>
                     <select class="form-control" id="reportProject" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
-                        <option value="">- Pilih Project -</option>
-                        <?php foreach ($list_data['project'] as $key => $value): ?>
-                            <option value="<?= $value['id'] ?>" <?= isset($report) && $report['project_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
-                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCompany">Nama Perusahaan</label>
                     <select class="form-control" id="reportCompany" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
-                        <option value="">- Pilih Perusahaan -</option>
-                        <?php foreach ($list_data['company'] as $key => $value): ?>
-                            <option value="<?= $value['id'] ?>" <?= isset($report) && $report['company_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
-                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportWarehouse">Nomor Gudang</label>
-                    <select class="form-control" id="reportWarehouse" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
-                        <option value="">- Pilih Gudang -</option>
-                        <?php foreach ($list_data['warehouse'] as $key => $value): ?>
-                            <option value="<?= $value['id'] ?>" <?= isset($report) && $report['warehouse_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="d-flex">
+                        <input type=" text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportWarehouse" required readonly>
+                        <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
+                            <button type="button" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold  text-navy ml-2" style="width:160px;"><i class="fas fa-caret-down mr-1"></i> Pilih Gudang</button>
+                        <?php endif ?>
+                    </div>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCategory">Kategori Pengaduan</label>
@@ -581,6 +573,7 @@
         default: "<?= site_url('report') ?>",
         create: "<?= site_url('report/create') ?>",
         edit: "<?= site_url('report/edit') ?>",
+        get_warehouses: "<?= site_url('warehouse/get_list') ?>",
     };
 
     const domCache = {
@@ -643,6 +636,7 @@
     const appState = {
         mode: "<?= $mode ?>",
         userRole: "<?= $this->auth_lib->role() ?>",
+        categoryWithDetail: <?= json_encode($category_with_detail) ?>,
         reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
         details: <?= !empty($report) ? json_encode($report['details']) : '[]' ?>,
         evidence: {
@@ -659,6 +653,10 @@
             files: [],
             deletedIds: []
         },
+        listData: {
+            project: <?= json_encode($list_data['project']) ?>,
+            company: <?= json_encode($list_data['company']) ?>,
+        }
     };
 
     const statusRadioCards = document.querySelectorAll('.status-radio-card');
@@ -1064,15 +1062,107 @@
         domCache.modal.image.close.addEventListener('click', (e) => {
             closeImageModal();
         });
+
         domCache.modal.image.container.addEventListener('click', (e) => {
             if (e.target === domCache.modal.image.container) closeImageModal();
         });
+
         document.addEventListener('keydown', (e) => {
             if (e.target === domCache.modal.image.container && e.key === "Escape") closeImageModal();
         });
 
         if (appState.mode !== 'detail') {
             domCache.form.name.addEventListener('submit', handleFormSubmit);
+
+            if (domCache.form.item.entity) {
+                domCache.form.item.entity.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    const projectSelect = domCache.form.item.project;
+
+                    if (projectSelect) {
+                        projectSelect.value = null;
+
+                        for (let i = 0; i <= projectSelect.options.length; i++) {
+                            projectSelect.remove(i);
+                        }
+
+                        if (appState.listData.project.length > 0) {
+                            const filteredProjects = appState.listData.project.filter(v => v.entity_id == value);
+
+                            if (filteredProjects.length > 0) {
+                                filteredProjects.forEach(project => {
+                                    const option = document.createElement('option');
+                                    option.value = project.id;
+                                    option.textContent = project.name;
+                                    projectSelect.appendChild(option);
+                                });
+
+                                projectSelect.value = filteredProjects[0].id;
+                                projectSelect.dispatchEvent(new Event('change'));
+                            } else {
+                                const option = document.createElement('option');
+                                option.value = '';
+                                option.textContent = 'No projects available';
+                                option.disabled = true;
+                                projectSelect.appendChild(option);
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            if (domCache.form.item.project) {
+                domCache.form.item.project.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    const companySelect = domCache.form.item.company;
+
+                    if (companySelect) {
+                        companySelect.value = null;
+
+                        for (let i = 0; i <= companySelect.options.length; i++) {
+                            companySelect.remove(i);
+                        }
+
+                        if (appState.listData.company.length > 0) {
+                            const filteredCompanies = appState.listData.company.filter(v => v.project_id == value);
+
+                            if (filteredCompanies.length > 0) {
+                                filteredCompanies.forEach(company => {
+                                    const option = document.createElement('option');
+                                    option.value = company.id;
+                                    option.textContent = company.name;
+                                    companySelect.appendChild(option);
+                                });
+                            } else {
+                                const option = document.createElement('option');
+                                option.value = '';
+                                option.textContent = 'No companies available';
+                                option.disabled = true;
+                                companySelect.appendChild(option);
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            if (domCache.form.item.category) {
+                const categoryWithDetail = appState.categoryWithDetail;
+
+                if (appState.reportData.category_id) {
+                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
+                }
+
+                domCache.form.item.category.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
+                });
+            }
+
+            // Evidence & Work
 
             if (domCache.form.item.evidence.dropzone && domCache.form.item.evidence.input) {
                 domCache.form.item.evidence.dropzone.addEventListener('click', () => {
@@ -1103,19 +1193,8 @@
                 });
             }
 
-            if (domCache.form.item.category) {
-                const categoryWithDetail = [2, 3];
-                if (appState.reportData.category_id) {
-                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
-                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
-                }
 
-                domCache.form.item.category.addEventListener('change', (e) => {
-                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(e.target.value)) ? '' : 'none';
-                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(e.target.value)) ? '' : 'none';
-                });
-            }
-
+            // RAB
 
             if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
                 domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';

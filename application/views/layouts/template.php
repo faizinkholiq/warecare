@@ -148,6 +148,10 @@
         .my-container {
             padding: 1rem;
         }
+
+        .text-navy {
+            color: #001f3f !important;
+        }
     </style>
 </head>
 
