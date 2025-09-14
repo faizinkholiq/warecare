@@ -248,19 +248,21 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCompany">Nama Perusahaan</label>
-                    <select class="form-control" id="reportCompany" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
-                    </select>
+                    <div class="d-flex">
+                        <input type="hidden" id="reportCompanyID">
+                        <input type="text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportCompany" required readonly>
+                        <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
+                            <button onclick="showWarehouses()" type="button" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold  text-navy ml-2" style="width:200px;">
+                                <i class="fas fa-caret-down mr-1"></i> Pilih Perusahaan
+                            </button>
+                        <?php endif ?>
+                    </div>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportWarehouse">Nomor Gudang</label>
                     <div class="d-flex">
                         <input type="hidden" id="reportWarehouseID">
                         <input type="text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportWarehouse" required readonly>
-                        <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
-                            <button onclick="showWarehouses()" type="button" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold  text-navy ml-2" style="width:160px;">
-                                <i class="fas fa-caret-down mr-1"></i> Pilih Gudang
-                            </button>
-                        <?php endif ?>
                     </div>
                 </div>
                 <div class="form-group col-md-6">
@@ -284,11 +286,13 @@
                 </div>
                 <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
                     <div style="margin: 2rem 0 3rem;">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" id="reportDetailAddButton" class="btn btn-default rounded-lg shadow border-0">
-                                <i class="fas fa-plus-circle mr-1"></i> Add New Row
-                            </button>
-                        </div>
+                        <?php if ($mode !== 'detail'): ?>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" id="reportDetailAddButton" class="btn btn-default rounded-lg shadow border-0">
+                                    <i class="fas fa-plus-circle mr-1"></i> Tambah Uraian
+                                </button>
+                            </div>
+                        <?php endif; ?>
                         <div class="table-responsive shadow rounded-lg" style="margin-top: 1.5rem;">
                             <table id="reportDetailTable" class="table text-sm" style="width:100%">
                                 <thead>
@@ -528,7 +532,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="reportDetailModalLabel">Add New Row</h5>
+                <h5 class="modal-title" id="reportDetailModalLabel">Tambah Uraian</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -617,7 +621,10 @@
             item: {
                 entity: document.getElementById('reportEntity'),
                 project: document.getElementById('reportProject'),
-                company: document.getElementById('reportCompany'),
+                company: {
+                    id: document.getElementById('reportCompanyID'),
+                    name: document.getElementById('reportCompany'),
+                },
                 warehouse: {
                     id: document.getElementById('reportWarehouseID'),
                     name: document.getElementById('reportWarehouse'),
@@ -676,7 +683,7 @@
         userRole: "<?= $this->auth_lib->role() ?>",
         categoryWithDetail: <?= json_encode($category_with_detail) ?>,
         reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
-        details: <?= !empty($report) ? json_encode($report['details']) : '[]' ?>,
+        details: [],
         evidence: {
             files: [],
             deletedIds: []
@@ -757,12 +764,13 @@
                 data: null,
                 orderable: false,
                 className: "dt-center",
+                visible: appState.mode === 'create' || (appState.mode === 'edit' && appState.reportData.status === 'Pending' && appState.userRole === 'pelapor'),
                 render: function(data, type, row) {
                     return `
-                        <button type="button" class="btn btn-sm btn-primary edit-row mr-2" data-id="${row.id}">
+                        <button type="button" class="btn btn-sm rounded-lg shadow-sm border-0 btn-primary edit-row mr-2" data-id="${row.id}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-danger remove-row" data-id="${row.id}">
+                        <button type="button" class="btn btn-sm rounded-lg shadow-sm border-0 btn-danger remove-row" data-id="${row.id}">
                             <i class="fas fa-trash"></i>
                         </button>`
                 },
@@ -772,14 +780,13 @@
         data: appState.details,
     });
 
-    // Initialize DataTable
-    var reportWarehouseTable = $('#reportWarehouseTable').DataTable({
+    const reportWarehouseTable = $('#reportWarehouseTable').DataTable({
         serverSide: true,
         ajax: {
             url: URLS.get_warehouses,
             type: 'POST',
             data: function(d) {
-                d.company = domCache.form.item.company.value
+                d.project = domCache.form.item.project.value
                 return d;
             }
         },
@@ -821,7 +828,7 @@
                 className: "dt-center align-middle",
                 render: function(data, type, row) {
                     const buttons = [
-                        `<button onclick="selectWarehouse('${row.id}', '${row.name}')" type="button" class="btn select-btn btn-sm btn-success shadow rounded-lg border-0 mr-1" data-tippy-content="Pilih Gudang">
+                        `<button onclick="selectWarehouse(${row.company_id}, '${row.company}', ${row.id}, '${row.name}')" type="button" class="btn select-btn btn-sm btn-success shadow rounded-lg border-0 mr-1" data-tippy-content="Pilih Gudang">
                             <i class="text-xs fa fa-check-circle"></i>
                         </button>`
                     ];
@@ -844,36 +851,191 @@
         dom: 'lftr',
     });
 
-    // Initialize the DataTable
-    $(document).ready(function() {
-        function reloadDetailTable() {
-            reportDetailTable.clear();
-            reportDetailTable.rows.add(appState.details);
-            reportDetailTable.draw();
+    function init() {
+        setupEventListeners();
+
+        if (appState.mode !== 'create' && appState.reportData) {
+            initializeExistingData();
         }
+    }
 
-        // Function to update parent dropdown based on level selection
-        function updateParentDropdown() {
-            const level = parseInt($('#reportDetailLevel').val());
-            const parentDropdown = $('#reportDetailParent');
+    function setupEventListeners() {
+        domCache.modal.image.close.addEventListener('click', (e) => {
+            closeImageModal();
+        });
 
-            parentDropdown.empty();
+        domCache.modal.image.container.addEventListener('click', (e) => {
+            if (e.target === domCache.modal.image.container) closeImageModal();
+        });
 
-            if (level === 1) {
-                $('#reportDetailParentItemContainer').hide();
-            } else {
-                $('#reportDetailParentItemContainer').show();
-                // Add only level 1 items as parents
-                const parentItems = appState.details.filter(item => item.level == 1);
-                if (parentItems.length === 0) {
-                    parentDropdown.append('<option value="">No parent items available</option>');
-                } else {
-                    parentItems.forEach(item => {
-                        parentDropdown.append(`<option value="${item.id}">${item.description}</option>`);
-                    });
+        document.addEventListener('keydown', (e) => {
+            if (e.target === domCache.modal.image.container && e.key === "Escape") closeImageModal();
+        });
+
+        if (appState.mode !== 'detail') {
+            domCache.form.name.addEventListener('submit', handleFormSubmit);
+
+            if (domCache.form.item.entity) {
+                domCache.form.item.entity.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    const projectSelect = domCache.form.item.project;
+
+                    if (projectSelect) {
+                        projectSelect.value = null;
+                        projectSelect.innerHTML = '';
+
+                        domCache.form.item.company.id.value = '';
+                        domCache.form.item.company.name.value = '';
+                        domCache.form.item.warehouse.id.value = '';
+                        domCache.form.item.warehouse.name.value = '';
+
+                        if (appState.listData.project.length > 0) {
+                            const filteredProjects = appState.listData.project.filter(v => v.entity_id == value);
+
+                            if (filteredProjects.length > 0) {
+                                filteredProjects.unshift({
+                                    id: '',
+                                    name: '- Pilih Project -'
+                                });
+
+                                filteredProjects.forEach(project => {
+                                    const option = document.createElement('option');
+                                    option.value = project.id;
+                                    option.textContent = project.name;
+                                    projectSelect.appendChild(option);
+                                });
+
+                                projectSelect.value = filteredProjects[0].id;
+                                projectSelect.dispatchEvent(new Event('change'));
+                            } else {
+                                const option = document.createElement('option');
+                                option.value = '';
+                                option.textContent = 'No projects available';
+                                option.disabled = true;
+                                projectSelect.appendChild(option);
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (domCache.form.item.project) {
+                domCache.form.item.project.addEventListener('change', (e) => {
+                    domCache.form.item.company.id.value = '';
+                    domCache.form.item.company.name.value = '';
+                    domCache.form.item.warehouse.id.value = '';
+                    domCache.form.item.warehouse.name.value = '';
+                });
+            }
+
+            if (domCache.form.item.category) {
+                const categoryWithDetail = appState.categoryWithDetail;
+
+                if (appState.reportData.category_id) {
+                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
                 }
+
+                domCache.form.item.category.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
+                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
+                });
+            }
+
+            // Evidence & Work
+
+            if (domCache.form.item.evidence.dropzone && domCache.form.item.evidence.input) {
+                domCache.form.item.evidence.dropzone.addEventListener('click', () => {
+                    domCache.form.item.evidence.input.click();
+                });
+                domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
+                domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
+                domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
+                    handleDrop('evidence', event);
+                });
+
+                domCache.form.item.evidence.input.addEventListener('change', (event) => {
+                    handleFileInputChange('evidence', event);
+                });
+            }
+
+            if (domCache.form.item.work.dropzone && domCache.form.item.work.input) {
+                domCache.form.item.work.dropzone.addEventListener('click', () => {
+                    domCache.form.item.work.input.click();
+                });
+                domCache.form.item.work.dropzone.addEventListener('dragover', handleDragOver);
+                domCache.form.item.work.dropzone.addEventListener('dragleave', handleDragLeave);
+                domCache.form.item.work.dropzone.addEventListener('drop', (event) => {
+                    handleDrop('work', event);
+                });
+                domCache.form.item.work.input.addEventListener('change', (event) => {
+                    handleFileInputChange('work', event);
+                });
+            }
+
+
+            // RAB
+
+            if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
+                domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
+                domCache.form.item.rab.addEventListener('change', (e) => {
+                    domCache.form.item.rabFile.container.style.display = (e.target.value === '1') ? '' : 'none';
+                });
+            }
+
+            if (domCache.form.item.rabFile.input) {
+                domCache.form.item.rabFile.input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+                });
+            }
+
+            if (domCache.form.item.rabFile.remove) {
+                domCache.form.item.rabFile.remove.addEventListener('click', function() {
+                    resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
+
+                    if (domCache.form.item.rabFile.download) {
+                        domCache.form.item.rabFile.download.remove();
+                        appState.rab.deleted = true;
+                    }
+                });
+            }
+
+            if (domCache.form.item.rabFinalFile.input) {
+                domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
+                });
+            }
+
+            if (domCache.form.item.rabFinalFile.remove) {
+                domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
+                    resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
+
+                    if (domCache.form.item.rabFinalFile.download) {
+                        domCache.form.item.rabFinalFile.download.remove();
+                        appState.rabFinal.deleted = true;
+                    }
+                });
             }
         }
+
+        statusRadioCards.forEach(card => {
+            const radioInput = card.querySelector('.status-radio-input');
+
+            if (radioInput.checked) {
+                card.classList.add('selected');
+            }
+
+            card.addEventListener('click', () => {
+                statusRadioCards.forEach(c => c.classList.remove('selected'));
+
+                card.classList.add('selected');
+
+                radioInput.checked = true;
+            });
+        });
 
         // Update parent dropdown when level changes
         $('#reportDetailLevel').on('change', updateParentDropdown);
@@ -885,7 +1047,7 @@
             document.querySelector('.status-radio-input:checked').value = 'OK';
             statusRadioCards.forEach(c => c.classList.remove('selected'));
             statusRadioCards[0].classList.add('selected');
-            $('#reportDetailModalLabel').text('Add New Row');
+            $('#reportDetailModalLabel').text('Tambah Uraian');
             $('#reportDetailParentItemContainer').hide();
             reportDetailModal.modal('show');
         });
@@ -1035,351 +1197,6 @@
                 toastr.success("Row removed successfully");
             }
         });
-
-        function renumberDetails() {
-            // First, ensure all items have a 'no' property
-            appState.details.forEach(item => {
-                if (!item.no) {
-                    return;
-                }
-            });
-
-            // Create a copy and sort by 'no'
-            const sortedArray = appState.details.slice().sort((a, b) => {
-                if (!a.no && !b.no) return 0;
-                if (!a.no) return 1;
-                if (!b.no) return -1;
-
-                const aParts = a.no.split('.').map(Number);
-                const bParts = b.no.split('.').map(Number);
-
-                const maxLength = Math.max(aParts.length, bParts.length);
-
-                for (let i = 0; i < maxLength; i++) {
-                    const aVal = aParts[i] || 0;
-                    const bVal = bParts[i] || 0;
-
-                    if (aVal != bVal) {
-                        return aVal - bVal;
-                    }
-                }
-
-                return 0;
-            });
-
-            // Fix parent numbers first (level 1 items)
-            fixNumberGroup(sortedArray.filter(item => item.level == 1), 1);
-
-            // Then fix child numbers for each parent group
-            const parents = sortedArray.filter(item => item.level === 1);
-            parents.forEach(parent => {
-                const children = sortedArray.filter(item =>
-                    item.level > 1 && item.no.startsWith(`${parent.no}.`)
-                );
-                fixNumberGroup(children, 2, parent.no);
-            });
-
-            // Fix deeper levels if they exist
-            fixDeeperLevels(sortedArray);
-
-            appState.details = sortedArray;
-
-            // Helper function to fix numbering for a group of items
-            function fixNumberGroup(group, level, parentPrefix = '') {
-                if (group.length == 0) return;
-
-                // Extract and sort the numbers
-                const numbers = group.map(item => {
-                    const parts = item.no.split('.');
-                    return parseInt(parts[level - 1]);
-                }).sort((a, b) => a - b);
-
-                // Check for gaps and fix them
-                let expectedNumber = 1;
-                const fixedItems = [];
-
-                numbers.forEach((currentNumber, index) => {
-                    const item = group.find(it => {
-                        const parts = it.no.split('.');
-                        return parseInt(parts[level - 1]) == currentNumber;
-                    });
-
-                    if (item && currentNumber != expectedNumber) {
-                        const oldNo = item.no;
-                        const parts = item.no.split('.');
-                        parts[level - 1] = expectedNumber.toString();
-
-                        // Update the prefix for children if this is a parent
-                        if (level == 1) {
-                            const newPrefix = parts.join('.');
-                            updateChildrenPrefix(sortedArray, oldNo, newPrefix);
-                        }
-
-                        item.no = parts.join('.');
-                    }
-
-                    fixedItems.push(item);
-                    expectedNumber++;
-                });
-
-                return fixedItems;
-            }
-
-            // Helper function to update children's prefix when parent number changes
-            function updateChildrenPrefix(array, oldParentNo, newParentNo) {
-                array.forEach(item => {
-                    if (item.no && item.no.startsWith(`${oldParentNo}.`)) {
-                        const oldNo = item.no;
-                        item.no = item.no.replace(`${oldParentNo}.`, `${newParentNo}.`);
-                    }
-                });
-            }
-
-            // Helper function to fix deeper levels recursively
-            function fixDeeperLevels(array) {
-                const maxLevel = Math.max(...array.map(item => item.level || 1));
-
-                for (let level = 3; level <= maxLevel; level++) {
-                    const itemsByParent = {};
-
-                    // Group items by their parent's number
-                    array.filter(item => item.level == level).forEach(item => {
-                        const parentNo = item.no.split('.').slice(0, -1).join('.');
-                        if (!itemsByParent[parentNo]) {
-                            itemsByParent[parentNo] = [];
-                        }
-                        itemsByParent[parentNo].push(item);
-                    });
-
-                    // Fix numbering for each parent group
-                    Object.keys(itemsByParent).forEach(parentNo => {
-                        fixNumberGroup(itemsByParent[parentNo], level, parentNo);
-                    });
-                }
-            }
-        }
-    });
-
-    function init() {
-        setupEventListeners();
-
-        if (appState.mode === 'edit' && appState.reportData) {
-            initializeExistingData();
-        }
-    }
-
-    function setupEventListeners() {
-        domCache.modal.image.close.addEventListener('click', (e) => {
-            closeImageModal();
-        });
-
-        domCache.modal.image.container.addEventListener('click', (e) => {
-            if (e.target === domCache.modal.image.container) closeImageModal();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.target === domCache.modal.image.container && e.key === "Escape") closeImageModal();
-        });
-
-        if (appState.mode !== 'detail') {
-            domCache.form.name.addEventListener('submit', handleFormSubmit);
-
-            if (domCache.form.item.entity) {
-                domCache.form.item.entity.addEventListener('change', (e) => {
-                    const value = e.target.value;
-                    const projectSelect = domCache.form.item.project;
-
-                    if (projectSelect) {
-                        projectSelect.value = null;
-
-                        for (let i = 0; i <= projectSelect.options.length; i++) {
-                            projectSelect.remove(i);
-                        }
-
-                        if (appState.listData.project.length > 0) {
-                            const filteredProjects = appState.listData.project.filter(v => v.entity_id == value);
-
-                            if (filteredProjects.length > 0) {
-                                filteredProjects.unshift({
-                                    id: '',
-                                    name: '- Pilih Project -'
-                                });
-
-                                filteredProjects.forEach(project => {
-                                    const option = document.createElement('option');
-                                    option.value = project.id;
-                                    option.textContent = project.name;
-                                    projectSelect.appendChild(option);
-                                });
-
-                                projectSelect.value = filteredProjects[0].id;
-                                projectSelect.dispatchEvent(new Event('change'));
-                            } else {
-                                const option = document.createElement('option');
-                                option.value = '';
-                                option.textContent = 'No projects available';
-                                option.disabled = true;
-                                projectSelect.appendChild(option);
-                            }
-                        }
-                    }
-                });
-            }
-
-
-            if (domCache.form.item.project) {
-                domCache.form.item.project.addEventListener('change', (e) => {
-                    const value = e.target.value;
-                    const companySelect = domCache.form.item.company;
-
-                    if (companySelect) {
-                        companySelect.value = null;
-
-                        for (let i = 0; i <= companySelect.options.length; i++) {
-                            companySelect.remove(i);
-                        }
-
-                        if (appState.listData.company.length > 0) {
-                            const filteredCompanies = appState.listData.company.filter(v => v.project_id == value);
-
-                            if (filteredCompanies.length > 0) {
-                                filteredCompanies.unshift({
-                                    id: '',
-                                    name: '- Pilih Perusahaan -'
-                                });
-
-                                filteredCompanies.forEach(company => {
-                                    const option = document.createElement('option');
-                                    option.value = company.id;
-                                    option.textContent = company.name;
-                                    companySelect.appendChild(option);
-                                });
-                            } else {
-                                const option = document.createElement('option');
-                                option.value = '';
-                                option.textContent = 'No companies available';
-                                option.disabled = true;
-                                companySelect.appendChild(option);
-                            }
-                        }
-                    }
-                });
-            }
-
-            if (domCache.form.item.company) {
-                domCache.form.item.company.addEventListener('change', (e) => {
-                    if (e.target.value) showWarehouses()
-                })
-            }
-
-            if (domCache.form.item.category) {
-                const categoryWithDetail = appState.categoryWithDetail;
-
-                if (appState.reportData.category_id) {
-                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
-                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
-                }
-
-                domCache.form.item.category.addEventListener('change', (e) => {
-                    const value = e.target.value;
-                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
-                    domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
-                });
-            }
-
-            // Evidence & Work
-
-            if (domCache.form.item.evidence.dropzone && domCache.form.item.evidence.input) {
-                domCache.form.item.evidence.dropzone.addEventListener('click', () => {
-                    domCache.form.item.evidence.input.click();
-                });
-                domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
-                domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
-                domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
-                    handleDrop('evidence', event);
-                });
-
-                domCache.form.item.evidence.input.addEventListener('change', (event) => {
-                    handleFileInputChange('evidence', event);
-                });
-            }
-
-            if (domCache.form.item.work.dropzone && domCache.form.item.work.input) {
-                domCache.form.item.work.dropzone.addEventListener('click', () => {
-                    domCache.form.item.work.input.click();
-                });
-                domCache.form.item.work.dropzone.addEventListener('dragover', handleDragOver);
-                domCache.form.item.work.dropzone.addEventListener('dragleave', handleDragLeave);
-                domCache.form.item.work.dropzone.addEventListener('drop', (event) => {
-                    handleDrop('work', event);
-                });
-                domCache.form.item.work.input.addEventListener('change', (event) => {
-                    handleFileInputChange('work', event);
-                });
-            }
-
-
-            // RAB
-
-            if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
-                domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
-                domCache.form.item.rab.addEventListener('change', (e) => {
-                    domCache.form.item.rabFile.container.style.display = (e.target.value === '1') ? '' : 'none';
-                });
-            }
-
-            if (domCache.form.item.rabFile.input) {
-                domCache.form.item.rabFile.input.addEventListener('change', function() {
-                    const file = this.files[0];
-                    updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
-                });
-            }
-
-            if (domCache.form.item.rabFile.remove) {
-                domCache.form.item.rabFile.remove.addEventListener('click', function() {
-                    resetFileUI(domCache.form.item.rabFile.input, domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select);
-
-                    if (domCache.form.item.rabFile.download) {
-                        domCache.form.item.rabFile.download.remove();
-                        appState.rab.deleted = true;
-                    }
-                });
-            }
-
-            if (domCache.form.item.rabFinalFile.input) {
-                domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
-                    const file = this.files[0];
-                    updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
-                });
-            }
-
-            if (domCache.form.item.rabFinalFile.remove) {
-                domCache.form.item.rabFinalFile.remove.addEventListener('click', function() {
-                    resetFileUI(domCache.form.item.rabFinalFile.input, domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select);
-
-                    if (domCache.form.item.rabFinalFile.download) {
-                        domCache.form.item.rabFinalFile.download.remove();
-                        appState.rabFinal.deleted = true;
-                    }
-                });
-            }
-        }
-
-        statusRadioCards.forEach(card => {
-            const radioInput = card.querySelector('.status-radio-input');
-
-            if (radioInput.checked) {
-                card.classList.add('selected');
-            }
-
-            card.addEventListener('click', () => {
-                statusRadioCards.forEach(c => c.classList.remove('selected'));
-
-                card.classList.add('selected');
-
-                radioInput.checked = true;
-            });
-        });
     }
 
     function initializeExistingData() {
@@ -1400,6 +1217,48 @@
                 isExisting: true
             }));
         }
+
+        if (appState.reportData.details) {
+            appState.details = appState.reportData.details;
+            reloadDetailTable();
+        }
+
+        if (appState.listData.project.length > 0) {
+            if (domCache.form.item.project) {
+                const projectSelect = domCache.form.item.project;
+                const filteredProjects = appState.listData.project.filter(v => v.entity_id == appState.reportData.entity_id);
+
+                projectSelect.value = null;
+                projectSelect.innerHTML = '';
+
+                if (filteredProjects.length > 0) {
+                    filteredProjects.unshift({
+                        id: '',
+                        name: '- Pilih Project -'
+                    });
+
+                    filteredProjects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        projectSelect.appendChild(option);
+                    });
+
+                    projectSelect.value = appState.reportData.project_id;
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No projects available';
+                    option.disabled = true;
+                    projectSelect.appendChild(option);
+                }
+            }
+        }
+
+        domCache.form.item.company.id.value = appState.reportData.company_id;
+        domCache.form.item.company.name.value = appState.reportData.company;
+        domCache.form.item.warehouse.id.value = appState.reportData.warehouse_id;
+        domCache.form.item.warehouse.name.value = appState.reportData.warehouse;
     }
 
     function showWarehouses() {
@@ -1408,9 +1267,11 @@
         $('#reportWarehouseModal').modal('show');
     }
 
-    function selectWarehouse(id, name) {
-        domCache.form.item.warehouse.id.value = id;
-        domCache.form.item.warehouse.name.value = name;
+    function selectWarehouse(company_id, company_name, warehouse_id, warehouse_name) {
+        domCache.form.item.company.id.value = company_id;
+        domCache.form.item.company.name.value = company_name;
+        domCache.form.item.warehouse.id.value = warehouse_id;
+        domCache.form.item.warehouse.name.value = warehouse_name;
         $('#reportWarehouseModal').modal('hide');
     }
 
@@ -1538,7 +1399,7 @@
 
         formData.append('entity_id', domCache.form.item.entity.value);
         formData.append('project_id', domCache.form.item.project.value);
-        formData.append('company_id', domCache.form.item.company.value);
+        formData.append('company_id', domCache.form.item.company.id.value);
         formData.append('warehouse_id', domCache.form.item.warehouse.id.value);
         formData.append('category_id', domCache.form.item.category.value);
 
@@ -1666,6 +1527,158 @@
                 console.error('Error:', error);
                 toastr.error("Failed to decline report.");
             });
+    }
+
+    function reloadDetailTable() {
+        reportDetailTable.clear();
+        reportDetailTable.rows.add(appState.details);
+        reportDetailTable.draw();
+    }
+
+    // Function to update parent dropdown based on level selection
+    function updateParentDropdown() {
+        const level = parseInt($('#reportDetailLevel').val());
+        const parentDropdown = $('#reportDetailParent');
+
+        parentDropdown.empty();
+
+        if (level === 1) {
+            $('#reportDetailParentItemContainer').hide();
+        } else {
+            $('#reportDetailParentItemContainer').show();
+            // Add only level 1 items as parents
+            const parentItems = appState.details.filter(item => item.level == 1);
+            if (parentItems.length === 0) {
+                parentDropdown.append('<option value="">No parent items available</option>');
+            } else {
+                parentItems.forEach(item => {
+                    parentDropdown.append(`<option value="${item.id}">${item.description}</option>`);
+                });
+            }
+        }
+    }
+
+    function renumberDetails() {
+        // First, ensure all items have a 'no' property
+        appState.details.forEach(item => {
+            if (!item.no) {
+                return;
+            }
+        });
+
+        // Create a copy and sort by 'no'
+        const sortedArray = appState.details.slice().sort((a, b) => {
+            if (!a.no && !b.no) return 0;
+            if (!a.no) return 1;
+            if (!b.no) return -1;
+
+            const aParts = a.no.split('.').map(Number);
+            const bParts = b.no.split('.').map(Number);
+
+            const maxLength = Math.max(aParts.length, bParts.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                const aVal = aParts[i] || 0;
+                const bVal = bParts[i] || 0;
+
+                if (aVal != bVal) {
+                    return aVal - bVal;
+                }
+            }
+
+            return 0;
+        });
+
+        // Fix parent numbers first (level 1 items)
+        fixNumberGroup(sortedArray.filter(item => item.level == 1), 1);
+
+        // Then fix child numbers for each parent group
+        const parents = sortedArray.filter(item => item.level === 1);
+        parents.forEach(parent => {
+            const children = sortedArray.filter(item =>
+                item.level > 1 && item.no.startsWith(`${parent.no}.`)
+            );
+            fixNumberGroup(children, 2, parent.no);
+        });
+
+        // Fix deeper levels if they exist
+        fixDeeperLevels(sortedArray);
+
+        appState.details = sortedArray;
+
+        // Helper function to fix numbering for a group of items
+        function fixNumberGroup(group, level, parentPrefix = '') {
+            if (group.length == 0) return;
+
+            // Extract and sort the numbers
+            const numbers = group.map(item => {
+                const parts = item.no.split('.');
+                return parseInt(parts[level - 1]);
+            }).sort((a, b) => a - b);
+
+            // Check for gaps and fix them
+            let expectedNumber = 1;
+            const fixedItems = [];
+
+            numbers.forEach((currentNumber, index) => {
+                const item = group.find(it => {
+                    const parts = it.no.split('.');
+                    return parseInt(parts[level - 1]) == currentNumber;
+                });
+
+                if (item && currentNumber != expectedNumber) {
+                    const oldNo = item.no;
+                    const parts = item.no.split('.');
+                    parts[level - 1] = expectedNumber.toString();
+
+                    // Update the prefix for children if this is a parent
+                    if (level == 1) {
+                        const newPrefix = parts.join('.');
+                        updateChildrenPrefix(sortedArray, oldNo, newPrefix);
+                    }
+
+                    item.no = parts.join('.');
+                }
+
+                fixedItems.push(item);
+                expectedNumber++;
+            });
+
+            return fixedItems;
+        }
+
+        // Helper function to update children's prefix when parent number changes
+        function updateChildrenPrefix(array, oldParentNo, newParentNo) {
+            array.forEach(item => {
+                if (item.no && item.no.startsWith(`${oldParentNo}.`)) {
+                    const oldNo = item.no;
+                    item.no = item.no.replace(`${oldParentNo}.`, `${newParentNo}.`);
+                }
+            });
+        }
+
+        // Helper function to fix deeper levels recursively
+        function fixDeeperLevels(array) {
+            const maxLevel = Math.max(...array.map(item => item.level || 1));
+
+            for (let level = 3; level <= maxLevel; level++) {
+                const itemsByParent = {};
+
+                // Group items by their parent's number
+                array.filter(item => item.level == level).forEach(item => {
+                    const parentNo = item.no.split('.').slice(0, -1).join('.');
+                    if (!itemsByParent[parentNo]) {
+                        itemsByParent[parentNo] = [];
+                    }
+                    itemsByParent[parentNo].push(item);
+                });
+
+                // Fix numbering for each parent group
+                Object.keys(itemsByParent).forEach(parentNo => {
+                    fixNumberGroup(itemsByParent[parentNo], level, parentNo);
+                });
+            }
+        }
     }
 
     if (document.readyState === 'loading') {

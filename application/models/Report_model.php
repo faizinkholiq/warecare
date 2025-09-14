@@ -135,7 +135,24 @@ class Report_model extends CI_Model
 
     public function get($id)
     {
-        return $this->db->get_where($this->table, ['id' => $id])->row_array();
+        $this->db->select([
+            $this->table . '.*',
+            'entity.name as entity',
+            'project.name as project',
+            'warehouse.name as warehouse',
+            'company.name as company',
+            'category.name as category',
+        ])
+            ->from($this->table)
+            ->join('entity', 'entity.id = report.entity_id', 'left')
+            ->join('project', 'project.id = report.project_id', 'left')
+            ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
+            ->join('category', 'category.id = report.category_id', 'left')
+            ->join('company', 'company.id = report.company_id', 'left')
+            ->where('report.id', $id)
+            ->group_by('report.id');
+
+        return $this->db->get()->row_array();
     }
 
     public function get_detail($id)

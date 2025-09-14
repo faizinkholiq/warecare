@@ -26,7 +26,7 @@ class Warehouse extends MY_Controller
 
     public function get_list()
     {
-        $p['company'] = $this->input->post('company');
+        $p['project'] = $this->input->post('project');
 
         $warehouses = $this->Warehouse_model->get_list($p);
 

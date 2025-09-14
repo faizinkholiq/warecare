@@ -16,8 +16,8 @@ class Warehouse_model extends CI_Model
 
     public function get_list($p)
     {
-        if (!empty($p['company'])) {
-            $this->db->where("company_id", $p['company']);
+        if (!empty($p['project'])) {
+            $this->db->where("company.project_id", $p['project']);
         }
 
         $this->db->select($this->table . '.*, company.name AS company_name');
