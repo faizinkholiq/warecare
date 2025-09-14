@@ -166,7 +166,7 @@ class Report_model extends CI_Model
         return $this->db->get()->row_array();
     }
 
-    public function summary($user)
+    public function summary($user = null)
     {
         $this->db->select([
             "COUNT(*) as all_count",

@@ -18,10 +18,10 @@ class Dashboard extends MY_Controller
         $data["title"] = "Dashboard";
         $data["menu_id"] = "dashboard";
 
-        if ($this->auth_lib->role() === 'administrator') {
-            $data["summary"] = $this->Report_model->summary();
-        } else {
+        if ($this->auth_lib->role() === 'pelapor') {
             $data["summary"] = $this->Report_model->summary($this->auth_lib->user_id());
+        } else {
+            $data["summary"] = $this->Report_model->summary();
         }
 
         $data["view"] = "dashboard/index";
