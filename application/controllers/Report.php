@@ -270,9 +270,22 @@ class Report extends MY_Controller
 
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["report"] = $report;
+
+            if ($report["is_rab"]) {
+                $data["report"]["rab"] = $this->Report_model->get_rab($id);
+            }
+
+            if ($report["status"] === 'On Process') {
+                $data["report"]["manager"] = $this->Report_model->get_manager($id);
+            }
+
+            if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
+                $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
+            }
+
             $data["report"]["evidences"] = $existing_evidences;
             $data["report"]["works"] = $existing_works;
-            $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
+
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
             $data["list_data"]["project"] = $this->Project_model->get_all();
             $data["list_data"]["company"] = $this->Company_model->get_all();

@@ -254,9 +254,12 @@
                 <div class="form-group col-md-6">
                     <label for="reportWarehouse">Nomor Gudang</label>
                     <div class="d-flex">
-                        <input type=" text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportWarehouse" required readonly>
+                        <input type="hidden" id="reportWarehouseID">
+                        <input type="text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportWarehouse" required readonly>
                         <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
-                            <button type="button" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold  text-navy ml-2" style="width:160px;"><i class="fas fa-caret-down mr-1"></i> Pilih Gudang</button>
+                            <button onclick="showWarehouses()" type="button" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold  text-navy ml-2" style="width:160px;">
+                                <i class="fas fa-caret-down mr-1"></i> Pilih Gudang
+                            </button>
                         <?php endif ?>
                     </div>
                 </div>
@@ -489,6 +492,38 @@
     </div>
 </div>
 
+<div class="modal fade" id="reportWarehouseModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="pt-2 pr-3">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg p-3">
+                    <table id="reportWarehouseTable" class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th class="dt-center">No</th>
+                                <th class="dt-center">No. Gudang</th>
+                                <th class="dt-center">Penyewa/Pembeli</th>
+                                <th class="dt-center">Status</th>
+                                <th class="dt-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-white shadow-sm border-0 font-weight-bold" data-dismiss="modal">Batal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -583,7 +618,10 @@
                 entity: document.getElementById('reportEntity'),
                 project: document.getElementById('reportProject'),
                 company: document.getElementById('reportCompany'),
-                warehouse: document.getElementById('reportWarehouse'),
+                warehouse: {
+                    id: document.getElementById('reportWarehouseID'),
+                    name: document.getElementById('reportWarehouse'),
+                },
                 category: document.getElementById('reportCategory'),
                 title: document.getElementById('reportTitle'),
                 description: {
@@ -732,6 +770,78 @@
             }
         ],
         data: appState.details,
+    });
+
+    // Initialize DataTable
+    var reportWarehouseTable = $('#reportWarehouseTable').DataTable({
+        serverSide: true,
+        ajax: {
+            url: URLS.get_warehouses,
+            type: 'POST',
+            data: function(d) {
+                d.company = domCache.form.item.company.value
+                return d;
+            }
+        },
+        rowId: 'id',
+        columns: [{
+                data: "id",
+                visible: false,
+                orderable: false,
+                targets: 0
+            },
+            {
+                data: null,
+                className: "align-middle",
+                render: function(data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                },
+                searchable: false,
+                orderable: false,
+                targets: 1
+            },
+            {
+                data: "name",
+                className: "align-middle",
+                targets: 2
+            },
+            {
+                data: "company",
+                className: "align-middle",
+                targets: 3
+            },
+            {
+                data: "status",
+                className: "align-middle",
+                targets: 4
+            },
+            {
+                data: null,
+                width: "8%",
+                className: "dt-center align-middle",
+                render: function(data, type, row) {
+                    const buttons = [
+                        `<button onclick="selectWarehouse('${row.id}', '${row.name}')" type="button" class="btn select-btn btn-sm btn-success shadow rounded-lg border-0 mr-1" data-tippy-content="Pilih Gudang">
+                            <i class="text-xs fa fa-check-circle"></i>
+                        </button>`
+                    ];
+
+                    return buttons.join('');
+                },
+                orderable: false,
+                targets: 5
+            }
+        ],
+        scrollResize: false,
+        scrollCollapse: false,
+        paging: false,
+        info: false,
+        responsive: true,
+        lengthChange: false,
+        autoWidth: true,
+        searching: true,
+        select: false,
+        dom: 'lftr',
     });
 
     // Initialize the DataTable
@@ -1090,6 +1200,11 @@
                             const filteredProjects = appState.listData.project.filter(v => v.entity_id == value);
 
                             if (filteredProjects.length > 0) {
+                                filteredProjects.unshift({
+                                    id: '',
+                                    name: '- Pilih Project -'
+                                });
+
                                 filteredProjects.forEach(project => {
                                     const option = document.createElement('option');
                                     option.value = project.id;
@@ -1128,6 +1243,11 @@
                             const filteredCompanies = appState.listData.company.filter(v => v.project_id == value);
 
                             if (filteredCompanies.length > 0) {
+                                filteredCompanies.unshift({
+                                    id: '',
+                                    name: '- Pilih Perusahaan -'
+                                });
+
                                 filteredCompanies.forEach(company => {
                                     const option = document.createElement('option');
                                     option.value = company.id;
@@ -1146,6 +1266,11 @@
                 });
             }
 
+            if (domCache.form.item.company) {
+                domCache.form.item.company.addEventListener('change', (e) => {
+                    if (e.target.value) showWarehouses()
+                })
+            }
 
             if (domCache.form.item.category) {
                 const categoryWithDetail = appState.categoryWithDetail;
@@ -1277,6 +1402,18 @@
         }
     }
 
+    function showWarehouses() {
+        reportWarehouseTable.draw();
+
+        $('#reportWarehouseModal').modal('show');
+    }
+
+    function selectWarehouse(id, name) {
+        domCache.form.item.warehouse.id.value = id;
+        domCache.form.item.warehouse.name.value = name;
+        $('#reportWarehouseModal').modal('hide');
+    }
+
     function handleFileInputChange(field, e) {
         processFiles(field, e.target.files);
         e.target.value = '';
@@ -1402,7 +1539,7 @@
         formData.append('entity_id', domCache.form.item.entity.value);
         formData.append('project_id', domCache.form.item.project.value);
         formData.append('company_id', domCache.form.item.company.value);
-        formData.append('warehouse_id', domCache.form.item.warehouse.value);
+        formData.append('warehouse_id', domCache.form.item.warehouse.id.value);
         formData.append('category_id', domCache.form.item.category.value);
 
         if (domCache.form.item.category.value != 2) {
