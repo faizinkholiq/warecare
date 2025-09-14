@@ -38,6 +38,9 @@ class Report_model extends CI_Model
             foreach ($columns as $column) {
                 if (!empty($column['search']['value'])) {
                     switch ($column['name']) {
+                        case 'status':
+                            $this->db->where('report.status', $column['search']['value']);
+                            break;
                         case 'category':
                             $this->db->where('category_id', $column['search']['value']);
                             break;
@@ -113,7 +116,7 @@ class Report_model extends CI_Model
         $this->db->group_by('report.id');
 
         // Clone the current query before getting the count
-        $total_records = $this->db->count_all_results(null, false);
+        $total_records = $this->db->count_all_results('', false);
 
         // Get the records with limit and offset
         $this->db->limit($limit, $offset);

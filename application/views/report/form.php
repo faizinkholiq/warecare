@@ -345,33 +345,33 @@
                         </select>
                     </div>
 
-                    <?php if ($mode === 'edit' || ($mode === 'detail' && isset($report) && (bool)$report['is_rab'] === true)): ?>
+                    <?php if ($mode === 'edit' || ($mode === 'detail' && isset($report) && (bool)$report['is_rab'])): ?>
                         <div id="reportRABContainer" class="form-group col-md-6">
                             <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
                                 <?php if ($mode !== 'detail'): ?>
                                     <input type="file" class="form-control" id="reportRABFile" hidden>
                                 <?php endif; ?>
                                 <div>
-                                    <?php if (isset($report) && $report['rab_file']): ?>
-                                        <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                    <?php if (isset($report) && $report['rab']['file']): ?>
+                                        <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab']['file']) ?>" class="btn btn-sm bg-navy rounded-lg">
                                             <i class="fas fa-download mr-1"></i> Download File
                                         </a>
                                     <?php endif; ?>
                                     <?php if ($mode !== 'detail'): ?>
-                                        <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab_file'] ? 'none' : '' ?>">
+                                        <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab']['file'] ? 'none' : '' ?>">
                                             <i class="fas fa-folder-open mr-1"></i> Pilih File
                                         </button>
                                     <?php endif; ?>
-                                    <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_file'] ? $report['rab_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                    <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab']['file'] ? $report['rab']['file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                                 </div>
                                 <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'kontraktor'): ?>
-                                    <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_file'] ? '' : 'none' ?>">
+                                    <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab']['file'] ? '' : 'none' ?>">
                                         <i class="fa fa-times"></i>
                                     </button>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <?php if (isset($report) && $report['rab_file'] && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
+                        <?php if (isset($report) && $report['rab']['file'] && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
                             <div class="form-group col-md-6">
                                 <label for="reportRABFinalFile">RAB Final</label>
                                 <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
@@ -379,20 +379,20 @@
                                         <input type="file" class="form-control" id="reportRABFinalFile" hidden>
                                     <?php endif; ?>
                                     <div>
-                                        <?php if (isset($report) && $report['rab_final_file']): ?>
-                                            <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab_final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                        <?php if (isset($report) && $report['rab']['final_file']): ?>
+                                            <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab']['final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
                                                 <i class="fas fa-download mr-1"></i> Download File
                                             </a>
                                         <?php endif; ?>
                                         <?php if ($mode !== 'detail'): ?>
-                                            <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab_final_file'] ? 'none' : '' ?>">
+                                            <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab']['final_file'] ? 'none' : '' ?>">
                                                 <i class="fas fa-folder-open mr-1"></i> Pilih File
                                             </button>
                                         <?php endif; ?>
-                                        <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab_final_file'] ? $report['rab_final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                        <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab']['final_file'] ? $report['rab']['final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                                     </div>
                                     <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'rab'): ?>
-                                        <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab_final_file'] ? '' : 'none' ?>">
+                                        <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab']['final_file'] ? '' : 'none' ?>">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     <?php endif; ?>
