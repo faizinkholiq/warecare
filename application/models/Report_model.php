@@ -95,6 +95,7 @@ class Report_model extends CI_Model
             'CONCAT_WS(" ", processed_by.first_name, processed_by.last_name) processed_by',
             'CONCAT_WS(" ", approved_by.first_name, approved_by.last_name) approved_by',
             'CONCAT_WS(" ", completed_by.first_name, completed_by.last_name) completed_by',
+            'CONCAT_WS(" ", rejected_by.first_name, rejected_by.last_name) rejected_by',
             'report.created_at'
         ])
             ->from('report')
@@ -107,7 +108,9 @@ class Report_model extends CI_Model
             ->join('user created_by', 'created_by.id = report.created_by', 'left')
             ->join('user processed_by', 'processed_by.id = report.processed_by', 'left')
             ->join('user approved_by', 'approved_by.id = report.approved_by', 'left')
-            ->join('user completed_by', 'completed_by.id = report.completed_by', 'left');
+            ->join('user completed_by', 'completed_by.id = report.completed_by', 'left')
+            ->join('user rejected_by', 'rejected_by.id = report.rejected_by', 'left')
+        ;
 
         // Handle ordering
         if (!empty($order)) {

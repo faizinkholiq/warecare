@@ -273,10 +273,7 @@ class Report extends MY_Controller
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["report"] = $report;
             $data["report"]["rab"] = $this->Report_model->get_rab($id);
-
-            if ($report["status"] === 'On Process') {
-                $data["report"]["manager"] = $this->Report_model->get_manager($id);
-            }
+            $data["report"]["manager"] = $this->Report_model->get_manager($id);
 
             if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
                 $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
@@ -469,7 +466,7 @@ class Report extends MY_Controller
                     'report_id' => $id,
                     'no' => $this->input->post('rab_no'),
                     'name' => $this->input->post('rab_name'),
-                    'budget' => $this->input->post('rab_budget'),
+                    'budget' => (float)str_replace('.', '', $this->input->post('rab_budget') ?: 0),
                     'description' => $this->input->post('rab_description'),
                 ];
 
@@ -511,9 +508,9 @@ class Report extends MY_Controller
             if ($data['status'] === 'Approved') {
                 $new_manager = [
                     'report_id' => $id,
-                    'rab_budget' => $this->input->post('manager_rab_budget'),
+                    'rab_budget' => (float)str_replace('.', '', $this->input->post('manager_rab_budget') ?: 0),
                     'paid_by' => $this->input->post('manager_paid_by'),
-                    'bill' => $this->input->post('manager_bill'),
+                    'bill' => (float)str_replace('.', '', $this->input->post('manager_bill') ?: 0),
                     'name' => $this->input->post('manager_name'),
                     'date' => $this->input->post('manager_date'),
                     'tax_report' => $this->input->post('manager_tax_report'),
@@ -568,9 +565,10 @@ class Report extends MY_Controller
         }
 
         $data = [
+            'status' => 'Rejected',
             'rejected_by' => $this->auth_lib->user_id(),
             'rejected_at' => date('Y-m-d H:i:s'),
-            'rejected_reason' => $this->input->post('rejected_reason')
+            'rejected_reason' => $this->input->post('reason')
         ];
 
         if (!$this->Report_model->update($id, $data)) {

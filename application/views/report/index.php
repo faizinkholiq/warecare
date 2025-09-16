@@ -306,10 +306,16 @@
                     render: function(data, type, row) {
                         let action_by = "";
 
-                        if (row.status === 'On Process') {
-                            action_by = row.processed_by;
-                        } else if (row.status === 'Approved') {
-                            action_by = row.approved_by;
+                        switch (row.status) {
+                            case 'On Process':
+                                action_by = row.processed_by;
+                                break;
+                            case 'Approved':
+                                action_by = row.approved_by;
+                                break;
+                            case 'Rejected':
+                                action_by = row.rejected_by;
+                                break;
                         }
 
                         if (action_by !== '') {

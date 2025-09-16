@@ -293,26 +293,40 @@
                         class="form-control"
                         id="reportCategory"
                         required
-                        <?= $mode === 'detail' || ($mode === 'ezdit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                        <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                         <option value="">- Pilih Kategori -</option>
                         <?php foreach ($list_data['category'] as $key => $value): ?>
-                            <option value="<?= $value['id'] ?>" <?= isset($report) && $report['category_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
+                            <option
+                                value="<?= $value['id'] ?>"
+                                <?= isset($report) && $report['category_id'] == $value['id'] ? 'selected' : '' ?>>
+                                <?= $value['name'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div id="reportDescriptionContainer" class="col-md-12 row" style="display: <?= isset($report) && !in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-6 pr-0">
                         <label for="reportTitle">Judul</label>
-                        <input type="text" class="form-control" id="reportTitle" value="<?= isset($report) ? $report['title'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="reportTitle"
+                            value="<?= isset($report) ? $report['title'] : ''; ?>"
+                            <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                     </div>
                     <div class="form-group col-md-7 pr-0">
                         <label for="reportDescription">Deskripsi</label>
-                        <textarea class="form-control" id="reportDescription" name="description" style="height: 7rem;" <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
+                        <textarea
+                            class="form-control"
+                            id="reportDescription"
+                            name="description"
+                            style="height: 7rem;"
+                            <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
                     </div>
                 </div>
                 <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
                     <div style="margin: 2rem 0 3rem;">
-                        <?php if ($mode !== 'detail'): ?>
+                        <?php if ($mode === 'create' || ($mode === 'edit' && $report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')): ?>
                             <div class="d-flex justify-content-between">
                                 <button type="button" id="reportDetailAddButton" class="btn btn-default rounded-lg shadow border-0">
                                     <i class="fas fa-plus-circle mr-1"></i> Tambah Uraian
@@ -355,7 +369,12 @@
                                 <div id="evidenceItem<?= $evidence['id']; ?>" class="preview-item">
                                     <img src="<?= $file_path ?>" alt="Evidence Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
                                     <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
-                                        <button type="button" class="remove-btn" onclick="removeFile('evidence', <?= $evidence['id'] ?>)"><i class="fa fa-times"></i></button>
+                                        <button
+                                            type="button"
+                                            class="remove-btn"
+                                            onclick="removeFile('evidence', <?= $evidence['id'] ?>)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
@@ -369,7 +388,11 @@
                 <?php if (($mode === 'detail' || $mode === 'edit') && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))): ?>
                     <div class="form-group col-md-6">
                         <label for="reportRAB">RAB</label>
-                        <select class="form-control" id="reportRAB" required <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                        <select
+                            class="form-control"
+                            id="reportRAB"
+                            required
+                            <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
                             <option value="0" <?= isset($report) && $report['is_rab'] == 0 ? 'selected' : '' ?>>Tanpa RAB</option>
                             <option value="1" <?= isset($report) && $report['is_rab'] == 1 ? 'selected' : '' ?>>Dengan RAB</option>
                         </select>
@@ -384,19 +407,31 @@
                                     <?php endif; ?>
                                     <div>
                                         <?php if (isset($report['rab']['file']) && !empty($report['rab']['file'])): ?>
-                                            <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab']['file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                            <a
+                                                id="reportRABDownloadFile"
+                                                href="<?= site_url('file/download/' . $report['rab']['file']) ?>"
+                                                class="btn btn-sm bg-navy rounded-lg">
                                                 <i class="fas fa-download mr-1"></i> Download File
                                             </a>
                                         <?php endif; ?>
                                         <?php if ($mode !== 'detail'): ?>
-                                            <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? 'none' : '' ?>">
+                                            <button
+                                                id="reportRABSelectFile"
+                                                type="button"
+                                                class="btn btn-sm bg-navy rounded-lg"
+                                                onclick="document.getElementById('reportRABFile').click()"
+                                                style="display:<?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? 'none' : '' ?>">
                                                 <i class="fas fa-folder-open mr-1"></i> Pilih File
                                             </button>
                                         <?php endif; ?>
                                         <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? $report['rab']['file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                                     </div>
                                     <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'kontraktor'): ?>
-                                        <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? '' : 'none' ?>">
+                                        <button
+                                            id="reportRABRemoveFile"
+                                            type="button"
+                                            class="btn btn-sm text-danger"
+                                            style="display:<?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? '' : 'none' ?>">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     <?php endif; ?>
@@ -404,11 +439,21 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="reportRABNo">Nomor RAB</label>
-                                <input type="text" class="form-control" id="reportRABNo" value="<?= isset($report['rab']['no']) ? $report['rab']['no'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="reportRABNo"
+                                    value="<?= isset($report['rab']['no']) ? $report['rab']['no'] : ''; ?>"
+                                    <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="reportRABName">Nama RAB</label>
-                                <input type="text" class="form-control" id="reportRABName" value="<?= isset($report['rab']['name']) ? $report['rab']['name'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="reportRABName"
+                                    value="<?= isset($report['rab']['name']) ? $report['rab']['name'] : ''; ?>"
+                                    <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="reportRABBudget">Nominal RAB</label>
@@ -416,12 +461,20 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text bg-white font-weight-bold">Rp</span>
                                     </div>
-                                    <input type="text" class="form-control input-currency" id="reportRABBudget" value="<?= isset($report['rab']['budget']) ? $report['rab']['budget'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                                    <input
+                                        type="text"
+                                        class="form-control input-currency"
+                                        id="reportRABBudget"
+                                        value="<?= isset($report['rab']['budget']) ? number_format($report['rab']['budget'], 0, ',', '.') : ''; ?>"
+                                        <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?> />
                                 </div>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="reportRABDescription">Keterangan</label>
-                                <textarea class="form-control" id="reportRABDescription" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>><?= isset($report['rab']['description']) ? $report['rab']['description'] : ''; ?></textarea>
+                                <textarea
+                                    class="form-control"
+                                    id="reportRABDescription"
+                                    <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>><?= isset($report['rab']['description']) ? $report['rab']['description'] : ''; ?></textarea>
                             </div>
                         </div>
                         <?php if (isset($report['rab']['file']) && !empty($report['rab']['file']) && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
@@ -433,19 +486,34 @@
                                     <?php endif; ?>
                                     <div>
                                         <?php if (isset($report['rab']['final_file']) && !empty($report['rab']['final_file'])): ?>
-                                            <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab']['final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                            <a
+                                                id="reportRABFinalDownloadFile"
+                                                href="<?= site_url('file/download/' . $report['rab']['final_file']) ?>"
+                                                class="btn btn-sm bg-navy rounded-lg">
                                                 <i class="fas fa-download mr-1"></i> Download File
                                             </a>
                                         <?php endif; ?>
                                         <?php if ($mode !== 'detail'): ?>
-                                            <button id="reportRABFinalSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFinalFile').click()" style="display:<?= isset($report) && $report['rab']['final_file'] ? 'none' : '' ?>">
+                                            <button
+                                                id="reportRABFinalSelectFile"
+                                                type="button" class="btn btn-sm bg-navy rounded-lg"
+                                                onclick="document.getElementById('reportRABFinalFile').click()"
+                                                style="display:<?= isset($report) && $report['rab']['final_file'] ? 'none' : '' ?>">
                                                 <i class="fas fa-folder-open mr-1"></i> Pilih File
                                             </button>
                                         <?php endif; ?>
-                                        <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report['rab']['final_file']) && !empty($report['rab']['final_file']) ? $report['rab']['final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                        <span
+                                            id="reportRABFinalFileName"
+                                            class="ml-2 font-weight-bold text-gray text-sm">
+                                            <?= isset($report['rab']['final_file']) && !empty($report['rab']['final_file']) ? $report['rab']['final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?>
+                                        </span>
                                     </div>
                                     <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'rab'): ?>
-                                        <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report['rab']['final_file']) && !empty($report['rab']['final_file']) ? '' : 'none' ?>">
+                                        <button
+                                            id="reportRABFinalRemoveFile"
+                                            type="button"
+                                            class="btn btn-sm text-danger"
+                                            style="display:<?= isset($report['rab']['final_file']) && !empty($report['rab']['final_file']) ? '' : 'none' ?>">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     <?php endif; ?>
@@ -453,40 +521,8 @@
                             </div>
                         <?php endif; ?>
                     <?php endif; ?>
-
-                    <?php if (isset($report) && ($report['status'] === 'Approved' || $report['status'] === 'Completed') && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'pelapor'))): ?>
-                        <div class="form-group col-md-7">
-                            <label>Pengerjaan</label>
-                            <?php if ($mode !== 'detail'): ?>
-                                <div class="dropzone" id="reportWorkDropzone">
-                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                                    <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                                    <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
-                                </div>
-                                <div class="invalid-feedback" id="reportWorkError"></div>
-                            <?php endif; ?>
-                            <div class="preview-container" id="reportWorkPreview">
-                                <?php if (isset($report) && !empty($report['works'])): ?>
-                                    <?php foreach ($report['works'] as $work):
-                                        $file_path = base_url('/uploads/' . $work['image_name']);
-                                    ?>
-                                        <div id="workItem<?= $work['id']; ?>" class="preview-item">
-                                            <img src="<?= $file_path ?>" alt="Work Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                            <?php if ($mode !== 'detail'): ?>
-                                                <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <?php if ($mode === 'detail'): ?>
-                                        <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
                 <?php endif; ?>
-                <?php if ($mode !== 'create'): ?>
+                <?php if ($mode !== 'create' && isset($report['manager']['id'])): ?>
                     <div class="border-top pt-4" style="margin-top: 2.5rem;">
                         <div class="form-group col-md-6">
                             <label for="reportRABNo">Bukti Pembayaran</label>
@@ -496,19 +532,35 @@
                                 <?php endif; ?>
                                 <div>
                                     <?php if (isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file'])): ?>
-                                        <a id="reportManagerDownloadPaymentFile" href="<?= site_url('file/download/' . $report['manager']['payment_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                        <a
+                                            id="reportManagerDownloadPaymentFile"
+                                            href="<?= site_url('file/download/' . $report['manager']['payment_file']) ?>"
+                                            class="btn btn-sm bg-navy rounded-lg">
                                             <i class="fas fa-download mr-1"></i> Download File
                                         </a>
                                     <?php endif; ?>
                                     <?php if ($mode !== 'detail'): ?>
-                                        <button id="reportManagerSelectPaymentFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportManagerPaymentFile').click()" style="display:<?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? 'none' : '' ?>">
+                                        <button
+                                            id="reportManagerSelectPaymentFile"
+                                            type="button"
+                                            class="btn btn-sm bg-navy rounded-lg"
+                                            onclick="document.getElementById('reportManagerPaymentFile').click()"
+                                            style="display:<?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? 'none' : '' ?>">
                                             <i class="fas fa-folder-open mr-1"></i> Pilih File
                                         </button>
                                     <?php endif; ?>
-                                    <span id="reportManagerPaymentFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? $report['manager']['payment_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                    <span
+                                        id="reportManagerPaymentFileName"
+                                        class="ml-2 font-weight-bold text-gray text-sm">
+                                        <?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? $report['manager']['payment_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?>
+                                    </span>
                                 </div>
                                 <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'manager'): ?>
-                                    <button id="reportManagerRemovePaymentFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? '' : 'none' ?>">
+                                    <button
+                                        id="reportManagerRemovePaymentFile"
+                                        type="button"
+                                        class="btn btn-sm text-danger"
+                                        style="display:<?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? '' : 'none' ?>">
                                         <i class="fa fa-times"></i>
                                     </button>
                                 <?php endif; ?>
@@ -524,7 +576,7 @@
                                     type="text"
                                     class="form-control input-currency"
                                     id="reportManagerRABBudget"
-                                    value="<?= isset($report['manager']['rab_budget']) ? $report['manager']['rab_budget'] : ''; ?>"
+                                    value="<?= isset($report['manager']['rab_budget']) ? number_format($report['manager']['rab_budget'], 0, ',', '.') : ''; ?>"
                                     <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?> />
                             </div>
                         </div>
@@ -548,7 +600,7 @@
                                 <input type="text"
                                     class="form-control input-currency"
                                     id="reportManagerBill"
-                                    value="<?= isset($report['manager']['bill']) ? $report['manager']['bill'] : ''; ?>"
+                                    value="<?= isset($report['manager']['bill']) ? number_format($report['manager']['bill'], 0, ',', '.') : ''; ?>"
                                     <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
                             </div>
                         </div>
@@ -580,6 +632,39 @@
                         </div>
                     </div>
                 <?php endif; ?>
+                <?php if (isset($report) && ($report['status'] === 'Approved' || $report['status'] === 'Completed') && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'pelapor'))): ?>
+                    <div class="border-top pt-4" style="margin-top: 2.5rem;">
+                        <div class="form-group col-md-7">
+                            <label>Pengerjaan</label>
+                            <?php if ($mode !== 'detail'): ?>
+                                <div class="dropzone" id="reportWorkDropzone">
+                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
+                                    <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
+                                    <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
+                                </div>
+                                <div class="invalid-feedback" id="reportWorkError"></div>
+                            <?php endif; ?>
+                            <div class="preview-container" id="reportWorkPreview">
+                                <?php if (isset($report) && !empty($report['works'])): ?>
+                                    <?php foreach ($report['works'] as $work):
+                                        $file_path = base_url('/uploads/' . $work['image_name']);
+                                    ?>
+                                        <div id="workItem<?= $work['id']; ?>" class="preview-item">
+                                            <img src="<?= $file_path ?>" alt="Work Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
+                                            <?php if ($mode !== 'detail'): ?>
+                                                <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <?php if ($mode === 'detail'): ?>
+                                        <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
             <div class="card-footer bg-white border-top rounded">
                 <div class="d-flex justify-content-between">
@@ -589,46 +674,69 @@
                     <div>
                         <?php if ($mode === 'edit'): ?>
                             <?php if (in_array($this->auth_lib->role(), ['kontraktor', 'rab'])): ?>
-                                <button onclick="declineReport()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                                <button
+                                    type="button"
+                                    onclick="rejectReport()"
+                                    class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
                                 </button>
-                                <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
+                                <button
+                                    type="submit"
+                                    class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
                                     <i class="fas fa-arrow-right mr-2"></i> Ajukan Pengaduan
                                 </button>
                             <?php endif; ?>
 
                             <?php if ($this->auth_lib->role() === 'manager'): ?>
-                                <button onclick="declineReport()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                                <button
+                                    type="button"
+                                    onclick="rejectReport()"
+                                    class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
                                 </button>
-                                <a href="<?= site_url('report/memo/' . $report['id']) ?>" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                <a
+                                    href="<?= site_url('report/memo/' . $report['id']) ?>"
+                                    class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
                                     <i class="fas fa-print mr-2"></i> Cetak Memo
                                 </a>
-                                <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                <button
+                                    type="submit"
+                                    class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
                                     <i class="fas fa-check mr-2"></i> Setujui Pengaduan
                                 </button>
                             <?php endif; ?>
 
                             <?php if ($this->auth_lib->role() === 'pelapor'): ?>
                                 <?php if (isset($report) && $report['status'] === 'Approved'): ?>
-                                    <a href="<?= site_url('report/memo/' . $report['id']) ?>" class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                    <a
+                                        href="<?= site_url('report/memo/' . $report['id']) ?>"
+                                        class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
                                         <i class="fas fa-print mr-2"></i> Cetak Memo
                                     </a>
-                                    <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
-                                        <i class="fas fa-tasks mr-2"></i> Selesaikan Pengerjaan
+                                    <button
+                                        type="submit"
+                                        class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                        <i class="fas fa-check-circle mr-2"></i> Selesaikan Pengerjaan
                                     </button>
                                 <?php else: ?>
-                                    <button type="submit" class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
+                                    <button
+                                        type="submit"
+                                        class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
                                         <i class="fas fa-save mr-2"></i> Simpan Perubahan
                                     </button>
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                         <?php if ($mode === 'create'): ?>
-                            <button onclick="resetForm()" type="button" class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
+                            <button
+                                type="button"
+                                onclick="resetForm()"
+                                class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                 <i class="fas fa-trash mr-2"></i> Reset
                             </button>
-                            <button type="submit" class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
+                            <button
+                                type="submit"
+                                class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
                                 <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan
                             </button>
                         <?php endif; ?>
@@ -678,7 +786,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="reportDetailModalLabel">Tambah Uraian</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -688,7 +800,11 @@
                     <div class="row">
                         <div class="form-group col-md-11">
                             <label for="reportDetailLevel">Level</label>
-                            <select name="level" class="form-control" id="reportDetailLevel" required>
+                            <select
+                                name="level"
+                                class="form-control"
+                                id="reportDetailLevel"
+                                required>
                                 <option value="1">Level 1 (Main Category)</option>
                                 <option value="2">Level 2 (Sub Item)</option>
                             </select>
@@ -697,14 +813,21 @@
                     <div class="row" id="reportDetailParentItemContainer">
                         <div class="form-group col-md-11">
                             <label for="reportDetailParent">Parent Item</label>
-                            <select class="form-control" id="reportDetailParent">
+                            <select
+                                id="reportDetailParent"
+                                class="form-control">
                             </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-md-11">
                             <label for="reportDetailDescription">Uraian</label>
-                            <input name="description" type="text" class="form-control" id="reportDetailDescription" required>
+                            <input
+                                id="reportDetailDescription"
+                                type="text"
+                                name="description"
+                                class="form-control"
+                                required>
                         </div>
                     </div>
                     <div class="row child-detail-container">
@@ -712,11 +835,22 @@
                             <label for="status">Status</label>
                             <div class="radio-group">
                                 <label class="status-radio-card" for="reportDetailStatusOK">
-                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusOK" value="OK" checked>
+                                    <input
+                                        id="reportDetailStatusOK"
+                                        type="radio"
+                                        name="status"
+                                        class="status-radio-input"
+                                        value="OK"
+                                        checked>
                                     <span class="status-label">OK</span>
                                 </label>
                                 <label class="status-radio-card" for="reportDetailStatusNotOK">
-                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusNotOK" value="Not OK">
+                                    <input
+                                        id="reportDetailStatusNotOK"
+                                        type="radio"
+                                        name="status"
+                                        class="status-radio-input"
+                                        value="Not OK">
                                     <span class="status-label">Not OK</span>
                                 </label>
                             </div>
@@ -725,7 +859,10 @@
                     <div class="row child-detail-container">
                         <div class="form-group col-md-11">
                             <label for="reportDetailCondition">Kondisi</label>
-                            <select name="condition" class="form-control" id="reportDetailCondition">
+                            <select
+                                id="reportDetailCondition"
+                                name="condition"
+                                class="form-control">
                                 <option value="Tidak Butuh Perbaikan">Tidak Butuh Perbaikan</option>
                                 <option value="Butuh Perbaikan">Butuh Perbaikan</option>
                             </select>
@@ -734,14 +871,24 @@
                     <div class="row child-detail-container">
                         <div class="form-group col-md-11">
                             <label for="reportDetailInformation">Keterangan</label>
-                            <textarea name="information" class="form-control" id="reportDetailInformation" style="height: 7rem;"></textarea>
+                            <textarea
+                                id="reportDetailInformation"
+                                name="information"
+                                class="form-control"
+                                style="height: 7rem;"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="reportDetailSaveBtn">Save Row</button>
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-dismiss="modal">Cancel</button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="reportDetailSaveBtn">Save Row</button>
             </div>
         </div>
     </div>
@@ -753,7 +900,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Hapus Detail</span></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -763,8 +914,16 @@
                 <p class="warning-text text-center border px-4 py-2 border-warning text-bold rounded bg-light-warning" style="font-size:13px"></p>
             </div>
             <div class="modal-footer d-flex">
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-default rounded-lg border-0 shadow" data-dismiss="modal">Batal</button>
-                <button id="reportDetailDeleteButton" type="button" style="flex: 1 1 auto;" class="btn btn-danger rounded-lg border-0 shadow">Ya, Hapus</button>
+                <button
+                    type="button"
+                    style="flex: 1 1 auto;"
+                    class="btn btn-default rounded-lg border-0 shadow"
+                    data-dismiss="modal">Batal</button>
+                <button
+                    id="reportDetailDeleteButton"
+                    type="button"
+                    style="flex: 1 1 auto;"
+                    class="btn btn-danger rounded-lg border-0 shadow">Ya, Hapus</button>
             </div>
         </div>
     </div>
@@ -775,18 +934,35 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Tolak Pengaduan</span></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h5 class="modal-title d-flex"><i class="fas fa-times mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Tolak Pengaduan</span></h5>
+                <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Apakah kamu yakin ingin menolak pengaduan ini? silahkan tulis alasannya dibawah ini</p>
-                <textarea name="reportRejectedReason" class="form-control" id="reportRejectedReason" style="height: 7rem;"></textarea>
+                <p>Apakah kamu yakin ingin menolak pengaduan ini?</p>
+                <label>Silahkan tulis alasannya dibawah ini:</label>
+                <textarea
+                    id="reportRejectedReason"
+                    name="reportRejectedReason"
+                    class="form-control"
+                    style="height: 7rem;"></textarea>
             </div>
             <div class="modal-footer d-flex">
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-default rounded-lg border-0 shadow" data-dismiss="modal">Batal</button>
-                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger rounded-lg border-0 shadow">Ya, Hapus Perusahaan</button>
+                <button
+                    type="button"
+                    style="flex: 1 1 auto;"
+                    class="btn btn-default rounded-lg border-0 shadow"
+                    data-dismiss="modal">Batal</button>
+                <button
+                    type="button"
+                    onclick="submitRejectReport()"
+                    style="flex: 1 1 auto;"
+                    class="btn btn-danger rounded-lg border-0 shadow">Ya, Tolak Pengaduan</button>
             </div>
         </div>
     </div>
@@ -803,6 +979,7 @@
         default: "<?= site_url('report') ?>",
         create: "<?= site_url('report/create') ?>",
         edit: "<?= site_url('report/edit') ?>",
+        reject: "<?= site_url('report/reject') ?>",
         get_warehouses: "<?= site_url('warehouse/get_list') ?>",
     };
 
@@ -1781,11 +1958,15 @@
         if (selectBtn) selectBtn.style.display = '';
     }
 
-    function declineReport() {
-        const formData = new FormData();
-        formData.append('status', 'Rejected');
+    function rejectReport() {
+        $('#reportReasonModal').modal('show');
+    }
 
-        fetch(`${URLS.edit}/${appState.reportData.id}`, {
+    function submitRejectReport() {
+        const formData = new FormData();
+        formData.append('reason', $('#reportRejectedReason').val());
+
+        fetch(`${URLS.reject}/${appState.reportData.id}`, {
                 method: 'POST',
                 body: formData
             })
@@ -1798,8 +1979,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                toastr.error("Failed to decline report.");
+                toastr.error("Gagal menolak pengaduan.");
             });
     }
 
