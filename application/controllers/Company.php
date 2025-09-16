@@ -9,7 +9,8 @@ class Company extends MY_Controller
         parent::__construct();
         $this->load->model([
             'Company_model',
-            'Project_model'
+            'Project_model',
+            'Entity_model',
         ]);
         $this->load->library('form_validation');
     }
@@ -19,6 +20,7 @@ class Company extends MY_Controller
         $data["current_user"] = $this->auth_lib->current_user();
         $data["title"] = "Company";
         $data["menu_id"] = "company";
+        $data["list_data"]["entity"] = $this->Entity_model->get_all();
         $data["list_data"]["project"] = $this->Project_model->get_all();
         $data["view"] = "company/index";
         $this->load->view('layouts/template', $data);

@@ -5,18 +5,34 @@ class Project_model extends CI_Model
 
     private $table = 'project';
 
-    public function get_all()
+    public function get_all($p = null)
     {
-        $this->db->select($this->table . '.*, entity.name AS entity_name');
-        $this->db->from($this->table);
-        $this->db->join('entity', 'entity.id = ' . $this->table . '.entity_id');
-        $this->db->order_by($this->table . '.created_at', 'DESC');
+        if (isset($p['entity']) && !empty($p['entity'])) {
+            $this->db->where('entity_id', $p['entity']);
+        }
+
+        $this->db->select([
+            $this->table . '.*',
+            'entity.name AS entity_name'
+        ])
+            ->from($this->table)
+            ->join('entity', 'entity.id = ' . $this->table . '.entity_id')
+            ->order_by($this->table . '.created_at', 'DESC');
+
         return $this->db->get()->result_array();
     }
 
     public function get($id)
     {
-        return $this->db->get_where($this->table, ['id' => $id])->row_array();
+        $this->db->select([
+            $this->table . '.*',
+            'entity.name AS entity_name'
+        ])
+            ->from($this->table)
+            ->join('entity', 'entity.id = ' . $this->table . '.entity_id')
+            ->where($this->table . '.id', $id);
+
+        return $this->db->get()->row_array();
     }
 
     public function get_by_entity($entity)

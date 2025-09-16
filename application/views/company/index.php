@@ -32,12 +32,18 @@
                 <div class="modal-body">
                     <input id="companyId" type="hidden" name="id">
                     <div class="form-group col-md-10">
+                        <label for="companyEntity">Entity</label>
+                        <select id="companyEntity" class="form-control" name="entity_id" required>
+                            <option value="">- Pilih Entity -</option>
+                            <?php foreach ($list_data['entity'] as $key => $value): ?>
+                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-10">
                         <label for="companyProject">Project</label>
                         <select id="companyProject" class="form-control" name="project_id" required>
                             <option value="">- Pilih Project -</option>
-                            <?php foreach ($list_data['project'] as $key => $value): ?>
-                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
-                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group col-md-10">
@@ -89,6 +95,11 @@
         create: "<?= site_url('company/create') ?>",
         edit: "<?= site_url('company/edit') ?>",
         delete: "<?= site_url('company/delete') ?>",
+        get_projects: "<?= site_url('project/get_list') ?>",
+    }
+
+    const listData = {
+        project: []
     }
 
     $(document).ready(function() {
@@ -169,6 +180,8 @@
             $('#inputModalIcon').removeClass('bg-light-primary').addClass('bg-light-success');
             $('#companyId').val('');
             $('#inputModal').modal('show');
+
+            loadProjectSelect();
         });
 
         // Edit Company Button
@@ -185,7 +198,9 @@
                     return;
                 }
 
-                $('#companyProject').val(data.project_id).trigger('change');
+                $('#companyEntity').val(data.entity_id).trigger('change');
+                loadProjectSelect(data.entity_id);
+                setTimeout(() => $('#companyProject').val(data.project_id).trigger('change'), 100);
                 $('#companyName').val(data.name);
                 $('#inputModalIcon').removeClass('fa-plus').addClass('fa-edit');
                 $('#inputModalIcon').removeClass('text-success').addClass('text-primary');
@@ -230,6 +245,7 @@
             $('#deleteModal').modal('show');
         });
 
+
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
             var company = $('#deleteCompanyId').val();
@@ -247,7 +263,57 @@
                 }
             });
         });
+
+        document.getElementById('companyEntity').addEventListener('change', (e) => {
+            const value = e.target.value;
+            loadProjectSelect(value);
+        });
     });
+
+    function loadProjectSelect(entityID) {
+        const projectSelect = document.getElementById('companyProject');
+        projectSelect.innerHTML = '';
+
+        if (!entityID) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No projects available';
+            option.disabled = true;
+            projectSelect.appendChild(option);
+            return;
+        }
+
+        let params = {
+            entity: entityID
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+
+        fetch(urls.get_projects + '?' + queryString, {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.data.length > 0) {
+                    res.data.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        projectSelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No projects available';
+                    option.disabled = true;
+                    projectSelect.appendChild(option);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error("Failed to load project.");
+            });
+    }
 
     function resetForm() {
         $('#companyForm')[0].reset();

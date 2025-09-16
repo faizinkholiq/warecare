@@ -26,7 +26,9 @@ class Project extends MY_Controller
 
     public function get_list()
     {
-        $projects = $this->Project_model->get_all();
+        $p['entity'] = $this->input->get('entity');
+
+        $projects = $this->Project_model->get_all($p);
 
         $data = [];
         foreach ($projects as $project) {
