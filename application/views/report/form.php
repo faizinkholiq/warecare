@@ -228,7 +228,11 @@
                 <div class="row">
                     <div class="form-group col-md-6" style="padding-left: 15px;">
                         <label for="reportEntity">Entity</label>
-                        <select class="form-control" id="reportEntity" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                        <select
+                            class="form-control"
+                            id="reportEntity"
+                            required
+                            <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                             <option value="">- Pilih Entity -</option>
                             <?php foreach ($list_data['entity'] as $key => $value): ?>
                                 <option value="<?= $value['id'] ?>" <?= isset($report) && $report['entity_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -243,16 +247,29 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportProject">Project</label>
-                    <select class="form-control" id="reportProject" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                    <select
+                        class="form-control"
+                        id="reportProject"
+                        required
+                        <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                     </select>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCompany">Nama Perusahaan</label>
                     <div class="d-flex">
                         <input type="hidden" id="reportCompanyID">
-                        <input type="text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportCompany" required readonly>
+                        <input
+                            type="text"
+                            class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>"
+                            id="reportCompany"
+                            required
+                            readonly>
                         <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
-                            <button onclick="showWarehouses()" type="button" class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold  text-navy ml-2" style="width:200px;">
+                            <button
+                                type="button"
+                                onclick="showWarehouses()"
+                                class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold text-navy ml-2"
+                                style="width:200px;">
                                 <i class="fas fa-caret-down mr-1"></i> Pilih Perusahaan
                             </button>
                         <?php endif ?>
@@ -262,12 +279,21 @@
                     <label for="reportWarehouse">Nomor Gudang</label>
                     <div class="d-flex">
                         <input type="hidden" id="reportWarehouseID">
-                        <input type="text" class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>" id="reportWarehouse" required readonly>
+                        <input
+                            type="text"
+                            class="form-control <?= $mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')) ? '' : '' ?>"
+                            id="reportWarehouse"
+                            required
+                            readonly>
                     </div>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="reportCategory">Kategori Pengaduan</label>
-                    <select class="form-control" id="reportCategory" required <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
+                    <select
+                        class="form-control"
+                        id="reportCategory"
+                        required
+                        <?= $mode === 'detail' || ($mode === 'ezdit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
                         <option value="">- Pilih Kategori -</option>
                         <?php foreach ($list_data['category'] as $key => $value): ?>
                             <option value="<?= $value['id'] ?>" <?= isset($report) && $report['category_id'] == $value['id'] ? 'selected' : '' ?>><?= $value['name'] ?></option>
@@ -350,32 +376,55 @@
                     </div>
 
                     <?php if ($mode === 'edit' || ($mode === 'detail' && isset($report) && (bool)$report['is_rab'])): ?>
-                        <div id="reportRABContainer" class="form-group col-md-6">
-                            <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
-                                <?php if ($mode !== 'detail'): ?>
-                                    <input type="file" class="form-control" id="reportRABFile" hidden>
-                                <?php endif; ?>
-                                <div>
-                                    <?php if (isset($report) && $report['rab']['file']): ?>
-                                        <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab']['file']) ?>" class="btn btn-sm bg-navy rounded-lg">
-                                            <i class="fas fa-download mr-1"></i> Download File
-                                        </a>
-                                    <?php endif; ?>
+                        <div id="reportRABContainer">
+                            <div class="form-group col-md-6">
+                                <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
                                     <?php if ($mode !== 'detail'): ?>
-                                        <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report) && $report['rab']['file'] ? 'none' : '' ?>">
-                                            <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                        <input type="file" class="form-control" id="reportRABFile" hidden>
+                                    <?php endif; ?>
+                                    <div>
+                                        <?php if (isset($report['rab']['file']) && !empty($report['rab']['file'])): ?>
+                                            <a id="reportRABDownloadFile" href="<?= site_url('file/download/' . $report['rab']['file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                                <i class="fas fa-download mr-1"></i> Download File
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if ($mode !== 'detail'): ?>
+                                            <button id="reportRABSelectFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportRABFile').click()" style="display:<?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? 'none' : '' ?>">
+                                                <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                            </button>
+                                        <?php endif; ?>
+                                        <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? $report['rab']['file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                    </div>
+                                    <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'kontraktor'): ?>
+                                        <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report['rab']['file']) && !empty($report['rab']['file']) ? '' : 'none' ?>">
+                                            <i class="fa fa-times"></i>
                                         </button>
                                     <?php endif; ?>
-                                    <span id="reportRABFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab']['file'] ? $report['rab']['file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                                 </div>
-                                <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'kontraktor'): ?>
-                                    <button id="reportRABRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab']['file'] ? '' : 'none' ?>">
-                                        <i class="fa fa-times"></i>
-                                    </button>
-                                <?php endif; ?>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="reportRABNo">Nomor RAB</label>
+                                <input type="text" class="form-control" id="reportRABNo" value="<?= isset($report['rab']['no']) ? $report['rab']['no'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="reportRABName">Nama RAB</label>
+                                <input type="text" class="form-control" id="reportRABName" value="<?= isset($report['rab']['name']) ? $report['rab']['name'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="reportRABBudget">Nominal RAB</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white font-weight-bold">Rp</span>
+                                    </div>
+                                    <input type="text" class="form-control input-currency" id="reportRABBudget" value="<?= isset($report['rab']['budget']) ? $report['rab']['budget'] : ''; ?>" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="reportRABDescription">Keterangan</label>
+                                <textarea class="form-control" id="reportRABDescription" <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>><?= isset($report['rab']['description']) ? $report['rab']['description'] : ''; ?></textarea>
                             </div>
                         </div>
-                        <?php if (isset($report) && $report['rab']['file'] && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
+                        <?php if (isset($report['rab']['file']) && !empty($report['rab']['file']) && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
                             <div class="form-group col-md-6">
                                 <label for="reportRABFinalFile">RAB Final</label>
                                 <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
@@ -383,7 +432,7 @@
                                         <input type="file" class="form-control" id="reportRABFinalFile" hidden>
                                     <?php endif; ?>
                                     <div>
-                                        <?php if (isset($report) && $report['rab']['final_file']): ?>
+                                        <?php if (isset($report['rab']['final_file']) && !empty($report['rab']['final_file'])): ?>
                                             <a id="reportRABFinalDownloadFile" href="<?= site_url('file/download/' . $report['rab']['final_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
                                                 <i class="fas fa-download mr-1"></i> Download File
                                             </a>
@@ -393,10 +442,10 @@
                                                 <i class="fas fa-folder-open mr-1"></i> Pilih File
                                             </button>
                                         <?php endif; ?>
-                                        <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report) && $report['rab']['final_file'] ? $report['rab']['final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                        <span id="reportRABFinalFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report['rab']['final_file']) && !empty($report['rab']['final_file']) ? $report['rab']['final_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
                                     </div>
                                     <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'rab'): ?>
-                                        <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report) && $report['rab']['final_file'] ? '' : 'none' ?>">
+                                        <button id="reportRABFinalRemoveFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report['rab']['final_file']) && !empty($report['rab']['final_file']) ? '' : 'none' ?>">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     <?php endif; ?>
@@ -436,6 +485,100 @@
                             </div>
                         </div>
                     <?php endif; ?>
+                <?php endif; ?>
+                <?php if ($mode !== 'create'): ?>
+                    <div class="border-top pt-4" style="margin-top: 2.5rem;">
+                        <div class="form-group col-md-6">
+                            <label for="reportRABNo">Bukti Pembayaran</label>
+                            <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
+                                <?php if ($mode !== 'detail'): ?>
+                                    <input type="file" class="form-control" id="reportManagerPaymentFile" hidden>
+                                <?php endif; ?>
+                                <div>
+                                    <?php if (isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file'])): ?>
+                                        <a id="reportManagerDownloadPaymentFile" href="<?= site_url('file/download/' . $report['manager']['payment_file']) ?>" class="btn btn-sm bg-navy rounded-lg">
+                                            <i class="fas fa-download mr-1"></i> Download File
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if ($mode !== 'detail'): ?>
+                                        <button id="reportManagerSelectPaymentFile" type="button" class="btn btn-sm bg-navy rounded-lg" onclick="document.getElementById('reportManagerPaymentFile').click()" style="display:<?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? 'none' : '' ?>">
+                                            <i class="fas fa-folder-open mr-1"></i> Pilih File
+                                        </button>
+                                    <?php endif; ?>
+                                    <span id="reportManagerPaymentFileName" class="ml-2 font-weight-bold text-gray text-sm"><?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? $report['manager']['payment_file'] : ($mode === 'detail' ? 'Belum ada file yang diupload' : 'Belum ada file yang dipilih') ?></span>
+                                </div>
+                                <?php if ($mode !== 'detail' && $this->auth_lib->role() === 'manager'): ?>
+                                    <button id="reportManagerRemovePaymentFile" type="button" class="btn btn-sm text-danger" style="display:<?= isset($report['manager']['payment_file']) && !empty($report['manager']['payment_file']) ? '' : 'none' ?>">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="reportManagerRABBudget">Nominal RAB Asal</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white font-weight-bold">Rp</span>
+                                </div>
+                                <input
+                                    type="text"
+                                    class="form-control input-currency"
+                                    id="reportManagerRABBudget"
+                                    value="<?= isset($report['manager']['rab_budget']) ? $report['manager']['rab_budget'] : ''; ?>"
+                                    <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?> />
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="reportManagerPaidBy">Dibayar Oleh</label>
+                            <select
+                                name="condition"
+                                class="form-control"
+                                id="reportManagerPaidBy"
+                                <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
+                                <option value="Customer" <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] === 'Customer' ? 'selected' : ''; ?>>Customer</option>
+                                <option value="Waringin" <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] === 'Waringin' ? 'selected' : ''; ?>>Waringin</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="reportManagerBill">Nominal Tagihan</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white font-weight-bold">Rp</span>
+                                </div>
+                                <input type="text"
+                                    class="form-control input-currency"
+                                    id="reportManagerBill"
+                                    value="<?= isset($report['manager']['bill']) ? $report['manager']['bill'] : ''; ?>"
+                                    <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="reportManagerName">Atas Nama</label>
+                            <input type="text"
+                                class="form-control"
+                                id="reportManagerName"
+                                value="<?= isset($report['manager']['name']) ? $report['manager']['name'] : ''; ?>"
+                                <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="reportManagerDate">Tanggal Bayar</label>
+                            <input type="date"
+                                class="form-control"
+                                id="reportManagerDate"
+                                value="<?= isset($report['manager']['date']) ? $report['manager']['date'] : ''; ?>"
+                                <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="reportManagerTaxReport">Lapor Pajak</label>
+                            <select name="condition"
+                                class="form-control"
+                                id="reportManagerTaxReport"
+                                <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
+                                <option value="1" <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] == 1 ? 'selected' : ''; ?>>Iya</option>
+                                <option value="0" <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] == 0 ? 'selected' : ''; ?>>Tidak</option>
+                            </select>
+                        </div>
+                    </div>
                 <?php endif; ?>
             </div>
             <div class="card-footer bg-white border-top rounded">
@@ -496,6 +639,7 @@
     </div>
 </div>
 
+<!-- Report Warehouse Modal -->
 <div class="modal fade" id="reportWarehouseModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -528,6 +672,7 @@
     </div>
 </div>
 
+<!-- Report Details Modal -->
 <div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -562,31 +707,31 @@
                             <input name="description" type="text" class="form-control" id="reportDetailDescription" required>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row child-detail-container">
                         <div class="form-group col-md-11">
                             <label for="status">Status</label>
                             <div class="radio-group">
                                 <label class="status-radio-card" for="reportDetailStatusOK">
-                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusOK" value="OK" required checked>
+                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusOK" value="OK" checked>
                                     <span class="status-label">OK</span>
                                 </label>
                                 <label class="status-radio-card" for="reportDetailStatusNotOK">
-                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusNotOK" value="Not OK" required>
+                                    <input name="status" class="status-radio-input" type="radio" id="reportDetailStatusNotOK" value="Not OK">
                                     <span class="status-label">Not OK</span>
                                 </label>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row child-detail-container">
                         <div class="form-group col-md-11">
                             <label for="reportDetailCondition">Kondisi</label>
-                            <select name="condition" class="form-control" id="reportDetailCondition" required>
+                            <select name="condition" class="form-control" id="reportDetailCondition">
                                 <option value="Tidak Butuh Perbaikan">Tidak Butuh Perbaikan</option>
                                 <option value="Butuh Perbaikan">Butuh Perbaikan</option>
                             </select>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row child-detail-container">
                         <div class="form-group col-md-11">
                             <label for="reportDetailInformation">Keterangan</label>
                             <textarea name="information" class="form-control" id="reportDetailInformation" style="height: 7rem;"></textarea>
@@ -602,6 +747,52 @@
     </div>
 </div>
 
+<!-- Delete Report Detail Modal -->
+<div class="modal fade" id="deleteReportDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Hapus Detail</span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="deleteReportDetailID">
+                <p>Apakah kamu yakin ingin menghapus data ini?</p>
+                <p class="warning-text text-center border px-4 py-2 border-warning text-bold rounded bg-light-warning" style="font-size:13px"></p>
+            </div>
+            <div class="modal-footer d-flex">
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-default rounded-lg border-0 shadow" data-dismiss="modal">Batal</button>
+                <button id="reportDetailDeleteButton" type="button" style="flex: 1 1 auto;" class="btn btn-danger rounded-lg border-0 shadow">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reason Modal -->
+<div class="modal fade" id="reportReasonModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex"><i class="fas fa-trash mr-3 rounded px-2 py-2 text-danger bg-light-danger text-sm"></i> <span>Tolak Pengaduan</span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah kamu yakin ingin menolak pengaduan ini? silahkan tulis alasannya dibawah ini</p>
+                <textarea name="reportRejectedReason" class="form-control" id="reportRejectedReason" style="height: 7rem;"></textarea>
+            </div>
+            <div class="modal-footer d-flex">
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-default rounded-lg border-0 shadow" data-dismiss="modal">Batal</button>
+                <button type="button" style="flex: 1 1 auto;" class="btn btn-danger rounded-lg border-0 shadow">Ya, Hapus Perusahaan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
 <div class="image-modal" id="imageModal">
     <span class="close-modal"><i class="fa fa-times"></i></span>
     <img id="zoomedImage">
@@ -638,16 +829,22 @@
                 detail: {
                     container: document.getElementById('reportDetailContainer'),
                 },
-                rab: document.getElementById('reportRAB'),
+                rab: {
+                    input: document.getElementById('reportRAB'),
+                    container: document.getElementById('reportRABContainer'),
+                },
                 evidence: {
                     input: document.getElementById('reportEvidenceFiles'),
                     dropzone: document.getElementById('reportEvidenceDropzone'),
                     preview: document.getElementById('reportEvidencePreview'),
                     error: document.getElementById('reportEvidenceError')
                 },
+                rabNo: document.getElementById('reportRABNo'),
+                rabName: document.getElementById('reportRABName'),
+                rabBudget: document.getElementById('reportRABBudget'),
+                rabDescription: document.getElementById('reportRABDescription'),
                 rabFile: {
                     input: document.getElementById('reportRABFile'),
-                    container: document.getElementById('reportRABContainer'),
                     content: document.getElementById('reportRABFileName'),
                     select: document.getElementById('reportRABSelectFile'),
                     remove: document.getElementById('reportRABRemoveFile'),
@@ -659,6 +856,19 @@
                     select: document.getElementById('reportRABFinalSelectFile'),
                     remove: document.getElementById('reportRABFinalRemoveFile'),
                     download: document.getElementById('reportRABFinalDownloadFile')
+                },
+                managerRABBudget: document.getElementById('reportManagerRABBudget'),
+                managerPaidBy: document.getElementById('reportManagerPaidBy'),
+                managerBill: document.getElementById('reportManagerBill'),
+                managerName: document.getElementById('reportManagerName'),
+                managerDate: document.getElementById('reportManagerDate'),
+                managerTaxReport: document.getElementById('reportManagerTaxReport'),
+                managerPaymentFile: {
+                    input: document.getElementById('reportManagerPaymentFile'),
+                    content: document.getElementById('reportManagerPaymentFileName'),
+                    select: document.getElementById('reportManagerSelectPaymentFile'),
+                    remove: document.getElementById('reportManagerRemovePaymentFile'),
+                    download: document.getElementById('reportManagerDownloadPaymentFile'),
                 },
                 work: {
                     input: document.getElementById('reportWorkFiles'),
@@ -694,6 +904,9 @@
         rabFinal: {
             deleted: false
         },
+        manager: {
+            deleted: false
+        },
         work: {
             files: [],
             deletedIds: []
@@ -707,6 +920,10 @@
     const statusRadioCards = document.querySelectorAll('.status-radio-card');
 
     const reportDetailModal = $('#reportDetailModal');
+
+    const deleteReportDetailModal = $('#deleteReportDetailModal');
+
+    const reportReasonModal = $('#reportReasonModal');
 
     const reportDetailTable = $('#reportDetailTable').DataTable({
         paging: false,
@@ -746,18 +963,20 @@
                 orderable: false,
                 className: "dt-center",
                 render: function(data, type, row) {
-                    return `<span class="font-weight-bold rounded-lg px-2 py-1 ${data === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${data}</span>`;
+                    return row.level == 2 ? (`<span class="font-weight-bold rounded-lg px-2 py-1 ${data === 'OK' ? 'detail-status-ok' : 'detail-status-not-ok'}">${data}</span>`) : '';
                 },
                 targets: 3
             },
             {
                 data: "condition",
                 orderable: false,
+                render: (data, type, row) => row.level == 2 ? data : '',
                 targets: 4
             },
             {
                 data: "information",
                 orderable: false,
+                render: (data, type, row) => row.level == 2 ? data : '',
                 targets: 5
             },
             {
@@ -976,11 +1195,10 @@
 
 
             // RAB
-
-            if (domCache.form.item.rab && domCache.form.item.rabFile.container) {
-                domCache.form.item.rabFile.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
-                domCache.form.item.rab.addEventListener('change', (e) => {
-                    domCache.form.item.rabFile.container.style.display = (e.target.value === '1') ? '' : 'none';
+            if (domCache.form.item.rab && domCache.form.item.rab.container) {
+                domCache.form.item.rab.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
+                domCache.form.item.rab.input.addEventListener('change', (e) => {
+                    domCache.form.item.rab.container.style.display = (e.target.value === '1') ? '' : 'none';
                 });
             }
 
@@ -1019,6 +1237,24 @@
                     }
                 });
             }
+
+            if (domCache.form.item.managerPaymentFile.input) {
+                domCache.form.item.managerPaymentFile.input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    updateFileUI(domCache.form.item.managerPaymentFile.content, domCache.form.item.managerPaymentFile.remove, domCache.form.item.managerPaymentFile.select, file);
+                });
+            }
+
+            if (domCache.form.item.managerPaymentFile.remove) {
+                domCache.form.item.managerPaymentFile.remove.addEventListener('click', function() {
+                    resetFileUI(domCache.form.item.managerPaymentFile.input, domCache.form.item.managerPaymentFile.content, domCache.form.item.managerPaymentFile.remove, domCache.form.item.managerPaymentFile.select);
+
+                    if (domCache.form.item.managerPaymentFile.download) {
+                        domCache.form.item.managerPaymentFile.download.remove();
+                        appState.manager.deleted = true;
+                    }
+                });
+            }
         }
 
         statusRadioCards.forEach(card => {
@@ -1049,13 +1285,40 @@
             statusRadioCards[0].classList.add('selected');
             $('#reportDetailModalLabel').text('Tambah Uraian');
             $('#reportDetailParentItemContainer').hide();
+            $('.child-detail-container').hide();
             reportDetailModal.modal('show');
+        });
+
+        // Delete row button
+        $('#reportDetailDeleteButton').on('click', function() {
+            const id = $('#deleteReportDetailID').val()
+            const index = appState.details.findIndex(item => item.id == id);
+
+            if (index != -1) {
+                const item = appState.details[index];
+
+                const hasChildren = appState.details.some(i => i.parent_id == id);
+
+                if (hasChildren) {
+                    appState.details = appState.details.filter(i => i.parent_id != id);
+                }
+
+                appState.details.splice(index, 1);
+
+                renumberDetails();
+
+                reloadDetailTable();
+
+                toastr.success("Row removed successfully");
+                deleteReportDetailModal.modal('hide');
+            }
+
         });
 
         // Edit row
         $('#reportDetailTable').on('click', '.edit-row', function() {
-            const id = parseInt($(this).data('id'));
-            const item = appState.details.find(item => item.id === id);
+            const id = $(this).data('id');
+            const item = appState.details.find(item => item.id == id);
 
             if (item) {
                 $('#reportDetailID').val(item.id);
@@ -1173,28 +1436,17 @@
             const id = parseInt($(this).data('id'));
             const index = appState.details.findIndex(item => item.id == id);
 
+            deleteReportDetailModal.find('.warning-text').hide()
             if (index != -1) {
-                const item = appState.details[index];
-
-                // Check if this is a parent with children
                 const hasChildren = appState.details.some(i => i.parent_id == id);
 
                 if (hasChildren) {
-                    if (!confirm("This item has child rows. Delete all children as well?")) {
-                        return;
-                    }
-                    // Remove children
-                    appState.details = appState.details.filter(i => i.parent_id != id);
+                    deleteReportDetailModal.find('.warning-text').html('<i class="fa fa-exclamation-triangle text-warning mr-2"></i>Menghapus data ini akan menghapus seluruh sub item dibawahnya.');
+                    deleteReportDetailModal.find('.warning-text').show()
                 }
 
-                // Remove the item
-                appState.details.splice(index, 1);
-
-                renumberDetails();
-
-                reloadDetailTable();
-
-                toastr.success("Row removed successfully");
+                $('#deleteReportDetailID').val(id)
+                deleteReportDetailModal.modal('show');
             }
         });
     }
@@ -1440,19 +1692,41 @@
                 formData.append('status', statusMap[appState.userRole]);
             }
 
-            formData.append('is_rab', domCache.form.item.rab.value);
+            formData.append('is_rab', domCache.form.item.rab.input.value);
 
-            if (domCache.form.item.rabFile.input && domCache.form.item.rabFile.input.files[0]) {
-                formData.append('rab_file', domCache.form.item.rabFile.input.files[0]);
+            if (domCache.form.item.rab.input.value === '1') {
+                formData.append('rab_no', domCache.form.item.rabNo.value);
+                formData.append('rab_name', domCache.form.item.rabName.value);
+                formData.append('rab_budget', domCache.form.item.rabBudget.value);
+                formData.append('rab_description', domCache.form.item.rabDescription.value);
+
+                if (domCache.form.item.rabFile.input && domCache.form.item.rabFile.input.files[0]) {
+                    formData.append('rab_file', domCache.form.item.rabFile.input.files[0]);
+                }
+
+                formData.append('delete_rab_file', appState.rab.deleted);
+
+                if (domCache.form.item.rabFinalFile.input && domCache.form.item.rabFinalFile.input.files[0]) {
+                    formData.append('rab_final_file', domCache.form.item.rabFinalFile.input.files[0]);
+                }
+
+                formData.append('delete_rab_final_file', appState.rabFinal.deleted);
             }
 
-            formData.append('delete_rab_file', appState.rab.deleted);
+            if (appState.userRole === 'manager') {
+                formData.append('manager_rab_budget', domCache.form.item.managerRABBudget.value);
+                formData.append('manager_paid_by', domCache.form.item.managerPaidBy.value);
+                formData.append('manager_bill', domCache.form.item.managerBill.value);
+                formData.append('manager_name', domCache.form.item.managerName.value);
+                formData.append('manager_date', domCache.form.item.managerDate.value);
+                formData.append('manager_tax_report', domCache.form.item.managerTaxReport.value);
 
-            if (domCache.form.item.rabFinalFile.input && domCache.form.item.rabFinalFile.input.files[0]) {
-                formData.append('rab_final_file', domCache.form.item.rabFinalFile.input.files[0]);
+                if (domCache.form.item.managerPaymentFile.input && domCache.form.item.managerPaymentFile.input.files[0]) {
+                    formData.append('manager_payment_file', domCache.form.item.managerPaymentFile.input.files[0]);
+                }
+
+                formData.append('delete_manager_payment_file', appState.manager.deleted);
             }
-
-            formData.append('delete_rab_final_file', appState.rabFinal.deleted);
 
             appState.work.files.forEach((file, index) => {
                 if (file instanceof File) {
@@ -1544,9 +1818,11 @@
 
         if (level === 1) {
             $('#reportDetailParentItemContainer').hide();
+            $('.child-detail-container').hide();
         } else {
             $('#reportDetailParentItemContainer').show();
-            // Add only level 1 items as parents
+            $('.child-detail-container').show();
+
             const parentItems = appState.details.filter(item => item.level == 1);
             if (parentItems.length === 0) {
                 parentDropdown.append('<option value="">No parent items available</option>');

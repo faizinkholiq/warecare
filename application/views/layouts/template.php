@@ -334,6 +334,7 @@
 <script>
     const menuId = '<?php echo $menu_id; ?>';
     const modalPrompt = $("#modal_prompt");
+    const MAX_VALUE = 9999999999;
 
     const capitalizeFirst = str => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
 
@@ -361,6 +362,78 @@
             placement: 'bottom',
             arrow: true,
             animation: 'fade'
+        });
+
+        $('.input-currency').on('input', function(e) {
+            // Get cursor position before any changes
+            let cursorPosition = this.selectionStart;
+            let originalValue = $(this).val();
+
+            // Remove all non-digit characters
+            let numericValue = originalValue.replace(/[^\d]/g, '');
+
+            // If empty, set to 0
+            if (numericValue === '') {
+                $(this).val('0');
+                return;
+            }
+
+            // Convert to number and validate range
+            let numberValue = parseInt(numericValue, 10);
+
+            // Enforce maximum value
+            if (numberValue > MAX_VALUE) {
+                numberValue = MAX_VALUE;
+                numericValue = MAX_VALUE.toString();
+            }
+
+            // Format with thousand separators
+            let formattedValue = numberValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+            // Update the input value
+            $(this).val(formattedValue);
+
+            // Adjust cursor position
+            let changeInLength = formattedValue.length - originalValue.length;
+            this.setSelectionRange(
+                Math.max(0, cursorPosition + changeInLength),
+                Math.max(0, cursorPosition + changeInLength)
+            );
+        });
+
+        // Validate on blur
+        $('.input-currency').on('blur', function() {
+            let numericValue = $(this).val().replace(/[^\d]/g, '');
+            if (numericValue === '') {
+                $(this).val('0');
+            }
+        });
+
+        $('.input-number').on('input', function(e) {
+            // Get cursor position before any changes
+            let cursorPosition = this.selectionStart;
+            let originalValue = $(this).val();
+
+            // Remove all non-digit characters
+            let numericValue = originalValue.replace(/[^\d]/g, '');
+
+            // If empty, set to 0
+            if (numericValue === '') {
+                $(this).val('0');
+                return;
+            }
+
+            // Convert to number and validate range
+            let numberValue = parseInt(numericValue, 10);
+
+            // Enforce maximum value
+            if (numberValue > MAX_VALUE) {
+                numberValue = MAX_VALUE;
+                numericValue = MAX_VALUE.toString();
+            }
+
+            // Update the input value
+            $(this).val(numberValue);
         });
     });
 </script>

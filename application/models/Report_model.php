@@ -89,6 +89,8 @@ class Report_model extends CI_Model
             'company.name as company',
             'category.name as category',
             'report.status',
+            'report_rab.file rab_file',
+            'report_rab.final_file rab_final_file',
             'CONCAT_WS(" ", created_by.first_name, created_by.last_name) created_by',
             'CONCAT_WS(" ", processed_by.first_name, processed_by.last_name) processed_by',
             'CONCAT_WS(" ", approved_by.first_name, approved_by.last_name) approved_by',
@@ -96,6 +98,7 @@ class Report_model extends CI_Model
             'report.created_at'
         ])
             ->from('report')
+            ->join('report_rab', 'report_rab.report_id = report.id', 'left')
             ->join('entity', 'entity.id = report.entity_id', 'left')
             ->join('project', 'project.id = report.project_id', 'left')
             ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')

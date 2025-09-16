@@ -173,9 +173,9 @@ class Report extends MY_Controller
                         'parent_id' => $item['parent_id'] ?? null,
                         'no' => $item['no'],
                         'description' => $item['description'],
-                        'status' => $item['status'],
-                        'condition' => $item['condition'],
-                        'information' => $item['information'],
+                        'status' => $item['level'] == 2 ? $item['status'] : null,
+                        'condition' => $item['level'] == 2 ?  $item['condition'] : null,
+                        'information' => $item['level'] == 2 ? $item['information'] : null,
                     ];
                     $this->Report_model->add_detail($item_data);
                 }
@@ -219,6 +219,8 @@ class Report extends MY_Controller
         $data["mode"] = "detail";
 
         $data["report"] = $report;
+        $data["report"]["rab"] = $this->Report_model->get_rab($id);
+        $data["report"]["manager"] = $this->Report_model->get_manager($id);
         $data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);;
         $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
         $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
@@ -270,10 +272,7 @@ class Report extends MY_Controller
 
         if (!$this->input->is_ajax_request() && $this->form_validation->run() === FALSE) {
             $data["report"] = $report;
-
-            if ($report["is_rab"]) {
-                $data["report"]["rab"] = $this->Report_model->get_rab($id);
-            }
+            $data["report"]["rab"] = $this->Report_model->get_rab($id);
 
             if ($report["status"] === 'On Process') {
                 $data["report"]["manager"] = $this->Report_model->get_manager($id);
@@ -398,9 +397,9 @@ class Report extends MY_Controller
                                 'parent_id' => $item['parent_id'] ?? null,
                                 'no' => $item['no'],
                                 'description' => $item['description'],
-                                'status' => $item['status'],
-                                'condition' => $item['condition'],
-                                'information' => $item['information'],
+                                'status' => $item['level'] == 2 ? $item['status'] : null,
+                                'condition' => $item['level'] == 2 ?  $item['condition'] : null,
+                                'information' => $item['level'] == 2 ? $item['information'] : null,
                             ];
                             $this->Report_model->add_detail($item_data);
                         }
@@ -520,6 +519,8 @@ class Report extends MY_Controller
                     'tax_report' => $this->input->post('manager_tax_report'),
                 ];
 
+                $delete_manager_payment_file = $this->input->post('delete_manager_payment_file') === 'true';
+
                 $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
                 if ($manager_payment_file) {
                     $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
@@ -530,9 +531,13 @@ class Report extends MY_Controller
 
                 $manager = $this->Report_model->get_manager($id);
                 if ($manager) {
-                    $this->Report_model->update($id, $new_manager);
+                    if ($delete_manager_payment_file && !empty($manager['payment_file'])) {
+                        $this->handle_delete_file('./uploads/', $manager['payment_file']);
+                    }
+
+                    $this->Report_model->update_manager($id, $new_manager);
                 } else {
-                    $this->Report_model->create($new_manager);
+                    $this->Report_model->create_manager($new_manager);
                 }
             }
 
