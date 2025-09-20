@@ -1,3 +1,9 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+<style>
+    .dropdown {
+        border: 1px solid #ced4da !important;
+    }
+</style>
 <div class="container-fluid my-container">
     <div class="d-flex align-items-center" style="justify-content: space-between;">
         <div class="d-flex" style="gap: 0.5rem;">
@@ -71,8 +77,9 @@
                     </div>
                     <div class="form-group col-md-10">
                         <label for="warehouseCompany">Perusahaan</label>
-                        <select id="warehouseCompany" class="form-control" name="company_id" required>
-                            <option value="">- Pilih Perusahaan -</option>
+                        <select id="warehouseCompany" class="form-control selectpicker"
+                            name="company_id" required data-live-search="true"
+                            data-style="btn-white" data-size="5" data-width="100%">
                         </select>
                     </div>
                     <div class="form-group col-md-10">
@@ -127,6 +134,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 <script>
     let notifications = {
         success: '<?= $this->session->flashdata('success') ?>',
@@ -232,6 +240,9 @@
             info: false,
         });
 
+        // Initialize bootstrap-select
+        $('#warehouseCompany').selectpicker();
+
         // Create Warehouse Button
         $(document).on('click', '.create-btn', function() {
             resetForm();
@@ -265,13 +276,12 @@
                 $('#warehouseEntity').val(data.entity_id).trigger('change');
                 setTimeout(function() {
                     $('#warehouseProject').val(data.project_id).trigger('change');
-                    $('#warehouseCompany').val(data.company_id).trigger('change');
+                    $('#warehouseCompany').selectpicker('val', data.company_id);
                 }, 100);
-                $('#warehouseCompany').val(data.company_id).trigger('change');
                 $('#warehouseName').val(data.name);
                 $('#warehouseStatus').val(data.status);
                 $('#warehouseOwnedAt').val(data.owned_at);
-                $('#warehouseHandovered').val(data.handovered_at);
+                $('#warehouseHandoveredAt').val(data.handovered_at);
                 $('#inputModalIcon').removeClass('fa-plus').addClass('fa-edit');
                 $('#inputModalIcon').removeClass('text-success').addClass('text-primary');
                 $('#inputModalIcon').removeClass('bg-light-success').addClass('bg-light-primary');
@@ -369,7 +379,10 @@
 
     function loadProjectSelect(entityID) {
         const projectSelect = document.getElementById('warehouseProject');
+        const companySelect = $('#warehouseCompany');
+
         projectSelect.innerHTML = '';
+        companySelect.selectpicker('val', '');
 
         if (!entityID) {
             const option = document.createElement('option');
@@ -377,6 +390,10 @@
             option.textContent = 'No projects available';
             option.disabled = true;
             projectSelect.appendChild(option);
+
+            companySelect.selectpicker('destroy');
+            companySelect.empty();
+            companySelect.selectpicker('refresh');
             return;
         }
 
@@ -407,7 +424,6 @@
                 }
 
                 $('#warehouseProject').val('').trigger('change');
-                $('#warehouseCompany').val('').trigger('change');
                 document.getElementById('warehouseProject').dispatchEvent(new Event('change'));
             })
             .catch(error => {
@@ -417,14 +433,17 @@
     }
 
     function loadCompanySelect(projectID) {
-        const companySelect = document.getElementById('warehouseCompany');
-        companySelect.innerHTML = '';
+        const companySelect = $('#warehouseCompany');
+        companySelect.selectpicker('destroy');
+        companySelect.empty();
+        companySelect.selectpicker('refresh');
+
         if (!projectID) {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = 'No companies available';
-            option.disabled = true;
-            companySelect.appendChild(option);
+            companySelect.append($('<option>', {
+                value: '',
+                text: "No companies available",
+            }));
+            companySelect.selectpicker('refresh');
             return;
         }
 
@@ -439,20 +458,24 @@
             })
             .then(response => response.json())
             .then(res => {
+                companySelect.selectpicker('destroy');
+                companySelect.empty();
+                companySelect.selectpicker('refresh');
+
                 if (res.data.length > 0) {
                     res.data.forEach(project => {
-                        const option = document.createElement('option');
-                        option.value = project.id;
-                        option.textContent = project.name;
-                        companySelect.appendChild(option);
+                        companySelect.append($('<option>', {
+                            value: project.id,
+                            text: project.name,
+                        }));
                     });
                 } else {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = 'No companies available';
-                    option.disabled = true;
-                    companySelect.appendChild(option);
+                    companySelect.append($('<option>', {
+                        value: '',
+                        text: "No companies available",
+                    }));
                 }
+                companySelect.selectpicker('refresh');
             })
             .catch(error => {
                 console.error('Error:', error);
