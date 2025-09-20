@@ -1,8 +1,28 @@
 <div class="container-fluid my-container">
-    <button type="button" class="create-btn btn btn-default border shadow-sm rounded-lg border-0 font-weight-bold">
-        <i class="fas fa-plus text-success mr-2"></i> Tambah Perusahaan Baru
-    </button>
-    <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg">
+    <div class="d-flex align-items-center" style="justify-content: space-between;">
+        <div class="d-flex" style="gap: 0.5rem;">
+            <button type="button" class="create-btn btn btn-default shadow-sm rounded-lg border-0 font-weight-bold">
+                <i class="fas fa-plus text-success mr-2"></i> Tambah Perusahaan Baru
+            </button>
+            <button id="clearFilters" class="btn btn-sm btn-default shadow-sm rounded-lg border-0 font-weight-bold">
+                <i class="fas fa-undo mr-1"></i>
+            </button>
+        </div>
+        <div class="d-flex" style="gap: 0.5rem">
+            <div class="form-group m-0 d-flex">
+                <select id="searchProject" class="form-control" style="width: 200px">
+                    <option value="">- All Project -</option>
+                    <?php foreach ($list_data['project'] as $key => $value): ?>
+                        <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group m-0">
+                <input id="searchName" type="text" class="form-control" placeholder="Name" style="width: 200px" />
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive text-sm bg-white shadow mt-2 rounded-lg">
         <table id="companiesTable" class="table border-0" style="width:100%">
             <thead>
                 <tr>
@@ -98,10 +118,6 @@
         get_projects: "<?= site_url('project/get_list') ?>",
     }
 
-    const listData = {
-        project: []
-    }
-
     $(document).ready(function() {
         setTimeout(() => {
             if (notifications.success) {
@@ -116,7 +132,12 @@
             serverSide: true,
             ajax: {
                 url: urls.get_list,
-                type: 'POST'
+                type: 'POST',
+                data: function(d) {
+                    d.project = $('#searchProject').val();
+                    d.name = $('#searchName').val();
+                    return d;
+                }
             },
             rowId: 'id',
             columns: [{
@@ -267,6 +288,27 @@
         document.getElementById('companyEntity').addEventListener('change', (e) => {
             const value = e.target.value;
             loadProjectSelect(value);
+        });
+
+        $('#searchProject').change(function(e) {
+            const value = e.target.value;
+            table.draw();
+        });
+
+        $('#searchName').on('input', function(e) {
+            const value = e.target.value;
+            table.draw();
+        });
+
+
+        $('#searchName').on('change', function(e) {
+            const value = e.target.value;
+            table.draw();
+        });
+
+        $('#clearFilters').on('click', function() {
+            $('#searchProject, #searchName').val('');
+            table.draw();
         });
     });
 

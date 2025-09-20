@@ -5,8 +5,16 @@ class Company_model extends CI_Model
 
     private $table = 'company';
 
-    public function get_all()
+    public function get_all($p = null)
     {
+        if (isset($p['project']) && !empty($p['project'])) {
+            $this->db->where('project_id', $p['project']);
+        }
+
+        if (isset($p['name']) && !empty($p['name'])) {
+            $this->db->like($this->table . '.name', $p['name'], 'both');
+        }
+
         $this->db->select([
             $this->table . '.*',
             'project.name AS project_name'

@@ -1,7 +1,27 @@
 <div class="container-fluid my-container">
-    <button type="button" class="create-btn btn btn-default border shadow-sm rounded-lg border-0 font-weight-bold">
-        <i class="fas fa-plus text-success mr-2"></i> Tambah Gudang Baru
-    </button>
+    <div class="d-flex align-items-center" style="justify-content: space-between;">
+        <div class="d-flex" style="gap: 0.5rem;">
+            <button type="button" class="create-btn btn btn-default border shadow-sm rounded-lg border-0 font-weight-bold">
+                <i class="fas fa-plus text-success mr-2"></i> Tambah Gudang Baru
+            </button>
+            <button id="clearFilters" class="btn btn-sm btn-default shadow-sm rounded-lg border-0 font-weight-bold">
+                <i class="fas fa-undo mr-1"></i>
+            </button>
+        </div>
+        <div class="d-flex" style="gap: 0.5rem">
+            <div class="form-group m-0 d-flex">
+                <select id="searchCompany" class="form-control" style="width: 200px">
+                    <option value="">- All Company -</option>
+                    <?php foreach ($list_data['company'] as $key => $value): ?>
+                        <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group m-0">
+                <input id="searchName" type="text" class="form-control" placeholder="Name" style="width: 200px" />
+            </div>
+        </div>
+    </div>
     <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg">
         <table id="warehousesTable" class="table border-0" style="width:100%">
             <thead>
@@ -35,12 +55,24 @@
                 <div class="modal-body">
                     <input id="warehouseId" type="hidden" name="id">
                     <div class="form-group col-md-10">
+                        <label for="warehouseEntity">Entity</label>
+                        <select id="warehouseEntity" class="form-control" name="entity_id" required>
+                            <option value="">- Pilih Entity -</option>
+                            <?php foreach ($list_data['entity'] as $key => $value): ?>
+                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="warehouseProject">Project</label>
+                        <select id="warehouseProject" class="form-control" name="project_id" required>
+                            <option value="">- Pilih Project -</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-10">
                         <label for="warehouseCompany">Perusahaan</label>
                         <select id="warehouseCompany" class="form-control" name="company_id" required>
                             <option value="">- Pilih Perusahaan -</option>
-                            <?php foreach ($list_data['company'] as $key => $value): ?>
-                                <option value="<?= $value['id']  ?>"><?= $value['name']  ?></option>
-                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group col-md-10">
@@ -107,6 +139,8 @@
         create: "<?= site_url('warehouse/create') ?>",
         edit: "<?= site_url('warehouse/edit') ?>",
         delete: "<?= site_url('warehouse/delete') ?>",
+        get_projects: "<?= site_url('project/get_list') ?>",
+        get_companies: "<?= site_url('company/get_list') ?>",
     }
 
     $(document).ready(function() {
@@ -123,7 +157,12 @@
             serverSide: true,
             ajax: {
                 url: urls.get_list,
-                type: 'POST'
+                type: 'POST',
+                data: function(d) {
+                    d.company = $('#searchCompany').val();
+                    d.name = $('#searchName').val();
+                    return d;
+                }
             },
             rowId: 'id',
             columns: [{
@@ -202,6 +241,9 @@
             $('#inputModalIcon').removeClass('bg-light-primary').addClass('bg-light-success');
             $('#warehouseId').val('');
             $('#inputModal').modal('show');
+
+            loadProjectSelect();
+            loadCompanySelect();
         });
 
         // Edit Warehouse Button
@@ -218,6 +260,13 @@
                     return;
                 }
 
+                loadProjectSelect(data.entity_id);
+                loadCompanySelect(data.project_id);
+                $('#warehouseEntity').val(data.entity_id).trigger('change');
+                setTimeout(function() {
+                    $('#warehouseProject').val(data.project_id).trigger('change');
+                    $('#warehouseCompany').val(data.company_id).trigger('change');
+                }, 100);
                 $('#warehouseCompany').val(data.company_id).trigger('change');
                 $('#warehouseName').val(data.name);
                 $('#warehouseStatus').val(data.status);
@@ -286,7 +335,130 @@
                 }
             });
         });
+
+        document.getElementById('warehouseEntity').addEventListener('change', (e) => {
+            const value = e.target.value;
+            loadProjectSelect(value);
+        });
+
+        document.getElementById('warehouseProject').addEventListener('change', (e) => {
+            const value = e.target.value;
+            loadCompanySelect(value);
+        });
+
+        $('#searchCompany').change(function(e) {
+            const value = e.target.value;
+            table.draw();
+        });
+
+        $('#searchName').on('input', function(e) {
+            const value = e.target.value;
+            table.draw();
+        });
+
+        $('#searchName').on('change', function(e) {
+            const value = e.target.value;
+            table.draw();
+        });
+
+        $('#clearFilters').on('click', function() {
+            $('#searchCompany, #searchName').val('');
+            table.draw();
+        });
     });
+
+    function loadProjectSelect(entityID) {
+        const projectSelect = document.getElementById('warehouseProject');
+        projectSelect.innerHTML = '';
+
+        if (!entityID) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No projects available';
+            option.disabled = true;
+            projectSelect.appendChild(option);
+            return;
+        }
+
+        let params = {
+            entity: entityID
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+
+        fetch(urls.get_projects + '?' + queryString, {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.data.length > 0) {
+                    res.data.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        projectSelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No projects available';
+                    option.disabled = true;
+                    projectSelect.appendChild(option);
+                }
+
+                $('#warehouseProject').val('').trigger('change');
+                $('#warehouseCompany').val('').trigger('change');
+                document.getElementById('warehouseProject').dispatchEvent(new Event('change'));
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error("Failed to load project.");
+            });
+    }
+
+    function loadCompanySelect(projectID) {
+        const companySelect = document.getElementById('warehouseCompany');
+        companySelect.innerHTML = '';
+        if (!projectID) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No companies available';
+            option.disabled = true;
+            companySelect.appendChild(option);
+            return;
+        }
+
+        let params = {
+            project: projectID
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+
+        fetch(urls.get_companies + '?' + queryString, {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.data.length > 0) {
+                    res.data.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        companySelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No companies available';
+                    option.disabled = true;
+                    companySelect.appendChild(option);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error("Failed to load project.");
+            });
+    }
 
     function resetForm() {
         $('#warehouseForm')[0].reset();

@@ -9,8 +9,8 @@ class Company extends MY_Controller
         parent::__construct();
         $this->load->model([
             'Company_model',
-            'Project_model',
             'Entity_model',
+            'Project_model',
         ]);
         $this->load->library('form_validation');
     }
@@ -28,10 +28,13 @@ class Company extends MY_Controller
 
     public function get_list()
     {
-        $companys = $this->Company_model->get_all();
+        $p['project'] = $this->input->get('project') ?? $this->input->post('project');
+        $p['name'] = $this->input->post('name');
+
+        $companies = $this->Company_model->get_all($p);
 
         $data = [];
-        foreach ($companys as $company) {
+        foreach ($companies as $company) {
             $data[] = [
                 'id'          => $company['id'],
                 'name'        => $company['name'],

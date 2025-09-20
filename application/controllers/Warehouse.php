@@ -9,7 +9,8 @@ class Warehouse extends MY_Controller
         parent::__construct();
         $this->load->model([
             'Warehouse_model',
-            'Company_model'
+            'Entity_model',
+            'Company_model',
         ]);
         $this->load->library('form_validation');
     }
@@ -19,6 +20,7 @@ class Warehouse extends MY_Controller
         $data["current_user"] = $this->auth_lib->current_user();
         $data["title"] = "Warehouse";
         $data["menu_id"] = "warehouse";
+        $data["list_data"]["entity"] = $this->Entity_model->get_all();
         $data["list_data"]["company"] = $this->Company_model->get_all();
         $data["view"] = "warehouse/index";
         $this->load->view('layouts/template', $data);
@@ -27,6 +29,8 @@ class Warehouse extends MY_Controller
     public function get_list()
     {
         $p['project'] = $this->input->post('project');
+        $p['company'] = $this->input->post('company');
+        $p['name'] = $this->input->post('name');
 
         $warehouses = $this->Warehouse_model->get_list($p);
 
