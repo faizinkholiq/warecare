@@ -107,7 +107,7 @@
         display: none;
     }
 
-    .my-dropdown-container {
+    .my-toolbar-container {
         display: inline-block;
         margin-right: 2rem;
     }
@@ -199,6 +199,7 @@
         detail: "<?= site_url('report/detail') ?>",
         edit: "<?= site_url('report/edit') ?>",
         delete: "<?= site_url('report/delete') ?>",
+        export_excel: "<?= site_url('report?mode=excel') ?>"
     }
 
     const appState = {
@@ -415,7 +416,7 @@
 
                         // Status filter with label
                         var categoryFilter = $(`
-                            <div class="my-dropdown-container">
+                            <div class="my-toolbar-container">
                                 <label class="mr-2">Kategori:</label>
                                 <select id="categoryFilter" class="my-dropdown-select">
                                     <option value="">All Categories</option>
@@ -428,7 +429,7 @@
 
                         // Status filter with label
                         var statusFilter = $(`
-                            <div class="my-dropdown-container">
+                            <div class="my-toolbar-container">
                                 <label class="mr-2">Status:</label>
                                 <select id="statusFilter" class="my-dropdown-select">
                                     <option value="">All Status</option>
@@ -442,18 +443,21 @@
 
                         // Date range filter
                         var dateFilter = $(`
-                            <div class="my-dropdown-container">
+                            <div class="my-toolbar-container">
                                 <input type="date" id="startDate" class="my-dropdown-select" style="width: 150px;">
                                 <span class="mx-2">to</span>
                                 <input type="date" id="endDate" class="my-dropdown-select" style="width: 150px;">
                             </div>
                         `).appendTo(leftFilters);
 
-                        // Clear button
-                        var clearButton = $(`
-                            <div class="my-dropdown-container">
-                                <button id="clearFilters" class="btn btn-sm btn-default">
-                                    <i class="fas fa-undo mr-1"></i> Clear Filters
+                        // Toolbar buttons
+                        var toolbarButtons = $(`
+                            <div class="my-toolbar-container">
+                                <button id="clearFilters" class="btn btn-sm font-weight-bold btn-default">
+                                    <i class="fas fa-undo mr-1"></i> Reload
+                                </button>
+                                <button id="exportExcel" class="ml-2 btn btn-sm font-weight-bold btn-default">
+                                    <i class="fa fa-file-excel mr-1 text-success"></i> Export Excel
                                 </button>
                             </div>
                         `).appendTo(leftFilters);
@@ -480,6 +484,10 @@
                             $('#statusFilter').val('');
                             table.column(8).search('').draw();
                             table.column(9).search('').draw();
+                        });
+
+                        $('#exportExcel').on('click', function() {
+                            window.open(urls.export_excel, '_blank')
                         });
                     }
                 });

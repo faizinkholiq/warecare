@@ -139,6 +139,117 @@ class Report_model extends CI_Model
         ];
     }
 
+    public function get_list_export($p)
+    {
+        $columns = $p['columns'];
+        $search = $p["search"];
+        $order = !empty($p["order"]) ? $p["order"][0] : null;
+
+
+        if (!empty($p["reported_by"])) {
+            $this->db->where('report.created_by', $p['reported_by']);
+        }
+
+        if (!empty($p["rab_only"])) {
+            $this->db->where('report.is_rab', true);
+        }
+
+        if (!empty($p["start_date"])) {
+            $this->db->where('DATE(report.created_at) >=', $p["start_date"]);
+        }
+
+        if (!empty($p["end_date"])) {
+            $this->db->where('DATE(report.created_at) <=', $p["end_date"]);
+        }
+
+        if (!empty($columns)) {
+            foreach ($columns as $column) {
+                if (!empty($column['search']['value'])) {
+                    switch ($column['name']) {
+                        case 'status':
+                            $this->db->where('report.status', $column['search']['value']);
+                            break;
+                        case 'category':
+                            $this->db->where('category_id', $column['search']['value']);
+                            break;
+                        default:
+                            $this->db->like($column['name'], $column['search']['value']);
+                    }
+                }
+            }
+        }
+
+        if (!empty($search["value"])) {
+            $searchable_fields = [
+                "report.no",
+                "report.title",
+                "entity.name",
+                "project.name",
+                "warehouse.name",
+                "company.name",
+                "category.name",
+                "report.status",
+                "report.created_at"
+            ];
+
+            $search_terms = explode(" ", $search["value"]);
+
+            $this->db->group_start();
+            foreach ($searchable_fields as $field) {
+                $this->db->or_group_start();
+                foreach ($search_terms as $term) {
+                    $this->db->like($field, $term);
+                }
+                $this->db->group_end();
+            }
+            $this->db->group_end();
+        }
+
+        // Base query
+        $this->db->select([
+            'report.no AS no_pengaduan',
+            'entity.name AS entity',
+            'project.name AS project',
+            'report.created_at AS tgl_pengaduan',
+            'warehouse.name AS no_gudang',
+            'company.name AS nama_perusahaan',
+            'category.name AS kategori_pengaduan',
+            'CASE 
+                WHEN report.status = "On Process" THEN CONCAT(report.status, "(", CONCAT_WS(" ", processed_by.first_name, processed_by.last_name), ")")
+                WHEN report.status = "Approved" THEN CONCAT(report.status, "(", CONCAT_WS(" ", approved_by.first_name, approved_by.last_name), ")")
+                WHEN report.status = "Completed" THEN CONCAT(report.status, "(", CONCAT_WS(" ", completed_by.first_name, completed_by.last_name), ")")
+                WHEN report.status = "Rejected" THEN CONCAT(report.status, "(", CONCAT_WS(" ", rejected_by.first_name, rejected_by.last_name), ")")
+                ELSE report.status
+            END AS status_pengajuan',
+            'CONCAT_WS(" ", created_by.first_name, created_by.last_name) AS pelapor',
+        ])
+            ->from('report')
+            ->join('report_rab', 'report_rab.report_id = report.id', 'left')
+            ->join('entity', 'entity.id = report.entity_id', 'left')
+            ->join('project', 'project.id = report.project_id', 'left')
+            ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
+            ->join('category', 'category.id = report.category_id', 'left')
+            ->join('company', 'company.id = report.company_id', 'left')
+            ->join('user created_by', 'created_by.id = report.created_by', 'left')
+            ->join('user processed_by', 'processed_by.id = report.processed_by', 'left')
+            ->join('user approved_by', 'approved_by.id = report.approved_by', 'left')
+            ->join('user completed_by', 'completed_by.id = report.completed_by', 'left')
+            ->join('user rejected_by', 'rejected_by.id = report.rejected_by', 'left')
+        ;
+
+        // Handle ordering
+        if (!empty($order)) {
+            $this->db->order_by($columns[$order['column']]['data'], $order['dir']);
+        } else {
+            $this->db->order_by('report.id', 'desc');
+        }
+
+        $this->db->group_by('report.id');
+
+
+        return $this->db->get()->result_array();
+    }
+
     public function get($id)
     {
         $this->db->select([

@@ -17,10 +17,17 @@ class Report extends MY_Controller
             'Category_model',
         ]);
         $this->load->library('pdf');
+        $this->load->helper('excel');
     }
 
     public function index()
     {
+        $mode = $this->input->get('mode') ?? '';
+        if ($mode == 'excel') {
+            $this->export_excel();
+            return;
+        }
+
         $data["title"] = "Pengaduan";
         $data["menu_id"] = "report";
 
@@ -779,5 +786,35 @@ class Report extends MY_Controller
         $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
 
         $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', false);
+    }
+
+    private function export_excel()
+    {
+        $params["columns"] = $this->input->get("columns");
+        $params["search"] = $this->input->get("search");
+        $params["draw"] = $this->input->get("draw");
+        $params["length"] = $this->input->get("length");
+        $params["start"] = $this->input->get("start");
+        $params['rab_only'] = false;
+        $params["start_date"] = $this->input->get("start_date");
+        $params["end_date"] = $this->input->get("end_date");
+
+        if (!empty($params["start_date"])) {
+            $params["start_date"] = date('Y-m-d', strtotime($params["start_date"]));
+        }
+
+        if (!empty($params["end_date"])) {
+            $params["end_date"] = date('Y-m-d', strtotime($params["end_date"]));
+        }
+
+        if ($this->auth_lib->role() === 'pelapor') {
+            $params["reported_by"] = $this->auth_lib->user_id();
+        } else if ($this->auth_lib->role() === 'rab') {
+            $params['rab_only'] = true;
+        }
+
+        $reports = $this->Report_model->get_list_export($params);
+
+        export_excel($reports, 'report_export_' . date('Y-m-d_H-i-s'), 'Pengaduan Export');
     }
 }
