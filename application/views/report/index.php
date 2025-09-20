@@ -481,6 +481,7 @@
 
                         $('#clearFilters').on('click', function() {
                             $('#startDate, #endDate').val('');
+                            $('#categoryFilter').val('');
                             $('#statusFilter').val('');
                             table.column(8).search('').draw();
                             table.column(9).search('').draw();
