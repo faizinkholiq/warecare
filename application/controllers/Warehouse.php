@@ -42,6 +42,7 @@ class Warehouse extends MY_Controller
                 'status'        => $warehouse['status'],
                 'owned_at'      => $warehouse['owned_at'],
                 'handovered_at' => $warehouse['handovered_at'],
+                'company_id'    => $warehouse['company_id'],
                 'company'       => $warehouse['company_name'],
                 'created_at'    => date('Y-m-d H:i:s', strtotime($warehouse['created_at'])),
             ];
