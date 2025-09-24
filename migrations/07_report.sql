@@ -81,6 +81,7 @@ CREATE TABLE report_rab (
     description VARCHAR(255),
     file VARCHAR(255),
     final_file VARCHAR(255),
+    final_budget DECIMAL(15, 2),
     FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
 );
 

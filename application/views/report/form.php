@@ -519,6 +519,20 @@
                                     <?php endif; ?>
                                 </div>
                             </div>
+                            <div class="form-group col-md-6">
+                                <label for="reportRABFinalBudget">Nominal RAB Final</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white font-weight-bold">Rp</span>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        class="form-control input-currency"
+                                        id="reportRABFinalBudget"
+                                        value="<?= isset($report['rab']['final_budget']) ? number_format($report['rab']['final_budget'], 0, ',', '.') : ''; ?>"
+                                        <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'rab') ? 'disabled' : '' ?> />
+                                </div>
+                            </div>
                         <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
@@ -564,20 +578,6 @@
                                         <i class="fa fa-times"></i>
                                     </button>
                                 <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="reportManagerRABBudget">Nominal RAB Asal</label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text bg-white font-weight-bold">Rp</span>
-                                </div>
-                                <input
-                                    type="text"
-                                    class="form-control input-currency"
-                                    id="reportManagerRABBudget"
-                                    value="<?= isset($report['manager']['rab_budget']) ? number_format($report['manager']['rab_budget'], 0, ',', '.') : ''; ?>"
-                                    <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?> />
                             </div>
                         </div>
                         <div class="form-group col-md-6">
@@ -1038,7 +1038,7 @@
                     remove: document.getElementById('reportRABFinalRemoveFile'),
                     download: document.getElementById('reportRABFinalDownloadFile')
                 },
-                managerRABBudget: document.getElementById('reportManagerRABBudget'),
+                rabFinalBudget: document.getElementById('reportRABFinalBudget'),
                 managerPaidBy: document.getElementById('reportManagerPaidBy'),
                 managerBill: document.getElementById('reportManagerBill'),
                 managerName: document.getElementById('reportManagerName'),
@@ -1836,16 +1836,16 @@
         formData.append('warehouse_id', domCache.form.item.warehouse.id.value);
         formData.append('category_id', domCache.form.item.category.value);
 
-        if (domCache.form.item.category.value != 2) {
-            formData.append('title', domCache.form.item.title.value);
-            formData.append('description', domCache.form.item.description.input.value);
-        } else {
+        if (appState.categoryWithDetail.includes(parseInt(domCache.form.item.category.value))) {
             if (appState.details.length === 0) {
                 toastr.error("Uraian tidak boleh kosong. setidaknya tambahkan satu uraian.");
                 return;
             }
 
             formData.append('details', JSON.stringify(appState.details));
+        } else {
+            formData.append('title', domCache.form.item.title.value);
+            formData.append('description', domCache.form.item.description.input.value);
         }
 
         appState.evidence.files.forEach((file, index) => {
@@ -1892,10 +1892,11 @@
                 }
 
                 formData.append('delete_rab_final_file', appState.rabFinal.deleted);
+
+                formData.append('rab_final_budget', domCache.form.item.rabFinalBudget.value);
             }
 
             if (appState.userRole === 'manager') {
-                formData.append('manager_rab_budget', domCache.form.item.managerRABBudget.value);
                 formData.append('manager_paid_by', domCache.form.item.managerPaidBy.value);
                 formData.append('manager_bill', domCache.form.item.managerBill.value);
                 formData.append('manager_name', domCache.form.item.managerName.value);

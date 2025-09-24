@@ -117,12 +117,15 @@ class Report extends MY_Controller
 
             $entity = $this->Entity_model->get($data['entity_id']);
             if ($entity) {
+                $prefix_no = $entity["id"];
                 if (preg_match_all('/\d+/', $entity["name"], $matches)) {
                     $numbers = $matches[0];
                     if (count($numbers) > 0) {
-                        $data["no"] = end($numbers) . '-' . date('Ym') . '-' . str_pad($this->Report_model->get_next_id(), 4, '0', STR_PAD_LEFT);
+                        $prefix_no = end($numbers);
                     }
                 }
+
+                $data["no"] = $prefix_no . '-' . date('Ym') . '-' . str_pad($this->Report_model->get_next_id(), 4, '0', STR_PAD_LEFT);
             }
 
             $evidence_files = $_FILES['evidence_files'] ?? [];
@@ -172,6 +175,8 @@ class Report extends MY_Controller
             }
 
             $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
+            print_r($details);
+            exit;
             if (!empty($details)) {
                 foreach ($details as $item) {
                     $item_data = [
@@ -475,6 +480,7 @@ class Report extends MY_Controller
                     'name' => $this->input->post('rab_name'),
                     'budget' => (float)str_replace('.', '', $this->input->post('rab_budget') ?: 0),
                     'description' => $this->input->post('rab_description'),
+                    'final_budget' => (float)str_replace('.', '', $this->input->post('rab_final_budget') ?: 0),
                 ];
 
                 $rab_file = $_FILES['rab_file'] ?? [];
@@ -515,7 +521,6 @@ class Report extends MY_Controller
             if ($data['status'] === 'Approved') {
                 $new_manager = [
                     'report_id' => $id,
-                    'rab_budget' => (float)str_replace('.', '', $this->input->post('manager_rab_budget') ?: 0),
                     'paid_by' => $this->input->post('manager_paid_by'),
                     'bill' => (float)str_replace('.', '', $this->input->post('manager_bill') ?: 0),
                     'name' => $this->input->post('manager_name'),
