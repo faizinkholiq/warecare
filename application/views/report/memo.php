@@ -1,5 +1,5 @@
 <?php
-$description = nl2br($report['description']);
+$description = isset($report['description']) && !empty($report['description']) ? nl2br($report['description']) : '';
 if (in_array($report['category_id'], $category_with_detail)) {
     if (!empty($report['details'])) {
         $description = "<ul>";
