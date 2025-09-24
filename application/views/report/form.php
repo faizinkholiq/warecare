@@ -522,7 +522,7 @@
                         <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
-                <?php if ($mode !== 'create' && isset($report['manager']['id'])): ?>
+                <?php if (($mode === 'detail' && isset($report['manager']['id'])) || ($mode === 'edit' && $this->auth_lib->role() === 'manager')): ?>
                     <div class="border-top pt-4" style="margin-top: 2.5rem;">
                         <div class="form-group col-md-6">
                             <label for="reportRABNo">Bukti Pembayaran</label>
@@ -694,11 +694,13 @@
                                     class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
                                 </button>
-                                <a
-                                    href="<?= site_url('report/memo/' . $report['id']) ?>"
-                                    class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
-                                    <i class="fas fa-print mr-2"></i> Cetak Memo
-                                </a>
+                                <?php if (isset($report) && $report['status'] === 'Approved'): ?>
+                                    <a
+                                        href="<?= site_url('report/memo/' . $report['id']) ?>"
+                                        class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                        <i class="fas fa-print mr-2"></i> Cetak Memo
+                                    </a>
+                                <?php endif; ?>
                                 <button
                                     type="submit"
                                     class="btn rounded-lg border-0 shadow-sm btn-success ml-2">

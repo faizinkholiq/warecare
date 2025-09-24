@@ -380,7 +380,7 @@
                                     <i class="text-xs fa fa-play"></i>
                                 </a>
                             `);
-                        } else if (appState.userRole === 'manager' && row.status === 'On Process' && (row.is_rab !== '1' || (row.is_rab == '1' && row.rab_final_file))) {
+                        } else if (appState.userRole === 'manager' && row.status === 'On Process' && (row.is_rab != 1 || (row.is_rab == 1 && row.rab_final_file))) {
                             buttons.push(`
                                 <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-success rounded-lg border-0 mr-1" data-tippy-content="Approve Report">
                                     <i class="text-xs fa fa-check"></i>

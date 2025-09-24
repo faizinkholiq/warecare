@@ -171,7 +171,7 @@ class Report extends MY_Controller
                 return;
             }
 
-            $details = json_decode($this->input->post('details'), true) ?? [];
+            $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
             if (!empty($details)) {
                 foreach ($details as $item) {
                     $item_data = [
@@ -332,7 +332,7 @@ class Report extends MY_Controller
 
             $evidence_files = $_FILES['evidence_files'] ?? [];
             $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
-            $deleted_evidences = json_decode($this->input->post('deleted_evidence_files'), true) ?? [];
+            $deleted_evidences = !empty($this->input->post('deleted_evidence_files')) ? json_decode($this->input->post('deleted_evidence_files'), true) : [];
             $total_evidences = $existing_count + $evidence_count - count($deleted_evidences);
 
             if ($total_evidences < 1) {
@@ -362,7 +362,7 @@ class Report extends MY_Controller
 
             $work_files = $_FILES['work_files'] ?? [];
             $work_count = !empty($work_files['name'][0]) ? count($work_files['name']) : 0;
-            $deleted_works = json_decode($this->input->post('deleted_work_files'), true) ?? [];
+            $deleted_works = !empty($this->input->post('deleted_work_files')) ? json_decode($this->input->post('deleted_work_files'), true) : [];
             $total_works = $existing_count + $work_count - count($deleted_works);
 
             if ($total_works < 1) {
@@ -392,7 +392,7 @@ class Report extends MY_Controller
 
             if ($this->Report_model->delete_details_by_report($id)) {
                 if (in_array($data['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-                    $details = json_decode($this->input->post('details'), true) ?? [];
+                    $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
                     if (!empty($details)) {
                         foreach ($details as $item) {
                             $item_data = [
