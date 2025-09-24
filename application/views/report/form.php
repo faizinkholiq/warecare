@@ -694,13 +694,6 @@
                                     class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
                                 </button>
-                                <?php if (isset($report) && $report['status'] === 'Approved'): ?>
-                                    <a
-                                        href="<?= site_url('report/memo/' . $report['id']) ?>"
-                                        class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
-                                        <i class="fas fa-print mr-2"></i> Cetak Memo
-                                    </a>
-                                <?php endif; ?>
                                 <button
                                     type="submit"
                                     class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
@@ -712,6 +705,7 @@
                                 <?php if (isset($report) && $report['status'] === 'Approved'): ?>
                                     <a
                                         href="<?= site_url('report/memo/' . $report['id']) ?>"
+                                        target="_blank"
                                         class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
                                         <i class="fas fa-print mr-2"></i> Cetak Memo
                                     </a>
@@ -728,6 +722,14 @@
                                     </button>
                                 <?php endif; ?>
                             <?php endif; ?>
+                        <?php endif; ?>
+                        <?php if ($mode === 'detail' &&  isset($report) && in_array($report['status'], ['Approved', 'Completed'])): ?>
+                            <a
+                                href="<?= site_url('report/memo/' . $report['id']) ?>"
+                                target="_blank"
+                                class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                <i class="fas fa-print mr-2"></i> Cetak Memo
+                            </a>
                         <?php endif; ?>
                         <?php if ($mode === 'create'): ?>
                             <button
