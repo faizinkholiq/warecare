@@ -175,8 +175,6 @@ class Report extends MY_Controller
             }
 
             $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
-            print_r($details);
-            exit;
             if (!empty($details)) {
                 foreach ($details as $item) {
                     $item_data = [
