@@ -3,30 +3,25 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 // PhpSpreadsheet Autoloader without Composer
 spl_autoload_register(function ($class) {
-    $prefix = 'PhpOffice\\PhpSpreadsheet\\';
-    $base_dir = __DIR__ . '/src/PhpSpreadsheet/';
+    $prefixes = [
+        'PhpOffice\\PhpSpreadsheet\\' => APPPATH . 'third_party/PhpSpreadsheet/src/PhpSpreadsheet/',
+        'Psr\\SimpleCache\\' => APPPATH . 'third_party/Psr/SimpleCache/src/',
+        'Psr\\' => APPPATH . 'third_party/Psr/SimpleCache/src/', // Fallback for other PSR
+    ];
 
-    // Check if the class uses the namespace prefix
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
+    foreach ($prefixes as $prefix => $base_dir) {
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) === 0) {
+            $relative_class = substr($class, $len);
+            $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
 
-    // Get the relative class name
-    $relative_class = substr($class, $len);
-
-    // Replace the namespace prefix with the base directory, replace namespace
-    // separators with directory separators in the relative class name, append
-    // with .php
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-
-    // If the file exists, require it
-    if (file_exists($file)) {
-        require $file;
+            if (file_exists($file)) {
+                require $file;
+                return;
+            }
+        }
     }
 });
 
-// Load necessary dependencies that would normally be handled by Composer
-require_once __DIR__ . '/src/PhpSpreadsheet/Shared/StringHelper.php';
-require_once __DIR__ . '/src/PhpSpreadsheet/Shared/File.php';
-require_once __DIR__ . '/src/PhpSpreadsheet/Calculation/Calculation.php';
+require_once APPPATH . 'third_party/PhpSpreadsheet/src/PhpSpreadsheet/Shared/StringHelper.php';
+require_once APPPATH . 'third_party/PhpSpreadsheet/src/PhpSpreadsheet/Shared/File.php';
