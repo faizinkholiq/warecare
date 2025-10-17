@@ -2,7 +2,7 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 class Report extends MY_Controller
 {
-    private $CATEGORY_WITH_DETAIL = [2, 3];
+    private $CATEGORY_WITH_DETAIL = [1, 2, 3, 4, 5];
     private $MAX_FILE_COUNT = 10;
 
     public function __construct()
@@ -457,57 +457,50 @@ class Report extends MY_Controller
             }
 
             $rab = $this->Report_model->get_rab($id);
-            $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
-            $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
-
-            if ($rab) {
-                if ($delete_rab_file && !empty($rab['file'])) {
-                    $this->handle_delete_file('./uploads/', $rab['file']);
-                }
-
-
-                if ($delete_rab_final_file && !empty($rab['final_file'])) {
-                    $this->handle_delete_file('./uploads/', $rab['final_file']);
-                }
-            }
-
             if ($data['is_rab']) {
-                $new_rab = [
-                    'report_id' => $id,
-                    'no' => $this->input->post('rab_no'),
-                    'name' => $this->input->post('rab_name'),
-                    'budget' => (float)str_replace('.', '', $this->input->post('rab_budget') ?: 0),
-                    'description' => $this->input->post('rab_description'),
-                    'final_budget' => (float)str_replace('.', '', $this->input->post('rab_final_budget') ?: 0),
-                ];
-
-                $rab_file = $_FILES['rab_file'] ?? [];
-                if ($rab_file) {
-                    $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
-                    if ($uploaded_rab) {
-                        $new_rab['file'] = $uploaded_rab['file_name'];
-                    }
-                }
-
-                $rab_final_file = $_FILES['rab_final_file'] ?? [];
-                if ($rab_final_file) {
-                    $uploaded_rab = $this->handle_upload_file($rab_final_file, 'rab_final');
-                    if ($uploaded_rab) {
-                        $new_rab['final_file'] = $uploaded_rab['file_name'];
-                    }
-                }
-
                 if ($rab) {
-                    if (!empty($new_rab['file'])) {
+                    $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
+                    $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
+
+                    $new_rab = [];
+
+                    if ($delete_rab_file && !empty($rab['file'])) {
                         $this->handle_delete_file('./uploads/', $rab['file']);
+                        $new_rab['file'] = null;
                     }
 
-                    if (!empty($new_rab['final_file'])) {
+                    if ($delete_rab_final_file && !empty($rab['final_file'])) {
                         $this->handle_delete_file('./uploads/', $rab['final_file']);
+                        $new_rab['final_file'] = null;
+                    }
+
+                    $rab_final_file = $_FILES['rab_final_file'] ?? [];
+                    if ($rab_final_file) {
+                        $uploaded_rab = $this->handle_upload_file($rab_final_file, 'rab_final');
+                        if ($uploaded_rab) {
+                            $new_rab['final_file'] = $uploaded_rab['file_name'];
+                        }
                     }
 
                     $this->Report_model->update_rab($id, $new_rab);
                 } else {
+                    $new_rab = [
+                        'report_id' => $id,
+                        'no' => $this->input->post('rab_no'),
+                        'name' => $this->input->post('rab_name'),
+                        'budget' => (float)str_replace('.', '', $this->input->post('rab_budget') ?: 0),
+                        'description' => $this->input->post('rab_description'),
+                        'final_budget' => (float)str_replace('.', '', $this->input->post('rab_final_budget') ?: 0),
+                    ];
+
+                    $rab_file = $_FILES['rab_file'] ?? [];
+                    if ($rab_file) {
+                        $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
+                        if ($uploaded_rab) {
+                            $new_rab['file'] = $uploaded_rab['file_name'];
+                        }
+                    }
+
                     $this->Report_model->create_rab($new_rab);
                 }
             } else {
@@ -517,33 +510,45 @@ class Report extends MY_Controller
             }
 
             if ($data['status'] === 'Approved') {
-                $new_manager = [
-                    'report_id' => $id,
-                    'paid_by' => $this->input->post('manager_paid_by'),
-                    'bill' => (float)str_replace('.', '', $this->input->post('manager_bill') ?: 0),
-                    'name' => $this->input->post('manager_name'),
-                    'date' => $this->input->post('manager_date'),
-                    'tax_report' => $this->input->post('manager_tax_report'),
-                ];
-
-                $delete_manager_payment_file = $this->input->post('delete_manager_payment_file') === 'true';
-
-                $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
-                if ($manager_payment_file) {
-                    $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
-                    if ($uploaded_manager_payment) {
-                        $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
-                    }
-                }
-
                 $manager = $this->Report_model->get_manager($id);
                 if ($manager) {
+                    $delete_manager_payment_file = $this->input->post('delete_manager_payment_file') === 'true';
+
+                    $new_manager = [];
+
                     if ($delete_manager_payment_file && !empty($manager['payment_file'])) {
                         $this->handle_delete_file('./uploads/', $manager['payment_file']);
                     }
 
-                    $this->Report_model->update_manager($id, $new_manager);
+                    $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
+                    if ($manager_payment_file) {
+                        $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
+                        if ($uploaded_manager_payment) {
+                            $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
+                        }
+                    }
+
+                    if ($new_manager) {
+                        $this->Report_model->update_manager($id, $new_manager);
+                    }
                 } else {
+                    $new_manager = [
+                        'report_id' => $id,
+                        'paid_by' => $this->input->post('manager_paid_by'),
+                        'bill' => (float)str_replace('.', '', $this->input->post('manager_bill') ?: 0),
+                        'name' => $this->input->post('manager_name'),
+                        'date' => $this->input->post('manager_date'),
+                        'tax_report' => $this->input->post('manager_tax_report'),
+                    ];
+
+                    $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
+                    if ($manager_payment_file) {
+                        $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
+                        if ($uploaded_manager_payment) {
+                            $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
+                        }
+                    }
+
                     $this->Report_model->create_manager($new_manager);
                 }
             }

@@ -95,5 +95,6 @@ CREATE TABLE report_manager (
     name VARCHAR(50),
     date DATE,
     tax_report BOOLEAN DEFAULT false,
+    payment_file VARCHAR(255),
     FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
 );

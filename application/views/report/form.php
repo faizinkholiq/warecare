@@ -304,26 +304,6 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div id="reportDescriptionContainer" class="col-md-12 row" style="display: <?= isset($report) && !in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
-                    <div class="form-group col-md-6 pr-0">
-                        <label for="reportTitle">Judul</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="reportTitle"
-                            value="<?= isset($report) ? $report['title'] : ''; ?>"
-                            <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>>
-                    </div>
-                    <div class="form-group col-md-7 pr-0">
-                        <label for="reportDescription">Deskripsi</label>
-                        <textarea
-                            class="form-control"
-                            id="reportDescription"
-                            name="description"
-                            style="height: 7rem;"
-                            <?= $mode === 'detail' || ($mode === 'edit' && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))) ? 'disabled' : '' ?>><?= isset($report) ? $report['description'] : ''; ?></textarea>
-                    </div>
-                </div>
                 <div id="reportDetailContainer" class="col-md-12" style="display: <?= isset($report) && in_array($report['category_id'], $category_with_detail) ? '' : 'none'; ?>;">
                     <div style="margin: 2rem 0 3rem;">
                         <?php if ($mode === 'create' || ($mode === 'edit' && $report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')): ?>
@@ -385,7 +365,7 @@
                         <?php endif; ?>
                     </div>
                 </div>
-                <?php if (($mode === 'detail' || $mode === 'edit') && isset($report) && ($report['status'] !== 'Pending' || ($report['status'] === 'Pending' && $this->auth_lib->role() === 'kontraktor'))): ?>
+                <?php if ($mode !== 'create' && in_array($this->auth_lib->role(), ['kontraktor', 'rab', 'manager'])): ?>
                     <div class="form-group col-md-6">
                         <label for="reportRAB">RAB</label>
                         <select
@@ -536,7 +516,7 @@
                         <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
-                <?php if (($mode === 'detail' && isset($report['manager']['id'])) || ($mode === 'edit' && $this->auth_lib->role() === 'manager')): ?>
+                <?php if ($mode !== 'create' && $this->auth_lib->role() === 'manager'): ?>
                     <div class="border-top pt-4" style="margin-top: 2.5rem;">
                         <div class="form-group col-md-6">
                             <label for="reportRABNo">Bukti Pembayaran</label>
@@ -592,7 +572,7 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="reportManagerBill">Nominal Tagihan</label>
+                            <label for="reportManagerBill">Nominal Tagihan <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] ? $report['manager']['paid_by'] : 'Customer' ?></label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text bg-white font-weight-bold">Rp</span>
@@ -617,7 +597,7 @@
                             <input type="date"
                                 class="form-control"
                                 id="reportManagerDate"
-                                value="<?= isset($report['manager']['date']) ? $report['manager']['date'] : ''; ?>"
+                                value="<?= isset($report['manager']['date']) ? $report['manager']['date'] : date('Y-m-d'); ?>"
                                 <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'manager') ? 'disabled' : '' ?>>
                         </div>
                         <div class="form-group col-md-6">
@@ -673,13 +653,16 @@
                     </a>
                     <div>
                         <?php if ($mode === 'edit'): ?>
-                            <?php if (in_array($this->auth_lib->role(), ['kontraktor', 'rab'])): ?>
+                            <?php if (in_array($this->auth_lib->role(), ['rab', 'manager'])): ?>
                                 <button
                                     type="button"
                                     onclick="rejectReport()"
                                     class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
                                 </button>
+                            <?php endif; ?>
+
+                            <?php if (in_array($this->auth_lib->role(), ['kontraktor', 'rab'])): ?>
                                 <button
                                     type="submit"
                                     class="btn rounded-lg border-0 shadow-sm bg-navy ml-2">
@@ -689,12 +672,6 @@
 
                             <?php if ($this->auth_lib->role() === 'manager'): ?>
                                 <button
-                                    type="button"
-                                    onclick="rejectReport()"
-                                    class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
-                                    <i class="fas fa-times mr-2"></i> Ditolak
-                                </button>
-                                <button
                                     type="submit"
                                     class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
                                     <i class="fas fa-check mr-2"></i> Setujui Pengaduan
@@ -703,12 +680,6 @@
 
                             <?php if ($this->auth_lib->role() === 'pelapor'): ?>
                                 <?php if (isset($report) && $report['status'] === 'Approved'): ?>
-                                    <a
-                                        href="<?= site_url('report/memo/' . $report['id']) ?>"
-                                        target="_blank"
-                                        class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
-                                        <i class="fas fa-print mr-2"></i> Cetak Memo
-                                    </a>
                                     <button
                                         type="submit"
                                         class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
@@ -723,11 +694,12 @@
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
-                        <?php if ($mode === 'detail' &&  isset($report) && in_array($report['status'], ['Approved', 'Completed'])): ?>
+                        <?php if ($this->auth_lib->role() === 'manager'): ?>
                             <a
                                 href="<?= site_url('report/memo/' . $report['id']) ?>"
                                 target="_blank"
-                                class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2">
+                                class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2"
+                                style="display: <?= $report['status'] === 'Approved' || $report['status'] === 'Completed' ? '' : 'none' ?>;">
                                 <i class="fas fa-print mr-2"></i> Cetak Memo
                             </a>
                         <?php endif; ?>
@@ -1040,7 +1012,10 @@
                 },
                 rabFinalBudget: document.getElementById('reportRABFinalBudget'),
                 managerPaidBy: document.getElementById('reportManagerPaidBy'),
-                managerBill: document.getElementById('reportManagerBill'),
+                managerBill: {
+                    input: document.getElementById('reportManagerBill'),
+                    label: document.querySelector('label[for="reportManagerBill"]')
+                },
                 managerName: document.getElementById('reportManagerName'),
                 managerDate: document.getElementById('reportManagerDate'),
                 managerTaxReport: document.getElementById('reportManagerTaxReport'),
@@ -1332,13 +1307,11 @@
                 const categoryWithDetail = appState.categoryWithDetail;
 
                 if (appState.reportData.category_id) {
-                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
                     domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(appState.reportData.category_id)) ? '' : 'none';
                 }
 
                 domCache.form.item.category.addEventListener('change', (e) => {
                     const value = e.target.value;
-                    domCache.form.item.description.container.style.display = !categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
                     domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
                 });
             }
@@ -1373,7 +1346,6 @@
                     handleFileInputChange('work', event);
                 });
             }
-
 
             // RAB
             if (domCache.form.item.rab && domCache.form.item.rab.container) {
@@ -1433,6 +1405,17 @@
                     if (domCache.form.item.managerPaymentFile.download) {
                         domCache.form.item.managerPaymentFile.download.remove();
                         appState.manager.deleted = true;
+                    }
+                });
+            }
+
+            if (domCache.form.item.managerPaidBy) {
+                domCache.form.item.managerPaidBy.addEventListener('change', function() {
+                    domCache.form.item.managerBill.label.textContent = 'Nominal Tagihan ' + this.value;
+                    if (this.value === 'Waringin') {
+                        domCache.form.item.managerName.value = 'Waringin';
+                    } else {
+                        domCache.form.item.managerName.value = '';
                     }
                 });
             }
@@ -1873,32 +1856,39 @@
                 formData.append('status', statusMap[appState.userRole]);
             }
 
-            formData.append('is_rab', domCache.form.item.rab.input.value);
-
-            if (domCache.form.item.rab.input.value === '1') {
-                formData.append('rab_no', domCache.form.item.rabNo.value);
-                formData.append('rab_name', domCache.form.item.rabName.value);
-                formData.append('rab_budget', domCache.form.item.rabBudget.value);
-                formData.append('rab_description', domCache.form.item.rabDescription.value);
-
-                if (domCache.form.item.rabFile.input && domCache.form.item.rabFile.input.files[0]) {
-                    formData.append('rab_file', domCache.form.item.rabFile.input.files[0]);
+            const rabRole = ['kontraktor', 'rab'];
+            if (rabRole.includes(appState.userRole)) {
+                if (appState.userRole === 'kontraktor') {
+                    formData.append('is_rab', domCache.form.item.rab.input.value);
                 }
 
-                formData.append('delete_rab_file', appState.rab.deleted);
+                if (domCache.form.item.rab.input.value === '1') {
+                    formData.append('rab_no', domCache.form.item.rabNo.value);
+                    formData.append('rab_name', domCache.form.item.rabName.value);
+                    formData.append('rab_budget', domCache.form.item.rabBudget.value);
+                    formData.append('rab_description', domCache.form.item.rabDescription.value);
 
-                if (domCache.form.item.rabFinalFile.input && domCache.form.item.rabFinalFile.input.files[0]) {
-                    formData.append('rab_final_file', domCache.form.item.rabFinalFile.input.files[0]);
+                    if (domCache.form.item.rabFile.input && domCache.form.item.rabFile.input.files[0]) {
+                        formData.append('rab_file', domCache.form.item.rabFile.input.files[0]);
+                    }
+
+                    formData.append('delete_rab_file', appState.rab.deleted);
+
+                    if (domCache.form.item.rabFinalFile.input && domCache.form.item.rabFinalFile.input.files[0]) {
+                        formData.append('rab_final_file', domCache.form.item.rabFinalFile.input.files[0]);
+                    }
+
+                    formData.append('delete_rab_final_file', appState.rabFinal.deleted);
+
+                    if (appState.userRole === 'rab') {
+                        formData.append('rab_final_budget', domCache.form.item.rabFinalBudget.value);
+                    }
                 }
-
-                formData.append('delete_rab_final_file', appState.rabFinal.deleted);
-
-                formData.append('rab_final_budget', domCache.form.item.rabFinalBudget.value);
             }
 
             if (appState.userRole === 'manager') {
                 formData.append('manager_paid_by', domCache.form.item.managerPaidBy.value);
-                formData.append('manager_bill', domCache.form.item.managerBill.value);
+                formData.append('manager_bill', domCache.form.item.managerBill.input.value);
                 formData.append('manager_name', domCache.form.item.managerName.value);
                 formData.append('manager_date', domCache.form.item.managerDate.value);
                 formData.append('manager_tax_report', domCache.form.item.managerTaxReport.value);
@@ -1925,12 +1915,17 @@
     function submitFormData(formData) {
         const url = appState.mode === 'create' ? URLS.create : `${URLS.edit}/${appState.reportData.id}`;
 
+        // Show loading
+
         fetch(url, {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
+                // Close loading
+                Swal.close();
+
                 if (data.success) {
                     window.location.href = URLS.default;
                 } else {
@@ -1938,6 +1933,9 @@
                 }
             })
             .catch(error => {
+                // Close loading on error
+                Swal.close();
+
                 console.error('Error:', error);
                 toastr.error("Failed to " + appState.mode + " report.");
             });

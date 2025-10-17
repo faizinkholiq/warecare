@@ -152,6 +152,17 @@
         .text-navy {
             color: #001f3f !important;
         }
+
+        .progressloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            display: none;
+        }
     </style>
 </head>
 
@@ -161,6 +172,10 @@
         <!-- Preloader -->
         <div class="preloader flex-column justify-content-center align-items-center">
             <i class="fas fa-circle-notch fa-spin" style="font-size: 50px;"></i>
+        </div>
+
+        <!-- Progress Loader -->
+        <div class="progressloader flex-column justify-content-center align-items-center">
         </div>
 
         <!-- Navbar -->
@@ -436,6 +451,14 @@
             $(this).val(numberValue);
         });
     });
+
+    function showLoading(type = true) {
+        if (type) {
+            $('.progressloader').fadeIn();
+        } else {
+            $('.progressloader').fadeOut();
+        }
+    }
 </script>
 
 </html>
