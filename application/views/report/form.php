@@ -1915,28 +1915,37 @@
     function submitFormData(formData) {
         const url = appState.mode === 'create' ? URLS.create : `${URLS.edit}/${appState.reportData.id}`;
 
-        // Show loading
+        showLoading(true);
+        updateProgress(10);
+
+        const progressInterval = simulateProgress();
 
         fetch(url, {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                // Close loading
-                Swal.close();
-
-                if (data.success) {
-                    window.location.href = URLS.default;
-                } else {
-                    throw new Error('Operation failed');
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
+                return response.json()
+            })
+            .then(data => {
+                clearInterval(progressInterval);
+                updateProgress(100);
+
+                setTimeout(() => {
+                    showLoading(false);
+                    if (data.success) {
+                        window.location.href = URLS.default;
+                    } else {
+                        throw new Error('Operation failed');
+                    }
+                }, 500);
             })
             .catch(error => {
-                // Close loading on error
-                Swal.close();
-
-                console.error('Error:', error);
+                clearInterval(progressInterval);
+                showLoading(false);
                 toastr.error("Failed to " + appState.mode + " report.");
             });
     }

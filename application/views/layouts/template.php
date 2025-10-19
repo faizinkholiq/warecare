@@ -153,15 +153,47 @@
             color: #001f3f !important;
         }
 
-        .progressloader {
+        .progress-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
             z-index: 9999;
-            display: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            display: flex;
+        }
+
+        .progress-container.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .progress-container .progress {
+            width: 20%;
+            height: 2rem;
+            border-radius: 1rem;
+        }
+
+        .progress-container .progress .progress-bar {
+            border-radius: 1rem;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -175,7 +207,14 @@
         </div>
 
         <!-- Progress Loader -->
-        <div class="progressloader flex-column justify-content-center align-items-center">
+        <div id="progressContainer" class="progress-container flex-column justify-content-center align-items-center">
+            <div class="progress">
+                <div class="progress-bar bg-navy"
+                    id="formProgressBar"
+                    role="progressbar"
+                    style="width: 0%">
+                </div>
+            </div>
         </div>
 
         <!-- Navbar -->
@@ -452,12 +491,43 @@
         });
     });
 
-    function showLoading(type = true) {
-        if (type) {
-            $('.progressloader').fadeIn();
+    function showLoading(show = true) {
+        const progressContainer = document.getElementById('progressContainer');
+
+        if (show) {
+            progressContainer.classList.add('show');
+            // submitBtn.disabled = true;
+            // submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
         } else {
-            $('.progressloader').fadeOut();
+            setTimeout(() => {
+                progressContainer.classList.remove('show');
+                // submitBtn.disabled = false;
+                // submitBtn.textContent = 'Submit Report';
+            }, 500);
         }
+    }
+
+    // Update progress bar
+    function updateProgress(percentage) {
+        const formProgressBar = document.getElementById('formProgressBar');
+
+        formProgressBar.style.width = percentage + '%';
+        formProgressBar.setAttribute('aria-valuenow', percentage);
+    }
+
+    // Simulate progress for file upload
+    function simulateProgress() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 90) {
+                progress = 90; // Don't go to 100% until the request completes
+                clearInterval(interval);
+            }
+            updateProgress(progress);
+        }, 200);
+
+        return interval;
     }
 </script>
 

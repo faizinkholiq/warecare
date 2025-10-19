@@ -303,15 +303,8 @@ class Report extends MY_Controller
 
             $this->load->view('layouts/template', $data);
         } else {
+
             $data = [
-                'entity_id' => $this->input->post('entity_id'),
-                'project_id' => $this->input->post('project_id'),
-                'company_id' => $this->input->post('company_id'),
-                'warehouse_id' => $this->input->post('warehouse_id'),
-                'category_id' => $this->input->post('category_id'),
-                'title' => $this->input->post('title'),
-                'description' => $this->input->post('description'),
-                'is_rab' => (bool)$this->input->post('is_rab'),
                 'status' => $this->input->post('status') ?: 'Pending',
                 'updated_by'  => $this->auth_lib->user_id()
             ];
@@ -333,85 +326,232 @@ class Report extends MY_Controller
                     break;
             }
 
-            $evidence_files = $_FILES['evidence_files'] ?? [];
-            $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
-            $deleted_evidences = !empty($this->input->post('deleted_evidence_files')) ? json_decode($this->input->post('deleted_evidence_files'), true) : [];
-            $total_evidences = $existing_count + $evidence_count - count($deleted_evidences);
+            switch ($this->auth_lib->role()) {
+                case 'pelapor':
+                    $data['entity_id'] = $this->input->post('entity_id');
+                    $data['project_id'] = $this->input->post('project_id');
+                    $data['company_id'] = $this->input->post('company_id');
+                    $data['warehouse_id'] = $this->input->post('warehouse_id');
+                    $data['category_id'] = $this->input->post('category_id');
+                    $data['title'] = $this->input->post('title');
+                    $data['description'] = $this->input->post('description');
 
-            if ($total_evidences < 1) {
-                $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
-                    'required' => 'At least one evidence file is required.'
-                ]);
-            } elseif ($total_evidences > $this->MAX_FILE_COUNT) {
-                $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
-                    'max_evidence_files' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
-                ]);
-            }
+                    $evidence_files = $_FILES['evidence_files'] ?? [];
+                    $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
+                    $deleted_evidences = !empty($this->input->post('deleted_evidence_files')) ? json_decode($this->input->post('deleted_evidence_files'), true) : [];
+                    $total_evidences = $existing_count + $evidence_count - count($deleted_evidences);
 
-            $uploaded_evidences = [];
-            if (!empty($evidence_files['name'][0])) {
-                if ($total_evidences > $this->MAX_FILE_COUNT) {
-                    $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed.");
-                    $this->output->set_status_header(400);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
-                    ]);
-                    return;
-                }
+                    if ($total_evidences < 1) {
+                        $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
+                            'required' => 'At least one evidence file is required.'
+                        ]);
+                    } elseif ($total_evidences > $this->MAX_FILE_COUNT) {
+                        $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
+                            'max_evidence_files' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
+                        ]);
+                    }
 
-                $uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
-            }
+                    $uploaded_evidences = [];
+                    if (!empty($evidence_files['name'][0])) {
+                        if ($total_evidences > $this->MAX_FILE_COUNT) {
+                            $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed.");
+                            $this->output->set_status_header(400);
+                            echo json_encode([
+                                "success" => false,
+                                "error" => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
+                            ]);
+                            return;
+                        }
 
-            $work_files = $_FILES['work_files'] ?? [];
-            $work_count = !empty($work_files['name'][0]) ? count($work_files['name']) : 0;
-            $deleted_works = !empty($this->input->post('deleted_work_files')) ? json_decode($this->input->post('deleted_work_files'), true) : [];
-            $total_works = $existing_count + $work_count - count($deleted_works);
+                        $uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
+                    }
 
-            if ($total_works < 1) {
-                $this->form_validation->set_rules('work_files', 'Work Files', 'required', [
-                    'required' => 'At least one work file is required.'
-                ]);
-            } elseif ($total_works > $this->MAX_FILE_COUNT) {
-                $this->form_validation->set_rules('work_files', 'Work Files', 'max_work_files', [
-                    'max_work_files' => "Maximum of $this->MAX_FILE_COUNT work files allowed."
-                ]);
-            }
+                    $work_files = $_FILES['work_files'] ?? [];
+                    $work_count = !empty($work_files['name'][0]) ? count($work_files['name']) : 0;
+                    $deleted_works = !empty($this->input->post('deleted_work_files')) ? json_decode($this->input->post('deleted_work_files'), true) : [];
+                    $total_works = $existing_count + $work_count - count($deleted_works);
 
-            $uploaded_works = [];
-            if (!empty($work_files['name'][0])) {
-                if ($total_works > $this->MAX_FILE_COUNT) {
-                    $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} work files allowed.");
-                    $this->output->set_status_header(400);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "Maximum of {$this->MAX_FILE_COUNT} work files allowed."
-                    ]);
-                    return;
-                }
+                    if ($total_works < 1) {
+                        $this->form_validation->set_rules('work_files', 'Work Files', 'required', [
+                            'required' => 'At least one work file is required.'
+                        ]);
+                    } elseif ($total_works > $this->MAX_FILE_COUNT) {
+                        $this->form_validation->set_rules('work_files', 'Work Files', 'max_work_files', [
+                            'max_work_files' => "Maximum of $this->MAX_FILE_COUNT work files allowed."
+                        ]);
+                    }
 
-                $uploaded_works = $this->handle_bulk_upload_files($work_files, 'work');
-            }
+                    $uploaded_works = [];
+                    if (!empty($work_files['name'][0])) {
+                        if ($total_works > $this->MAX_FILE_COUNT) {
+                            $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} work files allowed.");
+                            $this->output->set_status_header(400);
+                            echo json_encode([
+                                "success" => false,
+                                "error" => "Maximum of {$this->MAX_FILE_COUNT} work files allowed."
+                            ]);
+                            return;
+                        }
 
-            if ($this->Report_model->delete_details_by_report($id)) {
-                if (in_array($data['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-                    $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
-                    if (!empty($details)) {
-                        foreach ($details as $item) {
-                            $item_data = [
-                                'report_id' => $id,
-                                'level' => $item['level'],
-                                'parent_id' => $item['parent_id'] ?? null,
-                                'no' => $item['no'],
-                                'description' => $item['description'],
-                                'status' => $item['level'] == 2 ? $item['status'] : null,
-                                'condition' => $item['level'] == 2 ?  $item['condition'] : null,
-                                'information' => $item['level'] == 2 ? $item['information'] : null,
-                            ];
-                            $this->Report_model->add_detail($item_data);
+                        $uploaded_works = $this->handle_bulk_upload_files($work_files, 'work');
+                    }
+
+
+                    if ($this->Report_model->delete_details_by_report($id)) {
+                        if (in_array($data['category_id'], $this->CATEGORY_WITH_DETAIL)) {
+                            $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
+                            if (!empty($details)) {
+                                foreach ($details as $item) {
+                                    $item_data = [
+                                        'report_id' => $id,
+                                        'level' => $item['level'],
+                                        'parent_id' => $item['parent_id'] ?? null,
+                                        'no' => $item['no'],
+                                        'description' => $item['description'],
+                                        'status' => $item['level'] == 2 ? $item['status'] : null,
+                                        'condition' => $item['level'] == 2 ?  $item['condition'] : null,
+                                        'information' => $item['level'] == 2 ? $item['information'] : null,
+                                    ];
+                                    $this->Report_model->add_detail($item_data);
+                                }
+                            }
                         }
                     }
-                }
+
+                    if (!empty($uploaded_evidences)) {
+                        foreach ($uploaded_evidences as $file) {
+                            $this->Report_model->add_evidence($id, $file['file_path'], $file['file_name']);
+                        }
+                    }
+
+                    if (!empty($deleted_evidences)) {
+                        foreach ($deleted_evidences as $file_id) {
+                            $file = $this->Report_model->get_evidence($file_id);
+                            if ($file) {
+                                $this->handle_delete_file('./uploads/', $file['image_name']);
+                                $this->Report_model->delete_evidence($file_id);
+                            }
+                        }
+                    }
+
+                    if (!empty($uploaded_works)) {
+                        foreach ($uploaded_works as $file) {
+                            $this->Report_model->add_work($id, $file['file_path'], $file['file_name']);
+                        }
+                    }
+
+                    if (!empty($deleted_works)) {
+                        foreach ($deleted_works as $file_id) {
+                            $file = $this->Report_model->get_work($file_id);
+                            if ($file) {
+                                $this->handle_delete_file('./uploads/', $file['image_name']);
+                                $this->Report_model->delete_work($file_id);
+                            }
+                        }
+                    }
+
+                    break;
+                case 'kontraktor':
+                    $data['is_rab'] = (bool)$this->input->post('is_rab');
+                    if ($data['is_rab']) {
+                        $new_rab = [
+                            'report_id' => $id,
+                            'no' => $this->input->post('rab_no'),
+                            'name' => $this->input->post('rab_name'),
+                            'budget' => (float)str_replace('.', '', $this->input->post('rab_budget') ?: 0),
+                            'description' => $this->input->post('rab_description'),
+                        ];
+
+                        $rab_file = $_FILES['rab_file'] ?? [];
+                        if ($rab_file) {
+                            $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
+                            if ($uploaded_rab) {
+                                $new_rab['file'] = $uploaded_rab['file_name'];
+                            }
+                        }
+
+                        $this->Report_model->create_rab($new_rab);
+                    }
+
+                    break;
+                case 'rab':
+                    $rab = $this->Report_model->get_rab($id);
+                    if ($rab) {
+                        $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
+                        $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
+
+                        $new_rab = [
+                            'final_budget' => (float)str_replace('.', '', $this->input->post('rab_final_budget') ?: 0)
+                        ];
+
+                        if ($delete_rab_file && !empty($rab['file'])) {
+                            $this->handle_delete_file('./uploads/', $rab['file']);
+                            $new_rab['file'] = null;
+                        }
+
+                        if ($delete_rab_final_file && !empty($rab['final_file'])) {
+                            $this->handle_delete_file('./uploads/', $rab['final_file']);
+                            $new_rab['final_file'] = null;
+                        }
+
+                        $rab_final_file = $_FILES['rab_final_file'] ?? [];
+                        if ($rab_final_file) {
+                            $uploaded_rab = $this->handle_upload_file($rab_final_file, 'rab_final');
+                            if ($uploaded_rab) {
+                                $new_rab['final_file'] = $uploaded_rab['file_name'];
+                            }
+                        }
+
+                        $this->Report_model->update_rab($id, $new_rab);
+                    }
+
+                    break;
+                case 'manager':
+                    if ($data['status'] === 'Approved') {
+                        $manager = $this->Report_model->get_manager($id);
+                        if ($manager) {
+                            $delete_manager_payment_file = $this->input->post('delete_manager_payment_file') === 'true';
+
+                            $new_manager = [];
+
+                            if ($delete_manager_payment_file && !empty($manager['payment_file'])) {
+                                $this->handle_delete_file('./uploads/', $manager['payment_file']);
+                            }
+
+                            $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
+                            if ($manager_payment_file) {
+                                $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
+                                if ($uploaded_manager_payment) {
+                                    $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
+                                }
+                            }
+
+                            if ($new_manager) {
+                                $this->Report_model->update_manager($id, $new_manager);
+                            }
+                        } else {
+                            $new_manager = [
+                                'report_id' => $id,
+                                'paid_by' => $this->input->post('manager_paid_by'),
+                                'bill' => (float)str_replace('.', '', $this->input->post('manager_bill') ?: 0),
+                                'name' => $this->input->post('manager_name'),
+                                'date' => $this->input->post('manager_date'),
+                                'tax_report' => $this->input->post('manager_tax_report'),
+                            ];
+
+                            $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
+                            if ($manager_payment_file) {
+                                $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
+                                if ($uploaded_manager_payment) {
+                                    $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
+                                }
+                            }
+
+                            $this->Report_model->create_manager($new_manager);
+                        }
+                    }
+
+                    break;
             }
 
             if (!$this->Report_model->update($id, $data)) {
@@ -422,135 +562,6 @@ class Report extends MY_Controller
                     "error" => "Failed to update report"
                 ]);
                 return;
-            }
-
-            if (!empty($uploaded_evidences)) {
-                foreach ($uploaded_evidences as $file) {
-                    $this->Report_model->add_evidence($id, $file['file_path'], $file['file_name']);
-                }
-            }
-
-            if (!empty($deleted_evidences)) {
-                foreach ($deleted_evidences as $file_id) {
-                    $file = $this->Report_model->get_evidence($file_id);
-                    if ($file) {
-                        $this->handle_delete_file('./uploads/', $file['image_name']);
-                        $this->Report_model->delete_evidence($file_id);
-                    }
-                }
-            }
-
-            if (!empty($uploaded_works)) {
-                foreach ($uploaded_works as $file) {
-                    $this->Report_model->add_work($id, $file['file_path'], $file['file_name']);
-                }
-            }
-
-            if (!empty($deleted_works)) {
-                foreach ($deleted_works as $file_id) {
-                    $file = $this->Report_model->get_work($file_id);
-                    if ($file) {
-                        $this->handle_delete_file('./uploads/', $file['image_name']);
-                        $this->Report_model->delete_work($file_id);
-                    }
-                }
-            }
-
-            $rab = $this->Report_model->get_rab($id);
-            if ($data['is_rab']) {
-                if ($rab) {
-                    $delete_rab_file = $this->input->post('delete_rab_file') === 'true';
-                    $delete_rab_final_file = $this->input->post('delete_rab_final_file') === 'true';
-
-                    $new_rab = [];
-
-                    if ($delete_rab_file && !empty($rab['file'])) {
-                        $this->handle_delete_file('./uploads/', $rab['file']);
-                        $new_rab['file'] = null;
-                    }
-
-                    if ($delete_rab_final_file && !empty($rab['final_file'])) {
-                        $this->handle_delete_file('./uploads/', $rab['final_file']);
-                        $new_rab['final_file'] = null;
-                    }
-
-                    $rab_final_file = $_FILES['rab_final_file'] ?? [];
-                    if ($rab_final_file) {
-                        $uploaded_rab = $this->handle_upload_file($rab_final_file, 'rab_final');
-                        if ($uploaded_rab) {
-                            $new_rab['final_file'] = $uploaded_rab['file_name'];
-                        }
-                    }
-
-                    $this->Report_model->update_rab($id, $new_rab);
-                } else {
-                    $new_rab = [
-                        'report_id' => $id,
-                        'no' => $this->input->post('rab_no'),
-                        'name' => $this->input->post('rab_name'),
-                        'budget' => (float)str_replace('.', '', $this->input->post('rab_budget') ?: 0),
-                        'description' => $this->input->post('rab_description'),
-                        'final_budget' => (float)str_replace('.', '', $this->input->post('rab_final_budget') ?: 0),
-                    ];
-
-                    $rab_file = $_FILES['rab_file'] ?? [];
-                    if ($rab_file) {
-                        $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
-                        if ($uploaded_rab) {
-                            $new_rab['file'] = $uploaded_rab['file_name'];
-                        }
-                    }
-
-                    $this->Report_model->create_rab($new_rab);
-                }
-            } else {
-                if ($rab) {
-                    $this->Report_model->delete_rab($id);
-                }
-            }
-
-            if ($data['status'] === 'Approved') {
-                $manager = $this->Report_model->get_manager($id);
-                if ($manager) {
-                    $delete_manager_payment_file = $this->input->post('delete_manager_payment_file') === 'true';
-
-                    $new_manager = [];
-
-                    if ($delete_manager_payment_file && !empty($manager['payment_file'])) {
-                        $this->handle_delete_file('./uploads/', $manager['payment_file']);
-                    }
-
-                    $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
-                    if ($manager_payment_file) {
-                        $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
-                        if ($uploaded_manager_payment) {
-                            $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
-                        }
-                    }
-
-                    if ($new_manager) {
-                        $this->Report_model->update_manager($id, $new_manager);
-                    }
-                } else {
-                    $new_manager = [
-                        'report_id' => $id,
-                        'paid_by' => $this->input->post('manager_paid_by'),
-                        'bill' => (float)str_replace('.', '', $this->input->post('manager_bill') ?: 0),
-                        'name' => $this->input->post('manager_name'),
-                        'date' => $this->input->post('manager_date'),
-                        'tax_report' => $this->input->post('manager_tax_report'),
-                    ];
-
-                    $manager_payment_file = $_FILES['manager_payment_file'] ?? [];
-                    if ($manager_payment_file) {
-                        $uploaded_manager_payment = $this->handle_upload_file($manager_payment_file, 'manager_payment');
-                        if ($uploaded_manager_payment) {
-                            $new_manager['payment_file'] = $uploaded_manager_payment['file_name'];
-                        }
-                    }
-
-                    $this->Report_model->create_manager($new_manager);
-                }
             }
 
             $this->session->set_flashdata('success', 'Report updated successfully');
