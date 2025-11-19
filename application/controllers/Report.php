@@ -549,6 +549,26 @@ class Report extends MY_Controller
 
                             $this->Report_model->create_manager($new_manager);
                         }
+
+                        if ($this->Report_model->delete_details_by_report($id)) {
+                            $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
+                            if (!empty($details)) {
+                                foreach ($details as $item) {
+                                    $item_data = [
+                                        'report_id' => $id,
+                                        'level' => $item['level'],
+                                        'parent_id' => $item['parent_id'] ?? null,
+                                        'no' => $item['no'],
+                                        'description' => $item['description'],
+                                        'status' => $item['level'] == 2 ? $item['status'] : null,
+                                        'condition' => $item['level'] == 2 ?  $item['condition'] : null,
+                                        'information' => $item['level'] == 2 ? $item['information'] : null,
+                                        'is_show' => !empty($item['is_show']) ? (int)$item['is_show'] : 0,
+                                    ];
+                                    $this->Report_model->add_detail($item_data);
+                                }
+                            }
+                        }
                     }
 
                     break;
@@ -833,7 +853,14 @@ class Report extends MY_Controller
         }
 
         $reports = $this->Report_model->get_list_export($params);
+        if (empty($reports)) {
+            $this->session->set_flashdata('error', 'No data available for export.');
+            redirect('report');
+        }
 
-        export_excel($reports, 'report_export_' . date('Y-m-d_H-i-s'), 'Pengaduan Export');
+        if (!export_excel($reports, 'report_export_' . date('Y-m-d_H-i-s'), 'Pengaduan Export')) {
+            $this->session->set_flashdata('error', 'Failed to export report.');
+            redirect('report');
+        }
     }
 }

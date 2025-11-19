@@ -415,7 +415,7 @@ class Report_model extends CI_Model
 
     public function get_details_by_report($report_id)
     {
-        return $this->db->order_by('no')->get_where('report_details', ['report_id' => $report_id])->result_array();
+        return $this->db->where('is_show', 1)->order_by('no')->get_where('report_details', ['report_id' => $report_id])->result_array();
     }
 
     public function add_detail($data)

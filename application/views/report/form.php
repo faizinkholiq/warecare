@@ -241,7 +241,30 @@
                     </div>
                     <?php if ($mode !== 'create'): ?>
                         <div class="col-md-6 text-right">
-                            <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $report["status"])) ?>"><?= $report["status"] ?></span>
+                            <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $report["status"])) ?>">
+                                <i class="fas fa-<?php
+                                                    switch ($report["status"]) {
+                                                        case 'Pending':
+                                                            echo 'clock';
+                                                            break;
+                                                        case 'On Process':
+                                                            echo 'spinner';
+                                                            break;
+                                                        case 'Approved':
+                                                            echo 'check-circle';
+                                                            break;
+                                                        case 'Rejected':
+                                                            echo 'times-circle';
+                                                            break;
+                                                        case 'Completed':
+                                                            echo 'check-double';
+                                                            break;
+                                                        default:
+                                                            echo 'circle';
+                                                    }
+                                                    ?> mr-2"></i>
+                                <?= $report["status"] ?>
+                            </span>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -323,6 +346,7 @@
                                         <th width="7%">Status</th>
                                         <th width="12%">Kondisi</th>
                                         <th>Keterangan</th>
+                                        <th width="5%">Show</th>
                                         <th width="8%">Actions</th>
                                     </tr>
                                 </thead>
@@ -457,7 +481,11 @@
                                     <?= $mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() !== 'kontraktor') ? 'disabled' : '' ?>><?= isset($report['rab']['description']) ? $report['rab']['description'] : ''; ?></textarea>
                             </div>
                         </div>
-                        <?php if (isset($report['rab']['file']) && !empty($report['rab']['file']) && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'rab') || ($mode === 'edit' && in_array($report['status'], ['On Process', 'Approved'], true)))): ?>
+                        <?php if (
+                            in_array($this->auth_lib->role(), ['rab', 'manager'])
+                            && ($mode === 'detail' || $mode === 'edit')
+                            && isset($report['rab']['file']) && !empty($report['rab']['file'])
+                        ): ?>
                             <div class="form-group col-md-6">
                                 <label for="reportRABFinalFile">RAB Final</label>
                                 <div class="d-flex align-items-center justify-content-between border rounded-lg py-2 px-2">
@@ -653,9 +681,10 @@
                     </a>
                     <div>
                         <?php if ($mode === 'edit'): ?>
-                            <?php if (in_array($this->auth_lib->role(), ['rab', 'manager'])): ?>
+                            <?php if (in_array($this->auth_lib->role(), ['manager'])): ?>
                                 <button
                                     type="button"
+                                    id="rejectReportButton"
                                     onclick="rejectReport()"
                                     class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
@@ -673,6 +702,7 @@
                             <?php if ($this->auth_lib->role() === 'manager'): ?>
                                 <button
                                     type="submit"
+                                    id="approveReportButton"
                                     class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
                                     <i class="fas fa-check mr-2"></i> Setujui Pengaduan
                                 </button>
@@ -698,6 +728,7 @@
                             <a
                                 href="<?= site_url('report/memo/' . $report['id']) ?>"
                                 target="_blank"
+                                id="printMemoButton"
                                 class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2"
                                 style="display: <?= $report['status'] === 'Approved' || $report['status'] === 'Completed' ? '' : 'none' ?>;">
                                 <i class="fas fa-print mr-2"></i> Cetak Memo
@@ -1041,7 +1072,11 @@
                 close: document.getElementById('imageModal').querySelector('.close-modal')
             }
         },
-        buttons: {}
+        buttons: {
+            approveReport: document.getElementById('approveReportButton'),
+            rejectReport: document.getElementById('rejectReportButton'),
+            printMemo: document.getElementById('printMemoButton'),
+        }
     };
 
     const appState = {
@@ -1136,6 +1171,18 @@
                 targets: 5
             },
             {
+                data: "is_show",
+                orderable: false,
+                className: "dt-center",
+                visible: appState.userRole === 'manager',
+                render: function(data, type, row) {
+                    const checked = data === '1' ? 'checked' : '';
+                    const disabled = appState.mode === 'detail' ? 'disabled' : '';
+                    return `<input type="checkbox" class="show-checkbox" data-id="${row.id}" ${checked} ${disabled}>`;
+                },
+                targets: 6
+            },
+            {
                 data: null,
                 orderable: false,
                 className: "dt-center",
@@ -1149,7 +1196,7 @@
                             <i class="fas fa-trash"></i>
                         </button>`
                 },
-                targets: 6
+                targets: 7
             }
         ],
         data: appState.details,
@@ -1500,6 +1547,17 @@
 
                 $('#reportDetailModalLabel').text('Edit Row');
                 reportDetailModal.modal('show');
+            }
+        });
+
+        $('#reportDetailTable').on('change', '.show-checkbox', function() {
+            const id = parseInt($(this).data('id'));
+            const isChecked = $(this).is(':checked');
+            const index = appState.details.findIndex(item => item.id == id);
+
+            console.log('Toggled is_show for ID:', id, 'to', isChecked);
+            if (index !== -1) {
+                appState.details[index].is_show = isChecked ? '1' : '0';
             }
         });
 
@@ -1937,7 +1995,16 @@
                 setTimeout(() => {
                     showLoading(false);
                     if (data.success) {
-                        window.location.href = URLS.default;
+                        if (appState.userRole === 'manager') {
+                            setTimeout(() => {
+                                toastr.success("Report has been approved successfully.");
+                                domCache.buttons.approveReport.style.display = 'none';
+                                domCache.buttons.rejectReport.style.display = 'none';
+                                domCache.buttons.printMemo.style.display = '';
+                            }, 500);
+                        } else {
+                            window.location.href = URLS.default;
+                        }
                     } else {
                         throw new Error('Operation failed');
                     }

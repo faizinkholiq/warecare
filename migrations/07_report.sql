@@ -98,3 +98,5 @@ CREATE TABLE report_manager (
     payment_file VARCHAR(255),
     FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
 );
+
+ALTER TABLE `report_details` ADD `is_show` BOOLEAN NOT NULL DEFAULT FALSE AFTER `information`; 

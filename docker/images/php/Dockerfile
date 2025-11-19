@@ -25,7 +25,7 @@ RUN docker-php-ext-install -j$(nproc) \
     mysqli \
     gd \
     zip
-    
+
 # enable some module
 RUN a2enmod \
     proxy \

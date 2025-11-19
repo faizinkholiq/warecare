@@ -12,6 +12,10 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 if (!function_exists('export_excel')) {
     function export_excel($data, $filename = 'export', $title = 'Export Data')
     {
+        if (empty($data) || !is_array($data)) {
+            return;
+        }
+
         // Create new Spreadsheet object
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
