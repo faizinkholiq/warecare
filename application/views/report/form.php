@@ -1592,6 +1592,7 @@
                     appState.details[index].status = status;
                     appState.details[index].condition = condition;
                     appState.details[index].information = information;
+                    appState.details[index].is_show = false;
 
                     if (level == 2) {
                         appState.details[index].parent_id = parseInt($('#reportDetailParent').val());
@@ -1620,7 +1621,8 @@
                     level: level,
                     status: status,
                     condition: condition,
-                    information: information
+                    information: information,
+                    is_show: false,
                 };
 
                 if (level == 1) {
