@@ -186,6 +186,7 @@ class Report extends MY_Controller
                         'status' => $item['level'] == 2 ? $item['status'] : null,
                         'condition' => $item['level'] == 2 ?  $item['condition'] : null,
                         'information' => $item['level'] == 2 ? $item['information'] : null,
+                        'is_show' => 0,
                     ];
                     $this->Report_model->add_detail($item_data);
                 }
@@ -811,7 +812,7 @@ class Report extends MY_Controller
         }
 
         if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-            $report["details"] = $this->Report_model->get_details_by_report($id);
+            $report["details"] = $this->Report_model->get_details_by_report($id, true);
         }
 
         $pdf = new Pdf();

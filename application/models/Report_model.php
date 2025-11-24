@@ -413,9 +413,13 @@ class Report_model extends CI_Model
         return $this->db->delete('report_works', ['id' => $id]);
     }
 
-    public function get_details_by_report($report_id)
+    public function get_details_by_report($report_id, $is_show_only = false)
     {
-        return $this->db->where('is_show', 1)->order_by('no')->get_where('report_details', ['report_id' => $report_id])->result_array();
+        if ($is_show_only) {
+            return $this->db->where('is_show', 1)->order_by('no')->get_where('report_details', ['report_id' => $report_id])->result_array();
+        }
+
+        return $this->db->order_by('no')->get_where('report_details', ['report_id' => $report_id])->result_array();
     }
 
     public function add_detail($data)
