@@ -400,6 +400,11 @@
 
                         if (row.status === 'Completed') {
                             buttons.push(`
+                                <a href="${urls.print_memo}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Memo">
+                                    <i class="text-xs fa fa-print"></i>
+                                </a>
+                            `);
+                            buttons.push(`
                                 <a href="${urls.print_evidence}/${row.id}" target="_blank" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Bukti Pekerjaan">
                                     <i class="text-xs fa fa-image"></i>
                                 </a>
