@@ -1,7 +1,7 @@
 <table border="0.5" cellpadding="10">
     <tr>
-        <th width="50%" align="center" valign="middle" height="40">Sebelum</th>
-        <th width="50%" align="center" valign="middle" height="40">Sesudah</th>
+        <th width="50%" align="center" valign="middle" height="40"><b>Sebelum</b></th>
+        <th width="50%" align="center" valign="middle" height="40"><b>Sesudah</b></th>
     </tr>
     <?php if (empty($evidence_works)): ?>
         <tr>
@@ -14,10 +14,7 @@
                     <?php
                     if (!empty($value['image_name_before'])) {
                     ?>
-                        <div>
-                            <img src="<?= FCPATH . 'uploads/' . $value['image_name_before'] ?>" alt="evidence_before" style="max-width: 100%; max-height: 10px; height: auto;">
-                            <div style="text-align: center; margin-top: 5px;"><?= $value['description_before'] ?></div>
-                        </div>
+                        <img src="<?= FCPATH . 'uploads/' . $value['image_name_before'] ?>" alt="evidence_before" style="height: 200px; width: auto;">
                     <?php
                     } else {
                     ?>
@@ -30,10 +27,7 @@
                     <?php
                     if (!empty($value['image_name_after'])) {
                     ?>
-                        <div>
-                            <img src="<?= FCPATH . 'uploads/' . $value['image_name_after'] ?>" alt="evidence_after" style="max-width: 100%; max-height: 10px; height: auto;">
-                            <div style="text-align: center; margin-top: 5px;"><?= $value['description_after'] ?></div>
-                        </div>
+                        <img src="<?= FCPATH . 'uploads/' . $value['image_name_after'] ?>" alt="evidence_after" style="height: 200px; width: auto;">
                     <?php
                     } else {
                     ?>
@@ -42,6 +36,10 @@
                     }
                     ?>
                 </td>
+            </tr>
+            <tr>
+                <td valign="middle" align="center"><?= $value['description_before'] ?></td>
+                <td valign="middle" align="center"><?= $value['description_after'] ?></td>
             </tr>
         <?php endforeach; ?>
     <?php endif; ?>
