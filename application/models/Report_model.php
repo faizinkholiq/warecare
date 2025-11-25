@@ -392,13 +392,8 @@ class Report_model extends CI_Model
         return $this->db->get_where('report_works', ['id' => $id])->row_array();
     }
 
-    public function add_work($report_id, $image_path, $image_name)
+    public function add_work($data)
     {
-        $data = array(
-            'report_id' => $report_id,
-            'image_path' => $image_path,
-            'image_name' => $image_name
-        );
         $this->db->insert('report_works', $data);
         return $this->db->insert_id();
     }
@@ -473,5 +468,10 @@ class Report_model extends CI_Model
     public function delete_manager($report_id)
     {
         return $this->db->delete('report_manager', ['report_id' => $report_id]);
+    }
+
+    public function get_works_pairs_by_report($report_id)
+    {
+        return $this->db->order_by('id')->get_where('report_works', ['report_id' => $report_id])->result_array();
     }
 }

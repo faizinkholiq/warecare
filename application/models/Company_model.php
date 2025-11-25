@@ -17,10 +17,12 @@ class Company_model extends CI_Model
 
         $this->db->select([
             $this->table . '.*',
-            'project.name AS project_name'
+            'project.name AS project_name',
+            'entity.name AS entity_name',
         ])
             ->from($this->table)
             ->join('project', 'project.id = ' . $this->table . '.project_id')
+            ->join('entity', 'entity.id = project.entity_id', 'left')
             ->order_by($this->table . '.created_at', 'DESC');
 
         return $this->db->get()->result_array();

@@ -199,6 +199,8 @@
         detail: "<?= site_url('report/detail') ?>",
         edit: "<?= site_url('report/edit') ?>",
         delete: "<?= site_url('report/delete') ?>",
+        print_memo: "<?= site_url('report/memo') ?>",
+        print_evidence: "<?= site_url('report/evidence') ?>",
         export_excel: "<?= site_url('report?mode=excel') ?>"
     }
 
@@ -380,10 +382,26 @@
                                     <i class="text-xs fa fa-play"></i>
                                 </a>
                             `);
-                        } else if (appState.userRole === 'manager' && row.status === 'On Process' && (row.is_rab != 1 || (row.is_rab == 1 && row.rab_final_file))) {
+                        } else if (appState.userRole === 'manager') {
+                            if (row.status === 'On Process' && (row.is_rab != 1 || (row.is_rab == 1 && row.rab_final_file))) {
+                                buttons.push(`
+                                    <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-success rounded-lg border-0 mr-1" data-tippy-content="Approve Report">
+                                        <i class="text-xs fa fa-check"></i>
+                                    </a>
+                                `);
+                            } else if (row.status === 'Approved') {
+                                buttons.push(`
+                                    <a href="${urls.print_memo}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Memo">
+                                        <i class="text-xs fa fa-print"></i>
+                                    </a>
+                                `);
+                            }
+                        }
+
+                        if (row.status === 'Completed') {
                             buttons.push(`
-                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-success rounded-lg border-0 mr-1" data-tippy-content="Approve Report">
-                                    <i class="text-xs fa fa-check"></i>
+                                <a href="${urls.print_evidence}/${row.id}" target="_blank" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Bukti Pekerjaan">
+                                    <i class="text-xs fa fa-image"></i>
                                 </a>
                             `);
                         }
@@ -498,13 +516,13 @@
         // Delete Report Button
         $(document).on('click', '.delete-btn', function() {
             var reportId = $(this).data('id');
-            $('#deletereportId').val(reportId);
+            $('#deleteReportId').val(reportId);
             $('#deleteModal').modal('show');
         });
 
         // Confirm Delete
         $('#confirmDeleteBtn').click(function() {
-            var reportId = $('#deletereportId').val();
+            var reportId = $('#deleteReportId').val();
 
             $.ajax({
                 url: urls.delete + '/' + reportId,

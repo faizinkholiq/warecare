@@ -102,6 +102,41 @@
         background: #c82333;
     }
 
+    .preview-item-full {
+        position: relative;
+        width: 100%;
+        max-height: 20rem;
+        overflow: visible;
+    }
+
+    .preview-item-full img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+        border-radius: 15px;
+        cursor: pointer;
+    }
+
+    .preview-item-full .remove-btn {
+        position: absolute;
+        top: -5px;
+        right: -7px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 1;
+    }
+
+    .preview-item-full .remove-btn:hover {
+        background: #c82333;
+    }
+
     .file-input {
         display: none;
     }
@@ -331,7 +366,7 @@
                     <div style="margin: 2rem 0 3rem;">
                         <?php if ($mode === 'create' || ($mode === 'edit' && $report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor')): ?>
                             <div class="d-flex justify-content-between">
-                                <button type="button" id="reportDetailAddButton" class="btn btn-default rounded-lg shadow border-0">
+                                <button type="button" id="reportDetailAddBtn" class="btn btn-default rounded-lg shadow border-0">
                                     <i class="fas fa-plus-circle mr-1"></i> Tambah Uraian
                                 </button>
                             </div>
@@ -384,7 +419,7 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <?php if ($mode === 'detail'): ?>
-                                <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
+                                <div class="text-red font-weight-bold">* Belum ada bukti yang diupload</div>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
@@ -642,31 +677,94 @@
                 <?php endif; ?>
                 <?php if (isset($report) && ($report['status'] === 'Approved' || $report['status'] === 'Completed') && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'pelapor'))): ?>
                     <div class="border-top pt-4" style="margin-top: 2.5rem;">
-                        <div class="form-group col-md-7">
-                            <label>Pengerjaan</label>
-                            <?php if ($mode !== 'detail'): ?>
-                                <div class="dropzone" id="reportWorkDropzone">
-                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                                    <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                                    <input type="file" id="reportWorkFiles" class="file-input" accept="image/*" multiple>
-                                </div>
-                                <div class="invalid-feedback" id="reportWorkError"></div>
-                            <?php endif; ?>
-                            <div class="preview-container" id="reportWorkPreview">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="mb-0">Pekerjaan</label>
+                                <?php if ($mode !== 'detail'): ?>
+                                    <button type="button" id="addWorkRowBtn" class="btn btn-sm btn-primary rounded-lg shadow-sm border-0">
+                                        <i class="fas fa-plus-circle mr-1"></i> Tambah Bukti Pekerjaan
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                            <div id="workRowsContainer">
                                 <?php if (isset($report) && !empty($report['works'])): ?>
-                                    <?php foreach ($report['works'] as $work):
-                                        $file_path = base_url('/uploads/' . $work['image_name']);
-                                    ?>
-                                        <div id="workItem<?= $work['id']; ?>" class="preview-item">
-                                            <img src="<?= $file_path ?>" alt="Work Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
+                                    <?php foreach ($report['works'] as $index => $work): ?>
+                                        <div class="work-row border rounded-lg p-3 mb-3" data-index="<?= $index ?>">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>Gambar Sebelum</label>
+                                                        <div class="dropzone work-dropzone-before" data-type="before" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
+                                                            <?php if ($mode !== 'detail'): ?>
+                                                                <input type="file" class="file-input work-file-before" accept="image/*">
+                                                            <?php endif; ?>
+                                                            <div class="preview-container work-preview-before">
+                                                                <?php if (!empty($work['image_name_before'])):
+                                                                    $file_path = base_url('/uploads/' . $work['image_name_before']);
+                                                                ?>
+                                                                    <div class="preview-item-full">
+                                                                        <img src="<?= $file_path ?>" alt="Before Image" onclick="zoomImage('<?= $file_path ?>')">
+                                                                        <?php if ($mode !== 'detail'): ?>
+                                                                            <button type="button" class="remove-btn remove-work-image" data-type="before">
+                                                                                <i class="fa fa-times"></i>
+                                                                            </button>
+                                                                        <?php endif; ?>
+                                                                    </div>
+                                                                <?php else: ?>
+                                                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                                                    <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum" value="<?= isset($work['description_before']) ? $work['description_before'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label>Gambar Sesudah</label>
+                                                        <div class="dropzone work-dropzone-after" data-type="after" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
+                                                            <?php if ($mode !== 'detail'): ?>
+                                                                <input type="file" class="file-input work-file-after" accept="image/*">
+                                                            <?php endif; ?>
+                                                            <div class="preview-container work-preview-after">
+                                                                <?php if (!empty($work['image_name_after'])):
+                                                                    $file_path = base_url('/uploads/' . $work['image_name_after']);
+                                                                ?>
+                                                                    <div class="preview-item-full">
+                                                                        <img src="<?= $file_path ?>" alt="After Image" onclick="zoomImage('<?= $file_path ?>')">
+                                                                        <?php if ($mode !== 'detail'): ?>
+                                                                            <button type="button" class="remove-btn remove-work-image" data-type="after">
+                                                                                <i class="fa fa-times"></i>
+                                                                            </button>
+                                                                        <?php endif; ?>
+                                                                    </div>
+                                                                <?php else: ?>
+                                                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                                                    <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah" value="<?= isset($work['description_after']) ? $work['description_after'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <?php if ($mode !== 'detail'): ?>
-                                                <button type="button" class="remove-btn" onclick="removeFile('work', <?= $work['id'] ?>)"><i class="fa fa-times"></i></button>
+                                                <div class="text-right">
+                                                    <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
+                                                        <i class="fas fa-trash mr-1"></i> Hapus
+                                                    </button>
+                                                </div>
                                             <?php endif; ?>
+                                            <input type="hidden" class="work-id" value="<?= isset($work['id']) ? $work['id'] : '' ?>">
                                         </div>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <?php if ($mode === 'detail'): ?>
-                                        <div class="text-red font-weight-bold">* Belum ada bukti pengerjaan yang diupload</div>
+                                        <div class="text-red font-weight-bold">* Belum ada bukti pekerjaan yang diupload</div>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
@@ -684,7 +782,7 @@
                             <?php if (in_array($this->auth_lib->role(), ['manager'])): ?>
                                 <button
                                     type="button"
-                                    id="rejectReportButton"
+                                    id="rejectReportBtn"
                                     onclick="rejectReport()"
                                     class="btn rounded-lg border-0 shadow-sm btn-danger ml-2">
                                     <i class="fas fa-times mr-2"></i> Ditolak
@@ -702,7 +800,7 @@
                             <?php if ($this->auth_lib->role() === 'manager'): ?>
                                 <button
                                     type="submit"
-                                    id="approveReportButton"
+                                    id="approveReportBtn"
                                     class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
                                     <i class="fas fa-check mr-2"></i> Setujui Pengaduan
                                 </button>
@@ -713,7 +811,7 @@
                                     <button
                                         type="submit"
                                         class="btn rounded-lg border-0 shadow-sm btn-success ml-2">
-                                        <i class="fas fa-check-circle mr-2"></i> Selesaikan Pengerjaan
+                                        <i class="fas fa-check-circle mr-2"></i> Selesaikan Pekerjaan
                                     </button>
                                 <?php else: ?>
                                     <button
@@ -728,7 +826,7 @@
                             <a
                                 href="<?= site_url('report/memo/' . $report['id']) ?>"
                                 target="_blank"
-                                id="printMemoButton"
+                                id="printMemoBtn"
                                 class="btn rounded-lg border-0 shadow-sm btn-white font-weight-bold ml-2"
                                 style="display: <?= $report['status'] === 'Approved' || $report['status'] === 'Completed' ? '' : 'none' ?>;">
                                 <i class="fas fa-print mr-2"></i> Cetak Memo
@@ -927,7 +1025,7 @@
                     class="btn btn-default rounded-lg border-0 shadow"
                     data-dismiss="modal">Batal</button>
                 <button
-                    id="reportDetailDeleteButton"
+                    id="reportDetailDeleteBtn"
                     type="button"
                     style="flex: 1 1 auto;"
                     class="btn btn-danger rounded-lg border-0 shadow">Ya, Hapus</button>
@@ -1073,9 +1171,10 @@
             }
         },
         buttons: {
-            approveReport: document.getElementById('approveReportButton'),
-            rejectReport: document.getElementById('rejectReportButton'),
-            printMemo: document.getElementById('printMemoButton'),
+            approveReport: document.getElementById('approveReportBtn'),
+            rejectReport: document.getElementById('rejectReportBtn'),
+            printMemo: document.getElementById('printMemoBtn'),
+            addWorkRow: document.getElementById('addWorkRowBtn'),
         }
     };
 
@@ -1363,7 +1462,7 @@
                 });
             }
 
-            // Evidence & Work
+            // Evidence
 
             if (domCache.form.item.evidence.dropzone && domCache.form.item.evidence.input) {
                 domCache.form.item.evidence.dropzone.addEventListener('click', () => {
@@ -1380,20 +1479,6 @@
                 });
             }
 
-            if (domCache.form.item.work.dropzone && domCache.form.item.work.input) {
-                domCache.form.item.work.dropzone.addEventListener('click', () => {
-                    domCache.form.item.work.input.click();
-                });
-                domCache.form.item.work.dropzone.addEventListener('dragover', handleDragOver);
-                domCache.form.item.work.dropzone.addEventListener('dragleave', handleDragLeave);
-                domCache.form.item.work.dropzone.addEventListener('drop', (event) => {
-                    handleDrop('work', event);
-                });
-                domCache.form.item.work.input.addEventListener('change', (event) => {
-                    handleFileInputChange('work', event);
-                });
-            }
-
             // RAB
             if (domCache.form.item.rab && domCache.form.item.rab.container) {
                 domCache.form.item.rab.container.style.display = (appState.reportData.is_rab === '1') ? '' : 'none';
@@ -1405,7 +1490,32 @@
             if (domCache.form.item.rabFile.input) {
                 domCache.form.item.rabFile.input.addEventListener('change', function() {
                     const file = this.files[0];
-                    updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+
+                    if (file) {
+                        // Validate file type
+                        const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg', 'application/pdf',
+                            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        ];
+                        const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                        const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                        if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                            toastr.error('Format file tidak valid. Hanya diperbolehkan: PNG, JPG, JPEG, PDF, DOC, DOCX, XLS, XLSX');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Validate file size (20MB)
+                        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+                        if (file.size > maxSize) {
+                            toastr.error('Ukuran file maksimal 20MB');
+                            this.value = '';
+                            return;
+                        }
+
+                        updateFileUI(domCache.form.item.rabFile.content, domCache.form.item.rabFile.remove, domCache.form.item.rabFile.select, file);
+                    }
                 });
             }
 
@@ -1423,7 +1533,32 @@
             if (domCache.form.item.rabFinalFile.input) {
                 domCache.form.item.rabFinalFile.input.addEventListener('change', function() {
                     const file = this.files[0];
-                    updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
+
+                    if (file) {
+                        // Validate file type
+                        const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg', 'application/pdf',
+                            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        ];
+                        const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                        const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                        if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                            toastr.error('Format file tidak valid. Hanya diperbolehkan: PNG, JPG, JPEG, PDF, DOC, DOCX, XLS, XLSX');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Validate file size (20MB)
+                        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+                        if (file.size > maxSize) {
+                            toastr.error('Ukuran file maksimal 20MB');
+                            this.value = '';
+                            return;
+                        }
+
+                        updateFileUI(domCache.form.item.rabFinalFile.content, domCache.form.item.rabFinalFile.remove, domCache.form.item.rabFinalFile.select, file);
+                    }
                 });
             }
 
@@ -1441,7 +1576,32 @@
             if (domCache.form.item.managerPaymentFile.input) {
                 domCache.form.item.managerPaymentFile.input.addEventListener('change', function() {
                     const file = this.files[0];
-                    updateFileUI(domCache.form.item.managerPaymentFile.content, domCache.form.item.managerPaymentFile.remove, domCache.form.item.managerPaymentFile.select, file);
+
+                    if (file) {
+                        // Validate file type
+                        const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg', 'application/pdf',
+                            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        ];
+                        const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                        const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                        if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                            toastr.error('Format file tidak valid. Hanya diperbolehkan: PNG, JPG, JPEG, PDF, DOC, DOCX, XLS, XLSX');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Validate file size (20MB)
+                        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+                        if (file.size > maxSize) {
+                            toastr.error('Ukuran file maksimal 20MB');
+                            this.value = '';
+                            return;
+                        }
+
+                        updateFileUI(domCache.form.item.managerPaymentFile.content, domCache.form.item.managerPaymentFile.remove, domCache.form.item.managerPaymentFile.select, file);
+                    }
                 });
             }
 
@@ -1466,213 +1626,292 @@
                     }
                 });
             }
-        }
 
-        statusRadioCards.forEach(card => {
-            const radioInput = card.querySelector('.status-radio-input');
+            // Report Detail Modal Events
 
-            if (radioInput.checked) {
-                card.classList.add('selected');
-            }
+            statusRadioCards.forEach(card => {
+                const radioInput = card.querySelector('.status-radio-input');
 
-            card.addEventListener('click', () => {
-                statusRadioCards.forEach(c => c.classList.remove('selected'));
-
-                card.classList.add('selected');
-
-                radioInput.checked = true;
-            });
-        });
-
-        // Update parent dropdown when level changes
-        $('#reportDetailLevel').on('change', updateParentDropdown);
-
-        // Add new row button
-        $('#reportDetailAddButton').on('click', function() {
-            $('#reportDetailForm')[0].reset();
-            $('#reportDetailID').val('');
-            document.querySelector('.status-radio-input:checked').value = 'OK';
-            statusRadioCards.forEach(c => c.classList.remove('selected'));
-            statusRadioCards[0].classList.add('selected');
-            $('#reportDetailModalLabel').text('Tambah Uraian');
-            $('#reportDetailParentItemContainer').hide();
-            $('.child-detail-container').hide();
-            reportDetailModal.modal('show');
-        });
-
-        // Delete row button
-        $('#reportDetailDeleteButton').on('click', function() {
-            const id = $('#deleteReportDetailID').val()
-            const index = appState.details.findIndex(item => item.id == id);
-
-            if (index != -1) {
-                const item = appState.details[index];
-
-                const hasChildren = appState.details.some(i => i.parent_id == id);
-
-                if (hasChildren) {
-                    appState.details = appState.details.filter(i => i.parent_id != id);
+                if (radioInput.checked) {
+                    card.classList.add('selected');
                 }
 
-                appState.details.splice(index, 1);
+                card.addEventListener('click', () => {
+                    statusRadioCards.forEach(c => c.classList.remove('selected'));
+
+                    card.classList.add('selected');
+
+                    radioInput.checked = true;
+                });
+            });
+
+            $('#reportDetailLevel').on('change', updateParentDropdown);
+
+            $('#reportDetailAddBtn').on('click', function() {
+                $('#reportDetailForm')[0].reset();
+                $('#reportDetailID').val('');
+                document.querySelector('.status-radio-input:checked').value = 'OK';
+                statusRadioCards.forEach(c => c.classList.remove('selected'));
+                statusRadioCards[0].classList.add('selected');
+                $('#reportDetailModalLabel').text('Tambah Uraian');
+                $('#reportDetailParentItemContainer').hide();
+                $('.child-detail-container').hide();
+                reportDetailModal.modal('show');
+            });
+
+            $('#reportDetailDeleteBtn').on('click', function() {
+                const id = $('#deleteReportDetailID').val()
+                const index = appState.details.findIndex(item => item.id == id);
+
+                if (index != -1) {
+                    const item = appState.details[index];
+
+                    const hasChildren = appState.details.some(i => i.parent_id == id);
+
+                    if (hasChildren) {
+                        appState.details = appState.details.filter(i => i.parent_id != id);
+                    }
+
+                    appState.details.splice(index, 1);
+
+                    renumberDetails();
+
+                    reloadDetailTable();
+
+                    toastr.success("Row removed successfully");
+                    deleteReportDetailModal.modal('hide');
+                }
+
+            });
+
+            $('#reportDetailTable').on('click', '.edit-row', function() {
+                const id = $(this).data('id');
+                const item = appState.details.find(item => item.id == id);
+
+                if (item) {
+                    $('#reportDetailID').val(item.id);
+                    $('#reportDetailLevel').val(item.level);
+                    $('#reportDetailDescription').val(item.description);
+                    $('#reportDetailStatus').val(item.status);
+                    $('#reportDetailCondition').val(item.condition);
+                    $('#reportDetailInformation').val(item.information);
+
+                    // Update parent dropdown and set value if level 2
+                    updateParentDropdown();
+                    if (item.level == 2) {
+                        $('#reportDetailParent').val(item.parent_id);
+                    }
+
+                    $('#reportDetailModalLabel').text('Edit Row');
+                    reportDetailModal.modal('show');
+                }
+            });
+
+            $('#reportDetailTable').on('change', '.show-checkbox', function() {
+                const id = parseInt($(this).data('id'));
+                const isChecked = $(this).is(':checked');
+                const index = appState.details.findIndex(item => item.id == id);
+
+                console.log('Toggled is_show for ID:', id, 'to', isChecked);
+                if (index !== -1) {
+                    appState.details[index].is_show = isChecked ? '1' : '0';
+                }
+            });
+
+            $('#reportDetailSaveBtn').on('click', function() {
+                const id = $('#reportDetailID').val();
+                const level = parseInt($('#reportDetailLevel').val());
+                const description = $('#reportDetailDescription').val();
+                const status = document.querySelector('.status-radio-input:checked').value;
+                const condition = $('#reportDetailCondition').val();
+                const information = $('#reportDetailInformation').val();
+
+                if (!description) {
+                    toastr.error("Please enter Uraian");
+                    return;
+                }
+
+                if (level == 2) {
+                    const parentId = parseInt($('#reportDetailParent').val());
+                    if (!parentId) {
+                        toastr.error("Please select a parent item for Level 2");
+                        return;
+                    }
+                }
+
+                if (id) {
+                    // Editing existing row
+                    const index = appState.details.findIndex(item => item.id == parseInt(id));
+                    if (index != -1) {
+                        appState.details[index].description = description;
+                        appState.details[index].level = level;
+                        appState.details[index].status = status;
+                        appState.details[index].condition = condition;
+                        appState.details[index].information = information;
+                        appState.details[index].is_show = 0;
+
+                        if (level == 2) {
+                            appState.details[index].parent_id = parseInt($('#reportDetailParent').val());
+                            // Update the numbering
+                            const parent = appState.details.find(item => item.id == appState.details[index].parent_id);
+                            if (parent) {
+                                const siblings = appState.details.filter(i => i.parent_id == appState.details[index].parent_id && i.id != appState.details[index].id);
+                                appState.details[index].no = `${parent.no}.${siblings.length + 1}`;
+                            }
+                        } else {
+                            // If changing from level 2 to level 1, remove parentId
+                            delete appState.details[index].parent_id;
+                            // Renumber level 1 items
+                            const level1Items = appState.details.filter(item => item.level == 1);
+                            appState.details[index].no = (level1Items.length).toString();
+                        }
+
+                        toastr.success("Row updated successfully");
+                    }
+                } else {
+                    // Adding new row
+                    const newId = appState.details.length > 0 ? Math.max(...appState.details.map(item => item.id)) + 1 : 1;
+                    const newItem = {
+                        id: newId,
+                        description: description,
+                        level: level,
+                        status: status,
+                        condition: condition,
+                        information: information,
+                        is_show: 0,
+                    };
+
+                    if (level == 1) {
+                        // For level 1, generate the next number
+                        const level1Items = appState.details.filter(item => item.level == 1);
+                        newItem.no = (level1Items.length + 1).toString();
+                    } else {
+                        // For level 2, get the parent and generate the number
+                        const parentId = parseInt($('#reportDetailParent').val());
+                        const parent = appState.details.find(item => item.id == parentId);
+
+                        if (!parent) {
+                            toastr.error("Please select a valid parent");
+                            return;
+                        }
+
+                        newItem.parent_id = parentId;
+                        const parentChildren = appState.details.filter(item => item.parent_id == parentId);
+                        newItem.no = `${parent.no}.${parentChildren.length + 1}`;
+                    }
+
+                    appState.details.push(newItem);
+                    toastr.success("New row added successfully");
+                }
 
                 renumberDetails();
 
                 reloadDetailTable();
 
-                toastr.success("Row removed successfully");
-                deleteReportDetailModal.modal('hide');
-            }
+                reportDetailModal.modal('hide');
+            });
 
-        });
+            $('#reportDetailTable').on('click', '.remove-row', function() {
+                const id = parseInt($(this).data('id'));
+                const index = appState.details.findIndex(item => item.id == id);
 
-        // Edit row
-        $('#reportDetailTable').on('click', '.edit-row', function() {
-            const id = $(this).data('id');
-            const item = appState.details.find(item => item.id == id);
-
-            if (item) {
-                $('#reportDetailID').val(item.id);
-                $('#reportDetailLevel').val(item.level);
-                $('#reportDetailDescription').val(item.description);
-                $('#reportDetailStatus').val(item.status);
-                $('#reportDetailCondition').val(item.condition);
-                $('#reportDetailInformation').val(item.information);
-
-                // Update parent dropdown and set value if level 2
-                updateParentDropdown();
-                if (item.level == 2) {
-                    $('#reportDetailParent').val(item.parent_id);
-                }
-
-                $('#reportDetailModalLabel').text('Edit Row');
-                reportDetailModal.modal('show');
-            }
-        });
-
-        $('#reportDetailTable').on('change', '.show-checkbox', function() {
-            const id = parseInt($(this).data('id'));
-            const isChecked = $(this).is(':checked');
-            const index = appState.details.findIndex(item => item.id == id);
-
-            console.log('Toggled is_show for ID:', id, 'to', isChecked);
-            if (index !== -1) {
-                appState.details[index].is_show = isChecked ? '1' : '0';
-            }
-        });
-
-        // Save row
-        $('#reportDetailSaveBtn').on('click', function() {
-            const id = $('#reportDetailID').val();
-            const level = parseInt($('#reportDetailLevel').val());
-            const description = $('#reportDetailDescription').val();
-            const status = document.querySelector('.status-radio-input:checked').value;
-            const condition = $('#reportDetailCondition').val();
-            const information = $('#reportDetailInformation').val();
-
-            if (!description) {
-                toastr.error("Please enter Uraian");
-                return;
-            }
-
-            if (level == 2) {
-                const parentId = parseInt($('#reportDetailParent').val());
-                if (!parentId) {
-                    toastr.error("Please select a parent item for Level 2");
-                    return;
-                }
-            }
-
-            if (id) {
-                // Editing existing row
-                const index = appState.details.findIndex(item => item.id == parseInt(id));
+                deleteReportDetailModal.find('.warning-text').hide()
                 if (index != -1) {
-                    appState.details[index].description = description;
-                    appState.details[index].level = level;
-                    appState.details[index].status = status;
-                    appState.details[index].condition = condition;
-                    appState.details[index].information = information;
-                    appState.details[index].is_show = 0;
+                    const hasChildren = appState.details.some(i => i.parent_id == id);
 
-                    if (level == 2) {
-                        appState.details[index].parent_id = parseInt($('#reportDetailParent').val());
-                        // Update the numbering
-                        const parent = appState.details.find(item => item.id == appState.details[index].parent_id);
-                        if (parent) {
-                            const siblings = appState.details.filter(i => i.parent_id == appState.details[index].parent_id && i.id != appState.details[index].id);
-                            appState.details[index].no = `${parent.no}.${siblings.length + 1}`;
-                        }
-                    } else {
-                        // If changing from level 2 to level 1, remove parentId
-                        delete appState.details[index].parent_id;
-                        // Renumber level 1 items
-                        const level1Items = appState.details.filter(item => item.level == 1);
-                        appState.details[index].no = (level1Items.length).toString();
+                    if (hasChildren) {
+                        deleteReportDetailModal.find('.warning-text').html('<i class="fa fa-exclamation-triangle text-warning mr-2"></i>Menghapus data ini akan menghapus seluruh sub item dibawahnya.');
+                        deleteReportDetailModal.find('.warning-text').show()
                     }
 
-                    toastr.success("Row updated successfully");
+                    $('#deleteReportDetailID').val(id)
+                    deleteReportDetailModal.modal('show');
                 }
-            } else {
-                // Adding new row
-                const newId = appState.details.length > 0 ? Math.max(...appState.details.map(item => item.id)) + 1 : 1;
-                const newItem = {
-                    id: newId,
-                    description: description,
-                    level: level,
-                    status: status,
-                    condition: condition,
-                    information: information,
-                    is_show: 0,
-                };
+            });
 
-                if (level == 1) {
-                    // For level 1, generate the next number
-                    const level1Items = appState.details.filter(item => item.level == 1);
-                    newItem.no = (level1Items.length + 1).toString();
-                } else {
-                    // For level 2, get the parent and generate the number
-                    const parentId = parseInt($('#reportDetailParent').val());
-                    const parent = appState.details.find(item => item.id == parentId);
+            // Work Events
 
-                    if (!parent) {
-                        toastr.error("Please select a valid parent");
-                        return;
+            if (domCache.buttons.addWorkRow) {
+                domCache.buttons.addWorkRow.addEventListener('click', function() {
+                    const container = document.getElementById('workRowsContainer');
+                    const index = container.children.length;
+
+                    const workRow = document.createElement('div');
+                    workRow.className = 'work-row border rounded-lg p-3 mb-3';
+                    workRow.dataset.index = index;
+
+                    workRow.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Gambar Sebelum</label>
+                                    <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
+                                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                        <input type="file" class="file-input work-file-before" accept="image/*">
+                                        <div class="preview-container work-preview-before"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Gambar Sesudah</label>
+                                    <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
+                                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                        <input type="file" class="file-input work-file-after" accept="image/*">
+                                        <div class="preview-container work-preview-after"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
+                                <i class="fas fa-trash mr-1"></i> Hapus
+                            </button>
+                        </div>
+                        <input type="hidden" class="work-id" value="">
+                    `;
+
+                    container.appendChild(workRow);
+
+                    // Setup event listeners for the new row
+                    setupWorkRowListeners(workRow);
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-work-row')) {
+                    const workRow = e.target.closest('.work-row');
+                    const workId = workRow.querySelector('.work-id').value;
+
+                    if (workId) {
+                        appState.work.deletedIds.push(parseInt(workId));
                     }
 
-                    newItem.parent_id = parentId;
-                    const parentChildren = appState.details.filter(item => item.parent_id == parentId);
-                    newItem.no = `${parent.no}.${parentChildren.length + 1}`;
+                    workRow.remove();
                 }
 
-                appState.details.push(newItem);
-                toastr.success("New row added successfully");
-            }
+                if (e.target.closest('.remove-work-image')) {
+                    const btn = e.target.closest('.remove-work-image');
+                    const type = btn.dataset.type;
+                    const workRow = btn.closest('.work-row');
+                    const dropzone = workRow.querySelector(`.work-dropzone-${type}`);
+                    const previewContainer = dropzone.querySelector(`.work-preview-${type}`);
+                    const dropzoneText = dropzone.querySelector('p');
 
-            renumberDetails();
+                    previewContainer.innerHTML = '';
+                    dropzoneText.style.display = 'block';
 
-            reloadDetailTable();
-
-            reportDetailModal.modal('hide');
-        });
-
-        // Remove row
-        $('#reportDetailTable').on('click', '.remove-row', function() {
-            const id = parseInt($(this).data('id'));
-            const index = appState.details.findIndex(item => item.id == id);
-
-            deleteReportDetailModal.find('.warning-text').hide()
-            if (index != -1) {
-                const hasChildren = appState.details.some(i => i.parent_id == id);
-
-                if (hasChildren) {
-                    deleteReportDetailModal.find('.warning-text').html('<i class="fa fa-exclamation-triangle text-warning mr-2"></i>Menghapus data ini akan menghapus seluruh sub item dibawahnya.');
-                    deleteReportDetailModal.find('.warning-text').show()
+                    // Clear file reference
+                    delete workRow[`file${capitalizeFirst(type)}`];
                 }
-
-                $('#deleteReportDetailID').val(id)
-                deleteReportDetailModal.modal('show');
-            }
-        });
+            });
+        }
     }
 
     function initializeExistingData() {
@@ -1692,6 +1931,52 @@
                 filePath: work.image_path,
                 isExisting: true
             }));
+        } else {
+            // Add one default work row if no existing data
+            const container = document.getElementById('workRowsContainer');
+            if (container && container.children.length === 0) {
+                const index = 0;
+                const workRow = document.createElement('div');
+                workRow.className = 'work-row border rounded-lg p-3 mb-3';
+                workRow.dataset.index = index;
+
+                workRow.innerHTML = `
+                <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                    <label>Gambar Sebelum</label>
+                    <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
+                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                        <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                        <input type="file" class="file-input work-file-before" accept="image/*">
+                        <div class="preview-container work-preview-before"></div>
+                    </div>
+                    </div>
+                    <div class="form-group">
+                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                    <label>Gambar Sesudah</label>
+                    <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
+                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                        <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                        <input type="file" class="file-input work-file-after" accept="image/*">
+                        <div class="preview-container work-preview-after"></div>
+                    </div>
+                    </div>
+                    <div class="form-group">
+                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
+                    </div>
+                </div>
+                </div>
+                <input type="hidden" class="work-id" value="">
+            `;
+
+                container.appendChild(workRow);
+                setupWorkRowListeners(workRow);
+            }
         }
 
         if (appState.reportData.details) {
@@ -1960,13 +2245,38 @@
                 formData.append('delete_manager_payment_file', appState.manager.deleted);
             }
 
-            appState.work.files.forEach((file, index) => {
-                if (file instanceof File) {
-                    formData.append(`work_files[${index}]`, file);
+            // Collect work data from DOM
+            const workRows = document.querySelectorAll('.work-row');
+            const workData = [];
+
+            workRows.forEach((row, index) => {
+                const workId = row.querySelector('.work-id').value;
+                const descBefore = row.querySelector('.work-desc-before').value;
+                const descAfter = row.querySelector('.work-desc-after').value;
+                const fileBefore = row.fileBefore;
+                const fileAfter = row.fileAfter;
+
+                const workItem = {
+                    id: workId || null,
+                    description_before: descBefore,
+                    description_after: descAfter
+                };
+
+                // Append files if they exist
+                if (fileBefore instanceof File) {
+                    formData.append(`work_image_before[${index}]`, fileBefore);
                 }
+                if (fileAfter instanceof File) {
+                    formData.append(`work_image_after[${index}]`, fileAfter);
+                }
+
+                workData.push(workItem);
             });
 
-            formData.append('deleted_work_files', JSON.stringify(appState.work.deletedIds));
+            // Append work data as JSON
+            formData.append('work_data', JSON.stringify(workData));
+
+            // formData.append('deleted_work_files', JSON.stringify(appState.work.deletedIds));
         }
 
         submitFormData(formData);
@@ -2216,6 +2526,95 @@
                 });
             }
         }
+    }
+
+    function setupWorkRowListeners(workRow) {
+        const index = workRow.dataset.index;
+
+        // Setup dropzone for before image
+        const dropzoneBefore = workRow.querySelector('.work-dropzone-before');
+        const fileInputBefore = workRow.querySelector('.work-file-before');
+
+        dropzoneBefore.addEventListener('click', () => fileInputBefore.click());
+        dropzoneBefore.addEventListener('dragover', handleDragOver);
+        dropzoneBefore.addEventListener('dragleave', handleDragLeave);
+        dropzoneBefore.addEventListener('drop', (e) => handleWorkImageDrop(e, workRow, 'before'));
+        fileInputBefore.addEventListener('change', (e) => handleWorkImageChange(e, workRow, 'before'));
+
+        // Setup dropzone for after image
+        const dropzoneAfter = workRow.querySelector('.work-dropzone-after');
+        const fileInputAfter = workRow.querySelector('.work-file-after');
+
+        dropzoneAfter.addEventListener('click', () => fileInputAfter.click());
+        dropzoneAfter.addEventListener('dragover', handleDragOver);
+        dropzoneAfter.addEventListener('dragleave', handleDragLeave);
+        dropzoneAfter.addEventListener('drop', (e) => handleWorkImageDrop(e, workRow, 'after'));
+        fileInputAfter.addEventListener('change', (e) => handleWorkImageChange(e, workRow, 'after'));
+    }
+
+    function handleWorkImageDrop(e, workRow, type) {
+        e.preventDefault();
+        e.target.classList.remove('active');
+
+        if (e.dataTransfer.files.length) {
+            processWorkImage(workRow, type, e.dataTransfer.files[0]);
+        }
+    }
+
+    function handleWorkImageChange(e, workRow, type) {
+        if (e.target.files.length) {
+            processWorkImage(workRow, type, e.target.files[0]);
+        }
+        e.target.value = '';
+    }
+
+    function processWorkImage(workRow, type, file) {
+        const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+        if (!file.type.match('image.*')) {
+            toastr.error('Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan.');
+            return;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            toastr.error('Ukuran file maksimal 2MB.');
+            return;
+        }
+
+        const dropzone = workRow.querySelector(`.work-dropzone-${type}`);
+        const previewContainer = dropzone.querySelector(`.work-preview-${type}`);
+        const dropzoneText = dropzone.querySelector('p');
+
+        previewContainer.innerHTML = '';
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item-full';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = `${type} Image`;
+            img.onclick = () => zoomImage(e.target.result);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-btn remove-work-image';
+            removeBtn.dataset.type = type;
+            removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+
+            previewItem.appendChild(img);
+            previewItem.appendChild(removeBtn);
+            previewContainer.appendChild(previewItem);
+
+            // Hide the upload text when image is shown
+            dropzoneText.style.display = 'none';
+
+            // Store file reference
+            workRow.dataset[`file${capitalizeFirst(type)}`] = file.name;
+            workRow[`file${capitalizeFirst(type)}`] = file;
+        };
+        reader.readAsDataURL(file);
     }
 
     if (document.readyState === 'loading') {

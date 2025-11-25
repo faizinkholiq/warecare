@@ -28,6 +28,7 @@
                 <tr>
                     <th>ID</th>
                     <th class="dt-center" width="3%">No</th>
+                    <th class="dt-center" width="20%">Entity</th>
                     <th class="dt-center" width="20%">Project</th>
                     <th class="dt-center">Nama</th>
                     <th class="dt-center" width="10%">Aksi</th>
@@ -156,12 +157,16 @@
                     targets: 1
                 },
                 {
-                    data: "project",
+                    data: "entity",
                     targets: 2
                 },
                 {
-                    data: "name",
+                    data: "project",
                     targets: 3
+                },
+                {
+                    data: "name",
+                    targets: 4
                 },
                 {
                     data: null,
@@ -177,7 +182,7 @@
                         `;
                     },
                     orderable: false,
-                    targets: 4
+                    targets: 5
                 }
             ],
             scrollResize: true,

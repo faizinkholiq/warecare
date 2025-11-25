@@ -272,9 +272,6 @@ class Report extends MY_Controller
         $existing_evidences = $this->Report_model->get_evidences_by_report($id);
         $existing_count = count($existing_evidences);
 
-        $existing_works = $this->Report_model->get_works_by_report($id);
-        $existing_count = count($existing_works);
-
         $this->form_validation->set_rules('entity_id', 'Entity', 'required');
         $this->form_validation->set_rules('project_id', 'Project', 'required');
         $this->form_validation->set_rules('company_id', 'Company', 'required');
@@ -291,7 +288,6 @@ class Report extends MY_Controller
             }
 
             $data["report"]["evidences"] = $existing_evidences;
-            $data["report"]["works"] = $existing_works;
 
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
             $data["list_data"]["project"] = $this->Project_model->get_all();
@@ -367,37 +363,6 @@ class Report extends MY_Controller
                         $uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
                     }
 
-                    $work_files = $_FILES['work_files'] ?? [];
-                    $work_count = !empty($work_files['name'][0]) ? count($work_files['name']) : 0;
-                    $deleted_works = !empty($this->input->post('deleted_work_files')) ? json_decode($this->input->post('deleted_work_files'), true) : [];
-                    $total_works = $existing_count + $work_count - count($deleted_works);
-
-                    if ($total_works < 1) {
-                        $this->form_validation->set_rules('work_files', 'Work Files', 'required', [
-                            'required' => 'At least one work file is required.'
-                        ]);
-                    } elseif ($total_works > $this->MAX_FILE_COUNT) {
-                        $this->form_validation->set_rules('work_files', 'Work Files', 'max_work_files', [
-                            'max_work_files' => "Maximum of $this->MAX_FILE_COUNT work files allowed."
-                        ]);
-                    }
-
-                    $uploaded_works = [];
-                    if (!empty($work_files['name'][0])) {
-                        if ($total_works > $this->MAX_FILE_COUNT) {
-                            $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} work files allowed.");
-                            $this->output->set_status_header(400);
-                            echo json_encode([
-                                "success" => false,
-                                "error" => "Maximum of {$this->MAX_FILE_COUNT} work files allowed."
-                            ]);
-                            return;
-                        }
-
-                        $uploaded_works = $this->handle_bulk_upload_files($work_files, 'work');
-                    }
-
-
                     if ($this->Report_model->delete_details_by_report($id)) {
                         if (in_array($data['category_id'], $this->CATEGORY_WITH_DETAIL)) {
                             $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
@@ -435,18 +400,52 @@ class Report extends MY_Controller
                         }
                     }
 
-                    if (!empty($uploaded_works)) {
-                        foreach ($uploaded_works as $file) {
-                            $this->Report_model->add_work($id, $file['file_path'], $file['file_name']);
-                        }
-                    }
+                    if ($data['status'] === 'Completed') {
+                        $work_data = !empty($this->input->post('work_data')) ? json_decode($this->input->post('work_data'), true) : [];
 
-                    if (!empty($deleted_works)) {
-                        foreach ($deleted_works as $file_id) {
-                            $file = $this->Report_model->get_work($file_id);
-                            if ($file) {
-                                $this->handle_delete_file('./uploads/', $file['image_name']);
-                                $this->Report_model->delete_work($file_id);
+                        if (!empty($work_data)) {
+                            foreach ($work_data as $index => $work_item) {
+                                $work_record = [
+                                    'report_id' => $id,
+                                    'description_before' => $work_item['description_before'],
+                                    'description_after' => $work_item['description_after'],
+                                ];
+
+                                // Handle before image
+                                if (isset($_FILES['work_image_before']['name'][$index]) && !empty($_FILES['work_image_before']['name'][$index])) {
+                                    $file_before = [
+                                        'name' => $_FILES['work_image_before']['name'][$index],
+                                        'type' => $_FILES['work_image_before']['type'][$index],
+                                        'tmp_name' => $_FILES['work_image_before']['tmp_name'][$index],
+                                        'error' => $_FILES['work_image_before']['error'][$index],
+                                        'size' => $_FILES['work_image_before']['size'][$index]
+                                    ];
+
+                                    $uploaded_before = $this->handle_upload_file($file_before, 'work_before');
+                                    if ($uploaded_before) {
+                                        $work_record['image_path_before'] = $uploaded_before['file_path'];
+                                        $work_record['image_name_before'] = $uploaded_before['file_name'];
+                                    }
+                                }
+
+                                // Handle after image
+                                if (isset($_FILES['work_image_after']['name'][$index]) && !empty($_FILES['work_image_after']['name'][$index])) {
+                                    $file_after = [
+                                        'name' => $_FILES['work_image_after']['name'][$index],
+                                        'type' => $_FILES['work_image_after']['type'][$index],
+                                        'tmp_name' => $_FILES['work_image_after']['tmp_name'][$index],
+                                        'error' => $_FILES['work_image_after']['error'][$index],
+                                        'size' => $_FILES['work_image_after']['size'][$index]
+                                    ];
+
+                                    $uploaded_after = $this->handle_upload_file($file_after, 'work_after');
+                                    if ($uploaded_after) {
+                                        $work_record['image_path_after'] = $uploaded_after['file_path'];
+                                        $work_record['image_name_after'] = $uploaded_after['file_name'];
+                                    }
+                                }
+
+                                $this->Report_model->add_work($work_record);
                             }
                         }
                     }
@@ -465,7 +464,7 @@ class Report extends MY_Controller
 
                         $rab_file = $_FILES['rab_file'] ?? [];
                         if ($rab_file) {
-                            $uploaded_rab = $this->handle_upload_file($rab_file, 'rab');
+                            $uploaded_rab = $this->handle_upload_file($rab_file);
                             if ($uploaded_rab) {
                                 $new_rab['file'] = $uploaded_rab['file_name'];
                             }
@@ -497,7 +496,7 @@ class Report extends MY_Controller
 
                         $rab_final_file = $_FILES['rab_final_file'] ?? [];
                         if ($rab_final_file) {
-                            $uploaded_rab = $this->handle_upload_file($rab_final_file, 'rab_final');
+                            $uploaded_rab = $this->handle_upload_file($rab_final_file);
                             if ($uploaded_rab) {
                                 $new_rab['final_file'] = $uploaded_rab['file_name'];
                             }
@@ -735,7 +734,7 @@ class Report extends MY_Controller
         return $upload_data;
     }
 
-    private function handle_upload_file($files, $suffix = 'my_file')
+    private function handle_upload_file($files, $suffix = NULL)
     {
         $config['upload_path'] = './uploads/';
         $config['allowed_types'] = 'gif|jpg|jpeg|png|pdf|doc|docx|xls|xlsx';
@@ -763,10 +762,10 @@ class Report extends MY_Controller
         $this->load->library('upload', $config);
         $upload_data = [];
 
-        $original_name = $files['name'];
-        $file_extension = pathinfo($original_name, PATHINFO_EXTENSION);
+        $original_filename = pathinfo($files['name'], PATHINFO_FILENAME);
+        $file_extension = pathinfo($files['name'], PATHINFO_EXTENSION);
 
-        $custom_filename = $suffix . '_' . date('YmdHis') . '.' . $file_extension;
+        $custom_filename = ($suffix ? $suffix : $original_filename) . '_' . date('YmdHis') . '.' . $file_extension;
         $config['file_name'] = $custom_filename;
 
         $_FILES['image']['name'] = $files['name'];
@@ -826,6 +825,34 @@ class Report extends MY_Controller
         $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
 
         $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', false);
+    }
+
+    public function evidence($id)
+    {
+        $report = $this->Report_model->get_detail($id);
+        if (!$report) {
+            $this->session->set_flashdata('error', 'The evidence report cannot be printed because the report not found.');
+            redirect('report');
+            return;
+        }
+
+        if ($report['status'] !== 'Completed') {
+            $this->session->set_flashdata('error', 'The evidence report cannot be printed because it has not been completed yet.');
+            redirect('report');
+            return;
+        }
+
+        $pdf = new Pdf();
+
+        $pdf->SetCreator('Waringin Group');
+        $pdf->SetAuthor('Waringin Group');
+        $pdf->SetTitle('Bukti Pekerjaan #' . $report['id']);
+
+        $data['title'] = 'BUKTI PEKERJAAN';
+        $data['report'] = $report;
+        $data['evidence_works'] = $this->Report_model->get_works_pairs_by_report($id);
+
+        $pdf->generate_from_view('report/evidence', $data, date('Ymd_his') . '_work_evidence.pdf', false, false);
     }
 
     private function export_excel()

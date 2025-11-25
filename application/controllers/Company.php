@@ -38,6 +38,7 @@ class Company extends MY_Controller
             $data[] = [
                 'id'          => $company['id'],
                 'name'        => $company['name'],
+                'entity' => $company['entity_name'],
                 'project' => $company['project_name'],
                 'created_at'  => date('Y-m-d H:i:s', strtotime($company['created_at'])),
             ];

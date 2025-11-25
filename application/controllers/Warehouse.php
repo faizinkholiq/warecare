@@ -28,6 +28,7 @@ class Warehouse extends MY_Controller
 
     public function get_list()
     {
+        $p["search"] = $this->input->post("search");
         $p['project'] = $this->input->post('project');
         $p['company'] = $this->input->post('company');
         $p['name'] = $this->input->post('name');
@@ -44,6 +45,8 @@ class Warehouse extends MY_Controller
                 'handovered_at' => $warehouse['handovered_at'],
                 'company_id'    => $warehouse['company_id'],
                 'company'       => $warehouse['company_name'],
+                'project'       => $warehouse['project_name'],
+                'entity'       => $warehouse['entity_name'],
                 'created_at'    => date('Y-m-d H:i:s', strtotime($warehouse['created_at'])),
             ];
         }

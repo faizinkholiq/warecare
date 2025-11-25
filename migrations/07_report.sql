@@ -54,8 +54,12 @@ CREATE TABLE report_evidences (
 CREATE TABLE report_works (
     id INT PRIMARY KEY AUTO_INCREMENT,
     report_id INT NOT NULL,
-    image_path VARCHAR(255) NOT NULL,
-    image_name VARCHAR(255) NOT NULL,
+    image_path_before VARCHAR(255) NOT NULL,
+    image_name_before VARCHAR(255) NOT NULL,
+    description_before VARCHAR(255) NOT NULL,
+    image_path_after VARCHAR(255) NOT NULL,
+    image_name_after VARCHAR(255) NOT NULL,
+    description_after VARCHAR(255) NOT NULL,
     FOREIGN KEY (report_id) REFERENCES report(id) ON DELETE CASCADE
 );
 

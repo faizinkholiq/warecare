@@ -4,6 +4,7 @@ if (in_array($report['category_id'], $category_with_detail)) {
     if (!empty($report['details'])) {
         $description = "<ul>";
         $new_parent = true;
+        $have_child = false;
         foreach ($report['details'] as $detail) {
             if ($detail["level"] == 1) {
                 if (!$new_parent) {
@@ -12,6 +13,7 @@ if (in_array($report['category_id'], $category_with_detail)) {
                 }
 
                 $description .= "<li>" . $detail['description'];
+                $have_child = false;
             } else if ($detail["level"] == 2) {
                 if ($new_parent) {
                     $description .= "<ul>";
@@ -19,12 +21,17 @@ if (in_array($report['category_id'], $category_with_detail)) {
                 $description .= "<li>" . $detail['description'] . "</li>";
 
                 $new_parent = false;
+                $have_child = true;
             }
         }
 
         if (!$new_parent) {
             $description .= "</ul></li></ul>";
         } else {
+            if (!$have_child) {
+                $description .= "</li>";
+            }
+
             $description .= "</ul>";
         }
     }

@@ -2,12 +2,13 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 // Include the main TCPDF library
-require_once APPPATH . 'third_party/tcpdf/tcpdf.php';
+require_once FCPATH . 'vendor/autoload.php';
 
 class Pdf extends TCPDF
 {
 
     protected $ci;
+    protected $show_header = true;
 
     public function __construct($orientation = 'P', $unit = 'mm', $format = 'A4', $unicode = true, $encoding = 'UTF-8', $diskcache = false, $pdfa = false)
     {
@@ -47,9 +48,22 @@ class Pdf extends TCPDF
         $this->setLanguageArray($this->ci->config->item('tcpdf_language'));
     }
 
+    // Method to enable/disable header
+    public function setShowHeader($show = true)
+    {
+        $this->show_header = $show;
+        if (!$show) {
+            $this->setPrintHeader(false);
+        }
+    }
+
     // Custom Header
     public function Header()
     {
+        if (!$this->show_header) {
+            return;
+        }
+
         // Logo
         $image_file = APPPATH . '../assets/images/logo.png';
         if (file_exists($image_file)) {
@@ -67,10 +81,6 @@ class Pdf extends TCPDF
         $this->Cell(0, 15, "Kontraktor", 0, false, 'L', 0, '', 0, false, 'M', 'M');
         $this->SetY(30);
         $this->Cell(0, 15, "Tanggal: " . date('d F Y'), 0, false, 'L', 0, '', 0, false, 'M', 'M');
-
-
-        // Title - centered on page
-        // $this->Cell(0, 15, 'WARINGIN GROUP', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
 
     // Custom Footer
@@ -81,14 +91,14 @@ class Pdf extends TCPDF
 
         // Set font
         $this->SetFont('helvetica', 'I', 8);
-
-        // Page number
-        // $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
     }
 
     // Simple HTML to PDF method
-    public function generate_html_pdf($html, $filename = 'document.pdf', $download = true)
+    public function generate_html_pdf($html, $filename = 'document.pdf', $download = true, $show_header = true)
     {
+        // Set header visibility
+        $this->setShowHeader($show_header);
+
         // Add a page
         $this->AddPage();
 
@@ -107,12 +117,12 @@ class Pdf extends TCPDF
     }
 
     // Generate PDF from view
-    public function generate_from_view($view_name, $data = array(), $filename = 'document.pdf', $download = true)
+    public function generate_from_view($view_name, $data = array(), $filename = 'document.pdf', $download = true, $show_header = true)
     {
         // Load the view content
         $html = $this->ci->load->view($view_name, $data, TRUE);
 
         // Generate PDF
-        $this->generate_html_pdf($html, $filename, $download);
+        $this->generate_html_pdf($html, $filename, $download, $show_header);
     }
 }

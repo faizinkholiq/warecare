@@ -20,6 +20,8 @@ class Warehouse_model extends CI_Model
 
     public function get_list($p)
     {
+        $search = $p["search"];
+
         if (!empty($p['project'])) {
             $this->db->where("company.project_id", $p['project']);
         }
@@ -32,12 +34,36 @@ class Warehouse_model extends CI_Model
             $this->db->like($this->table . '.name', $p['name'], 'both');
         }
 
+        if (!empty($search["value"])) {
+            $searchable_fields = [
+                "warehouse.name",
+                "warehouse.status",
+                "company.name",
+            ];
+
+            $search_terms = explode(" ", $search["value"]);
+
+            $this->db->group_start();
+            foreach ($searchable_fields as $field) {
+                $this->db->or_group_start();
+                foreach ($search_terms as $term) {
+                    $this->db->like($field, $term);
+                }
+                $this->db->group_end();
+            }
+            $this->db->group_end();
+        }
+
         $this->db->select([
             $this->table . '.*',
             'company.name AS company_name',
+            'project.name AS project_name',
+            'entity.name AS entity_name',
         ])
             ->from($this->table)
             ->join('company', 'company.id = ' . $this->table . '.company_id')
+            ->join('project', 'project.id = company.project_id', 'left')
+            ->join('entity', 'entity.id = project.entity_id', 'left')
             ->order_by($this->table . '.created_at', 'DESC');
 
         return $this->db->get()->result_array();

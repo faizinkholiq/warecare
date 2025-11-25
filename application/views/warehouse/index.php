@@ -34,11 +34,13 @@
                 <tr>
                     <th>ID</th>
                     <th class="dt-center" width="3%">No</th>
+                    <th class="dt-center" width="15%">Entity</th>
+                    <th class="dt-center" width="15%">Project</th>
                     <th class="dt-center" width="20%">Perusahaan</th>
                     <th class="dt-center">Nama</th>
                     <th class="dt-center" width="10%">Status</th>
-                    <th class="dt-center" width="15%">Tgl. Sewa/Beli</th>
-                    <th class="dt-center" width="15%">Tgl. Serah Terima</th>
+                    <th class="dt-center" width="12%">Tgl. Sewa/Beli</th>
+                    <th class="dt-center" width="12%">Tgl. Serah Terima</th>
                     <th class="dt-center" width="10%">Aksi</th>
                 </tr>
             </thead>
@@ -189,27 +191,35 @@
                     targets: 1
                 },
                 {
-                    data: "company",
+                    data: "entity",
                     targets: 2
                 },
                 {
-                    data: "name",
+                    data: "project",
                     targets: 3
+                },
+                {
+                    data: "company",
+                    targets: 4
+                },
+                {
+                    data: "name",
+                    targets: 5
                 },
                 {
                     data: "status",
                     className: "dt-center",
-                    targets: 4
+                    targets: 6
                 },
                 {
                     data: "owned_at",
                     className: "dt-center",
-                    targets: 5
+                    targets: 7
                 },
                 {
                     data: "handovered_at",
                     className: "dt-center",
-                    targets: 6
+                    targets: 8
                 },
                 {
                     data: null,
@@ -225,7 +235,7 @@
                         `;
                     },
                     orderable: false,
-                    targets: 7
+                    targets: 9
                 }
             ],
             scrollResize: true,
