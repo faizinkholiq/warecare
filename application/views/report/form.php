@@ -390,38 +390,98 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group col-md-7">
-                    <label>Lampiran Bukti</label>
-                    <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
-                        <div class="dropzone" id="reportEvidenceDropzone">
-                            <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop gambar di sini atau klik untuk memilih</p>
-                            <p class="small text-muted">Format yang didukung: JPG, PNG, GIF. Maksimal 2MB per file.</p>
-                            <input type="file" id="reportEvidenceFiles" class="file-input" accept="image/*" multiple>
-                        </div>
-                        <div class="invalid-feedback" id="reportEvidenceError"></div>
-                    <?php endif; ?>
-                    <div class="preview-container" id="reportEvidencePreview">
-                        <?php if (isset($report) && !empty($report['evidences'])): ?>
-                            <?php foreach ($report['evidences'] as $evidence):
-                                $file_path = base_url('/uploads/' . $evidence['image_name']);
-                            ?>
-                                <div id="evidenceItem<?= $evidence['id']; ?>" class="preview-item">
-                                    <img src="<?= $file_path ?>" alt="Evidence Image" data-src="<?= $file_path ?>" onclick="zoomImage(this.dataset.src)">
-                                    <?php if ($mode === 'create' || ($mode === 'edit' && isset($report) && ($report['status'] === 'Pending' && $this->auth_lib->role() === 'pelapor'))): ?>
-                                        <button
-                                            type="button"
-                                            class="remove-btn"
-                                            onclick="removeFile('evidence', <?= $evidence['id'] ?>)">
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <?php if ($mode === 'detail'): ?>
-                                <div class="text-red font-weight-bold">* Belum ada bukti yang diupload</div>
+                <div class="" style="margin-top: 2.5rem;">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="mb-0">Pekerjaan</label>
+                            <?php if ($mode !== 'detail'): ?>
+                                <button type="button" id="addWorkRowBtn" class="btn btn-sm btn-primary rounded-lg shadow-sm border-0">
+                                    <i class="fas fa-plus-circle mr-1"></i> Tambah
+                                </button>
                             <?php endif; ?>
-                        <?php endif; ?>
+                        </div>
+                        <div id="workRowsContainer">
+                            <?php if (isset($report) && !empty($report['works'])): ?>
+                                <?php foreach ($report['works'] as $index => $work): ?>
+                                    <div class="work-row border rounded-lg p-3 mb-3" data-index="<?= $index ?>">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Sebelum</label>
+                                                    <div class="dropzone work-dropzone-before" data-type="before" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
+                                                        <?php if ($mode !== 'detail'): ?>
+                                                            <input type="file" class="file-input work-file-before" accept="image/*">
+                                                        <?php endif; ?>
+                                                        <div class="preview-container work-preview-before">
+                                                            <?php if (!empty($work['image_name_before'])):
+                                                                $file_path = base_url('/uploads/' . $work['image_name_before']);
+                                                            ?>
+                                                                <div class="preview-item-full">
+                                                                    <img src="<?= $file_path ?>" alt="Before Image" onclick="zoomImage('<?= $file_path ?>')">
+                                                                    <?php if ($mode !== 'detail'): ?>
+                                                                        <button type="button" class="remove-btn remove-work-image" data-type="before">
+                                                                            <i class="fa fa-times"></i>
+                                                                        </button>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            <?php else: ?>
+                                                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum" value="<?= isset($work['description_before']) ? $work['description_before'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Sesudah</label>
+                                                    <div class="dropzone work-dropzone-after" data-type="after" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
+                                                        <?php if ($mode !== 'detail'): ?>
+                                                            <input type="file" class="file-input work-file-after" accept="image/*">
+                                                        <?php endif; ?>
+                                                        <div class="preview-container work-preview-after">
+                                                            <?php if (!empty($work['image_name_after'])):
+                                                                $file_path = base_url('/uploads/' . $work['image_name_after']);
+                                                            ?>
+                                                                <div class="preview-item-full">
+                                                                    <img src="<?= $file_path ?>" alt="After Image" onclick="zoomImage('<?= $file_path ?>')">
+                                                                    <?php if ($mode !== 'detail'): ?>
+                                                                        <button type="button" class="remove-btn remove-work-image" data-type="after">
+                                                                            <i class="fa fa-times"></i>
+                                                                        </button>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            <?php else: ?>
+                                                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah" value="<?= isset($work['description_after']) ? $work['description_after'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php if ($mode !== 'detail'): ?>
+                                            <div class="text-right">
+                                                <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
+                                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
+                                        <input type="hidden" class="work-id" value="<?= isset($work['id']) ? $work['id'] : '' ?>">
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php if ($mode === 'detail'): ?>
+                                    <div class="text-red font-weight-bold">* Belum ada bukti pekerjaan yang diupload</div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php if ($mode !== 'create' && in_array($this->auth_lib->role(), ['kontraktor', 'rab', 'manager'])): ?>
@@ -672,102 +732,6 @@
                                 <option value="1" <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] == 1 ? 'selected' : ''; ?>>Iya</option>
                                 <option value="0" <?= isset($report['manager']['paid_by']) && $report['manager']['paid_by'] == 0 ? 'selected' : ''; ?>>Tidak</option>
                             </select>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                <?php if (isset($report) && ($report['status'] === 'Approved' || $report['status'] === 'Completed') && ($mode === 'detail' || ($mode === 'edit' && $this->auth_lib->role() === 'pelapor'))): ?>
-                    <div class="border-top pt-4" style="margin-top: 2.5rem;">
-                        <div class="col-md-12">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <label class="mb-0">Pekerjaan</label>
-                                <?php if ($mode !== 'detail'): ?>
-                                    <button type="button" id="addWorkRowBtn" class="btn btn-sm btn-primary rounded-lg shadow-sm border-0">
-                                        <i class="fas fa-plus-circle mr-1"></i> Tambah Bukti Pekerjaan
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                            <div id="workRowsContainer">
-                                <?php if (isset($report) && !empty($report['works'])): ?>
-                                    <?php foreach ($report['works'] as $index => $work): ?>
-                                        <div class="work-row border rounded-lg p-3 mb-3" data-index="<?= $index ?>">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Gambar Sebelum</label>
-                                                        <div class="dropzone work-dropzone-before" data-type="before" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
-                                                            <?php if ($mode !== 'detail'): ?>
-                                                                <input type="file" class="file-input work-file-before" accept="image/*">
-                                                            <?php endif; ?>
-                                                            <div class="preview-container work-preview-before">
-                                                                <?php if (!empty($work['image_name_before'])):
-                                                                    $file_path = base_url('/uploads/' . $work['image_name_before']);
-                                                                ?>
-                                                                    <div class="preview-item-full">
-                                                                        <img src="<?= $file_path ?>" alt="Before Image" onclick="zoomImage('<?= $file_path ?>')">
-                                                                        <?php if ($mode !== 'detail'): ?>
-                                                                            <button type="button" class="remove-btn remove-work-image" data-type="before">
-                                                                                <i class="fa fa-times"></i>
-                                                                            </button>
-                                                                        <?php endif; ?>
-                                                                    </div>
-                                                                <?php else: ?>
-                                                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                                                                    <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum" value="<?= isset($work['description_before']) ? $work['description_before'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Gambar Sesudah</label>
-                                                        <div class="dropzone work-dropzone-after" data-type="after" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
-                                                            <?php if ($mode !== 'detail'): ?>
-                                                                <input type="file" class="file-input work-file-after" accept="image/*">
-                                                            <?php endif; ?>
-                                                            <div class="preview-container work-preview-after">
-                                                                <?php if (!empty($work['image_name_after'])):
-                                                                    $file_path = base_url('/uploads/' . $work['image_name_after']);
-                                                                ?>
-                                                                    <div class="preview-item-full">
-                                                                        <img src="<?= $file_path ?>" alt="After Image" onclick="zoomImage('<?= $file_path ?>')">
-                                                                        <?php if ($mode !== 'detail'): ?>
-                                                                            <button type="button" class="remove-btn remove-work-image" data-type="after">
-                                                                                <i class="fa fa-times"></i>
-                                                                            </button>
-                                                                        <?php endif; ?>
-                                                                    </div>
-                                                                <?php else: ?>
-                                                                    <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                                                                    <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah" value="<?= isset($work['description_after']) ? $work['description_after'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <?php if ($mode !== 'detail'): ?>
-                                                <div class="text-right">
-                                                    <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
-                                                        <i class="fas fa-trash mr-1"></i> Hapus
-                                                    </button>
-                                                </div>
-                                            <?php endif; ?>
-                                            <input type="hidden" class="work-id" value="<?= isset($work['id']) ? $work['id'] : '' ?>">
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <?php if ($mode === 'detail'): ?>
-                                        <div class="text-red font-weight-bold">* Belum ada bukti pekerjaan yang diupload</div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -1374,8 +1338,9 @@
 
     function init() {
         setupEventListeners();
-
-        if (appState.mode !== 'create' && appState.reportData) {
+        if (appState.mode === 'create') {
+            initializeDefaultData();
+        } else {
             initializeExistingData();
         }
     }
@@ -1842,9 +1807,9 @@
 
                     workRow.innerHTML = `
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-${appState.mode === 'create' ? '12' : '6'}">
                                 <div class="form-group">
-                                    <label>Gambar Sebelum</label>
+                                    <label style="display: ${appState.mode === 'create' ? 'none' : ''}">Sebelum</label>
                                     <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
                                         <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
                                         <input type="file" class="file-input work-file-before" accept="image/*">
@@ -1855,9 +1820,10 @@
                                     <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
                                 </div>
                             </div>
+                            ${appState.mode !== 'create' ? `
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Gambar Sesudah</label>
+                                    <label>Sesudah</label>
                                     <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
                                         <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
                                         <input type="file" class="file-input work-file-after" accept="image/*">
@@ -1868,6 +1834,7 @@
                                     <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
                                 </div>
                             </div>
+                            ` : ''}
                         </div>
                         <div class="text-right">
                             <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
@@ -1914,6 +1881,46 @@
         }
     }
 
+    function initializeDefaultData() {
+        // Evidence
+        appState.evidence.files = [];
+
+        // Work
+        appState.work.files = [];
+        appState.work.deletedIds = [];
+
+        // Add one default work row if no existing data
+        const container = document.getElementById('workRowsContainer');
+        if (container && container.children.length === 0) {
+            const index = 0;
+            const workRow = document.createElement('div');
+            workRow.className = 'work-row border rounded-lg p-3 mb-3';
+            workRow.dataset.index = index;
+
+            workRow.innerHTML = `
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
+                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                <input type="file" class="file-input work-file-before" accept="image/*">
+                                <div class="preview-container work-preview-before"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" class="work-id" value="">
+            `;
+
+            container.appendChild(workRow);
+            setupWorkRowListeners(workRow);
+        }
+    }
+
     function initializeExistingData() {
         if (appState.reportData.evidences && appState.reportData.evidences.length > 0) {
             appState.evidence.files = appState.reportData.evidences.map(evidence => ({
@@ -1942,34 +1949,34 @@
 
                 workRow.innerHTML = `
                 <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                    <label>Gambar Sebelum</label>
-                    <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
-                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                        <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                        <input type="file" class="file-input work-file-before" accept="image/*">
-                        <div class="preview-container work-preview-before"></div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Gambar Sebelum</label>
+                            <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
+                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                <input type="file" class="file-input work-file-before" accept="image/*">
+                                <div class="preview-container work-preview-before"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
+                        </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Sesudah</label>
+                            <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
+                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                <input type="file" class="file-input work-file-after" accept="image/*">
+                                <div class="preview-container work-preview-after"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
+                        </div>
                     </div>
-                    <div class="form-group">
-                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                    <label>Gambar Sesudah</label>
-                    <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
-                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                        <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                        <input type="file" class="file-input work-file-after" accept="image/*">
-                        <div class="preview-container work-preview-after"></div>
-                    </div>
-                    </div>
-                    <div class="form-group">
-                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
-                    </div>
-                </div>
                 </div>
                 <input type="hidden" class="work-id" value="">
             `;

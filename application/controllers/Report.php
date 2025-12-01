@@ -811,7 +811,7 @@ class Report extends MY_Controller
         }
 
         if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-            $report["details"] = $this->Report_model->get_details_by_report($id, true);
+            $report["details"] = $this->Report_model->get_details_by_report($id);
         }
 
         $pdf = new Pdf();
