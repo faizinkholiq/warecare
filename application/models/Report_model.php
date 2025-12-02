@@ -303,6 +303,37 @@ class Report_model extends CI_Model
         return $this->db->get()->row_array();
     }
 
+    public function get_list_detail($ids = [])
+    {
+        $this->db->select([
+            $this->table . '.id',
+            $this->table . '.no',
+            $this->table . '.title',
+            $this->table . '.description',
+            'entity.name as entity',
+            'project.name as project',
+            'warehouse.name as warehouse',
+            'company.name as company',
+            'category.id as category_id',
+            'category.name as category',
+            $this->table . '.status',
+            'DATE_FORMAT(report.completed_at, "%Y-%m-%d %H:%i") as completed_at',
+            'CONCAT_WS(" ", created_by.first_name, created_by.last_name) created_by',
+            'DATE_FORMAT(report.created_at, "%Y-%m-%d %H:%i") as created_at'
+        ])
+            ->from($this->table)
+            ->join('entity', 'entity.id = report.entity_id', 'left')
+            ->join('project', 'project.id = report.project_id', 'left')
+            ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
+            ->join('category', 'category.id = report.category_id', 'left')
+            ->join('company', 'company.id = report.company_id', 'left')
+            ->join('user created_by', 'created_by.id = report.created_by', 'left')
+            ->where_in('report.id', $ids)
+            ->group_by('report.id');
+
+        return $this->db->get()->result_array();
+    }
+
     public function summary($user = null)
     {
         $this->db->select([

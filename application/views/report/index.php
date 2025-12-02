@@ -35,78 +35,6 @@
         font-weight: bold;
     }
 
-    .action-btn {
-        margin-right: 5px;
-        margin-bottom: 5px;
-    }
-
-    .img-thumbnail {
-        max-width: 60px;
-        max-height: 60px;
-    }
-
-    .dropzone {
-        border: 2px dashed #ccc;
-        border-radius: 5px;
-        padding: 25px;
-        text-align: center;
-        background: #f8f9fa;
-        cursor: pointer;
-        transition: all 0.3s;
-        margin-bottom: 20px;
-    }
-
-    .dropzone:hover,
-    .dropzone.dragover {
-        background: #e9ecef;
-        border-color: #999;
-    }
-
-    .dropzone i {
-        font-size: 48px;
-        color: #6c757d;
-        margin-bottom: 10px;
-    }
-
-    .image-preview-container {
-        display: flex;
-        flex-wrap: wrap;
-        margin-top: 15px;
-    }
-
-    .image-preview-item {
-        position: relative;
-        margin-right: 15px;
-        margin-bottom: 15px;
-    }
-
-    .image-preview-item img {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-    }
-
-    .btn-remove-image {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .upload-progress {
-        width: 100%;
-        margin-top: 10px;
-        display: none;
-    }
-
     .my-toolbar-container {
         display: inline-block;
         margin-right: 2rem;
@@ -133,6 +61,12 @@
         border-color: #bac8f3;
         outline: 0;
         box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    table.dataTable tbody>tr.selected,
+    table.dataTable tbody>tr>.selected {
+        color: inherit;
+        background-color: #7cc0fd40;
     }
 </style>
 
@@ -200,6 +134,7 @@
         edit: "<?= site_url('report/edit') ?>",
         delete: "<?= site_url('report/delete') ?>",
         print_memo: "<?= site_url('report/memo') ?>",
+        print_memo_bulk: "<?= site_url('report/memo_bulk') ?>",
         print_evidence: "<?= site_url('report/evidence') ?>",
         export_excel: "<?= site_url('report?mode=excel') ?>"
     }
@@ -240,6 +175,11 @@
                 });
             },
             rowId: 'id',
+            select: {
+                style: 'multi',
+                selector: 'tr',
+                items: 'row'
+            },
             columns: [{
                     data: "id",
                     visible: false,
@@ -346,7 +286,7 @@
                     className: "dt-center align-middle",
                     render: function(data, type, row) {
                         const buttons = [
-                            `<a href="${urls.detail}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="View Details">
+                            `<a href="${urls.detail}/${row.id}" class="btn btn-sm btn-default text-navy shadow rounded-lg border-0 mr-1" data-tippy-content="View Details">
                                 <i class="text-xs fa fa-info-circle"></i>
                             </a>`
                         ];
@@ -378,7 +318,7 @@
                             }
                         } else if ((appState.userRole === 'kontraktor' && row.status === 'Pending') || (appState.userRole === 'rab' && row.status === 'On Process' && !row.rab_final_file)) {
                             buttons.push(`
-                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Process Report">
+                                <a href="${urls.edit}/${row.id}" class="btn btn-sm btn-default text-navy shadow rounded-lg border-0 mr-1" data-tippy-content="Process Report">
                                     <i class="text-xs fa fa-play"></i>
                                 </a>
                             `);
@@ -391,7 +331,7 @@
                                 `);
                             } else if (row.status === 'Approved') {
                                 buttons.push(`
-                                    <a href="${urls.print_memo}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Memo">
+                                    <a href="${urls.print_memo}/${row.id}" target="_blank" class="btn btn-sm btn-default text-navy shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Memo">
                                         <i class="text-xs fa fa-print"></i>
                                     </a>
                                 `);
@@ -400,12 +340,12 @@
 
                         if (row.status === 'Completed') {
                             buttons.push(`
-                                <a href="${urls.print_memo}/${row.id}" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Memo">
+                                <a href="${urls.print_memo}/${row.id}" target="_blank" class="btn btn-sm btn-default text-navy shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Memo">
                                     <i class="text-xs fa fa-print"></i>
                                 </a>
                             `);
                             buttons.push(`
-                                <a href="${urls.print_evidence}/${row.id}" target="_blank" class="btn btn-sm btn-default shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Bukti Pekerjaan">
+                                <a href="${urls.print_evidence}/${row.id}" target="_blank" class="btn btn-sm btn-default text-navy shadow rounded-lg border-0 mr-1" data-tippy-content="Cetak Bukti Pekerjaan">
                                     <i class="text-xs fa fa-image"></i>
                                 </a>
                             `);
@@ -425,12 +365,11 @@
             lengthChange: false,
             autoWidth: false,
             searching: true,
-            select: false,
             dom: 'lftipr',
             initComplete: function() {
                 this.api().columns().every(function() {
                     var column = this;
-                    if (column.index() === 9) {
+                    if (column.index() === 10) {
                         var filterContainer = $('<div class="d-flex align-items-center justify-content-between w-100"></div>')
                             .prependTo($('#reportsTable_wrapper'));
 
@@ -442,13 +381,13 @@
                             <div class="my-toolbar-container">
                                 <label class="mr-2">Kategori:</label>
                                 <select id="categoryFilter" class="my-dropdown-select">
-                                    <option value="">All Categories</option>
-                                    ${appState.listData.category.map(cat => `
-                                        <option value="${cat.id}">${cat.name}</option>
-                                    `).join('')}
+                                <option value="">All Categories</option>
+                                ${appState.listData.category.map(cat => `
+                                    <option value="${cat.id}">${cat.name}</option>
+                                `).join('')}
                                 </select>
-                            </div>`)
-                            .appendTo(leftFilters);
+                            </div>
+                        `).appendTo(leftFilters);
 
                         // Status filter with label
                         var statusFilter = $(`
@@ -461,8 +400,8 @@
                                     <option value="Approved">Approved</option>
                                     <option value="Completed">Completed</option>
                                 </select>
-                            </div>`)
-                            .appendTo(leftFilters);
+                            </div>
+                        `).appendTo(leftFilters);
 
                         // Date range filter
                         var dateFilter = $(`
@@ -475,14 +414,17 @@
 
                         // Toolbar buttons
                         var toolbarButtons = $(`
-                            <div class="my-toolbar-container">
-                                <button id="clearFilters" class="btn btn-sm font-weight-bold btn-default">
-                                    <i class="fas fa-undo mr-1"></i> Reload
-                                </button>
-                                <button id="exportExcel" class="ml-2 btn btn-sm font-weight-bold btn-default">
-                                    <i class="fa fa-file-excel mr-1 text-success"></i> Export Excel
-                                </button>
-                            </div>
+                        <div class="my-toolbar-container">
+                            <button type="button" id="clearFilters" class="btn btn-sm font-weight-bold btn-default">
+                                <i class="fas fa-undo mr-1"></i> Reload
+                            </button>
+                            <button type="button" id="exportExcel" class="ml-2 btn btn-sm font-weight-bold btn-default">
+                                <i class="fa fa-file-excel mr-1 text-success"></i> Export Excel
+                            </button>
+                            <button type="button" id="printMemoBulk" class="ml-2 btn btn-sm font-weight-bold btn-default">
+                                <i class="fa fa-file-pdf mr-1 text-danger"></i> Print Memos
+                            </button>
+                        </div>
                         `).appendTo(leftFilters);
 
                         // Move search box to right side of filterContainer
@@ -494,24 +436,51 @@
 
                         $('#categoryFilter').on('change', function() {
                             var category = $(this).val();
-                            table.column(8).search(category).draw();
+                            table.column(9).search(category).draw();
                         });
 
                         $('#statusFilter').on('change', function() {
                             var status = $(this).val();
-                            table.column(9).search(status).draw();
+                            table.column(10).search(status).draw();
                         });
 
                         $('#clearFilters').on('click', function() {
                             $('#startDate, #endDate').val('');
                             $('#categoryFilter').val('');
                             $('#statusFilter').val('');
-                            table.column(8).search('').draw();
                             table.column(9).search('').draw();
+                            table.column(10).search('').draw();
                         });
 
                         $('#exportExcel').on('click', function() {
                             window.open(urls.export_excel, '_blank')
+                        });
+
+                        $('#printMemoBulk').on('click', function() {
+                            var selectedData = table.rows({
+                                selected: true
+                            }).data().toArray();
+
+                            var ids = selectedData.map(function(r) {
+                                return r.id;
+                            });
+
+                            if (ids.length === 0) {
+                                toastr.info('Harap pilih minimal satu laporan untuk mencetak memo.');
+                                return;
+                            }
+
+                            // Check if any selected report is not completed or approved
+                            var nonCompletedReports = selectedData.filter(function(r) {
+                                return r.status !== 'Completed' && r.status !== 'Approved';
+                            });
+
+                            if (nonCompletedReports.length > 0) {
+                                toastr.info('Hanya laporan dengan status "Completed" yang dapat dicetak. Harap pilih hanya laporan yang sudah selesai.');
+                                return;
+                            }
+
+                            window.open(urls.print_memo_bulk + '?ids=' + ids, '_blank');
                         });
                     }
                 });
@@ -542,6 +511,5 @@
                 }
             });
         });
-
     });
 </script>

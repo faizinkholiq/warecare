@@ -827,6 +827,46 @@ class Report extends MY_Controller
         $pdf->generate_from_view('report/memo', $data, date('Ymd_his') . '_memo.pdf', false);
     }
 
+    public function memo_bulk()
+    {
+        $ids = $this->input->get('ids');
+        if (empty($ids)) {
+            $this->session->set_flashdata('error', 'No report IDs provided.');
+            redirect('report');
+            return;
+        }
+
+        // Convert comma-separated string to array
+        $ids = explode(',', $ids);
+        $ids = array_filter($ids); // Remove empty values
+        $ids = array_map('intval', $ids); // Convert to integers
+
+        $reports = $this->Report_model->get_list_detail($ids);
+        if (empty($reports)) {
+            $this->session->set_flashdata('error', 'No reports found.');
+            redirect('report');
+            return;
+        }
+
+        foreach ($reports as $key => $report) {
+            if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
+                $reports[$key]["details"] = $this->Report_model->get_details_by_report($report['id']);
+            }
+        }
+
+        $pdf = new Pdf();
+
+        $pdf->SetCreator('Waringin Group');
+        $pdf->SetAuthor('Waringin Group');
+        $pdf->SetTitle('Memo Pengaduan');
+
+        $data['title'] = 'PEMBERITAHUAN PEKERJAAN KURANG/TAMBAH';
+        $data['reports'] = $reports;
+        $data['category_with_detail'] = $this->CATEGORY_WITH_DETAIL;
+
+        $pdf->generate_from_view('report/memo_bulk', $data, date('Ymd_his') . '_memo.pdf', false);
+    }
+
     public function evidence($id)
     {
         $report = $this->Report_model->get_detail($id);
