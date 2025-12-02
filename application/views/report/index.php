@@ -71,11 +71,26 @@
 </style>
 
 <div class="container-fluid my-container">
-    <?php if ($this->auth_lib->role() === 'pelapor'): ?>
-        <a href="<?= site_url('/report/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg text-navy font-weight-bold create-btn">
-            <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru
-        </a>
-    <?php endif; ?>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <?php if ($this->auth_lib->role() === 'pelapor'): ?>
+                <a href="<?= site_url('/report/create') ?>" class="btn btn-default border-0 shadow-sm rounded-lg text-navy font-weight-bold create-btn">
+                    <i class="fas fa-bullhorn mr-2"></i> Ajukan Pengaduan Baru
+                </a>
+            <?php endif; ?>
+            <button type="button" id="clearFilters" class="ml-2 btn border-0 shadow-sm rounded-lg font-weight-bold btn-default">
+                <i class="fas fa-undo mr-1"></i> Reload
+            </button>
+        </div>
+        <div>
+            <button type="button" id="exportExcel" class="btn border-0 shadow-sm rounded-lg font-weight-bold btn-default">
+                <i class="fa fa-file-excel mr-1 text-success"></i> Export Excel
+            </button>
+            <button type="button" id="printMemoBulk" class="ml-2 btn border-0 shadow-sm rounded-lg font-weight-bold btn-default">
+                <i class="fa fa-file-pdf mr-1 text-danger"></i> Print Memos
+            </button>
+        </div>
+    </div>
     <div class="table-responsive text-sm bg-white shadow mt-3 rounded-lg p-3">
         <table id="reportsTable" class="table table-bordered" style="width:100%">
             <thead>
@@ -376,6 +391,28 @@
                         // Left side filters
                         var leftFilters = $('<div class="d-flex align-items-center"></div>').appendTo(filterContainer);
 
+                        // Entity filter with label
+                        var entityFilter = $(`
+                            <div class="my-toolbar-container">
+                                <label class="mr-2">Entity:</label>
+                                <select id="entityFilter" class="my-dropdown-select">
+                                    <option value="">All Entities</option>
+                                </select>
+                            </div>
+                        `).appendTo(leftFilters);
+
+                        // Populate entity options from table data
+                        table.column(3).data().unique().sort().each(function(d) {
+                            if (d && d.trim() !== '') {
+                                $('#entityFilter').append('<option value="' + d + '">' + d + '</option>');
+                            }
+                        });
+
+                        $('#entityFilter').on('change', function() {
+                            var entity = $(this).val();
+                            table.column(3).search(entity).draw();
+                        });
+
                         // Status filter with label
                         var categoryFilter = $(`
                             <div class="my-toolbar-container">
@@ -410,21 +447,6 @@
                                 <span class="mx-2">to</span>
                                 <input type="date" id="endDate" class="my-dropdown-select" style="width: 150px;">
                             </div>
-                        `).appendTo(leftFilters);
-
-                        // Toolbar buttons
-                        var toolbarButtons = $(`
-                        <div class="my-toolbar-container">
-                            <button type="button" id="clearFilters" class="btn btn-sm font-weight-bold btn-default">
-                                <i class="fas fa-undo mr-1"></i> Reload
-                            </button>
-                            <button type="button" id="exportExcel" class="ml-2 btn btn-sm font-weight-bold btn-default">
-                                <i class="fa fa-file-excel mr-1 text-success"></i> Export Excel
-                            </button>
-                            <button type="button" id="printMemoBulk" class="ml-2 btn btn-sm font-weight-bold btn-default">
-                                <i class="fa fa-file-pdf mr-1 text-danger"></i> Print Memos
-                            </button>
-                        </div>
                         `).appendTo(leftFilters);
 
                         // Move search box to right side of filterContainer
