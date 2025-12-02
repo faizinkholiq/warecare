@@ -128,41 +128,6 @@ class Report extends MY_Controller
                 $data["no"] = $prefix_no . '-' . date('Ym') . '-' . str_pad($this->Report_model->get_next_id(), 4, '0', STR_PAD_LEFT);
             }
 
-            $evidence_files = $_FILES['evidence_files'] ?? [];
-            $file_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
-
-            if ($file_count < 1) {
-                $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
-                    'required' => 'At least one evidence file is required.'
-                ]);
-            } elseif ($file_count > $this->MAX_FILE_COUNT) {
-                $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
-                    'max_evidence_files' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
-                ]);
-            }
-
-            $this->form_validation->set_message('max_evidence_files', "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed.");
-
-            if ($file_count < 1) {
-                $this->output->set_status_header(422);
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Please upload at least one evidence image.'
-                ]);
-                return;
-            }
-
-            if ($file_count > $this->MAX_FILE_COUNT) {
-                $this->output->set_status_header(422);
-                echo json_encode([
-                    'success' => false,
-                    'error' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
-                ]);
-                return;
-            }
-
-            $uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
-
             $report_id = $this->Report_model->create($data);
             if (!$report_id) {
                 $this->session->set_flashdata('error', 'Failed to create report');
@@ -192,9 +157,31 @@ class Report extends MY_Controller
                 }
             }
 
-            if (!empty($uploaded_evidences)) {
-                foreach ($uploaded_evidences as $file) {
-                    $this->Report_model->add_evidence($report_id, $file['file_path'], $file['file_name']);
+            $work_data = !empty($this->input->post('work_data')) ? json_decode($this->input->post('work_data'), true) : [];
+            if (!empty($work_data)) {
+                foreach ($work_data as $index => $work_item) {
+                    $work_record = [
+                        'report_id' => $report_id,
+                        'description_before' => $work_item['description_before'],
+                    ];
+
+                    if (isset($_FILES['work_image_before']['name'][$index]) && !empty($_FILES['work_image_before']['name'][$index])) {
+                        $file_before = [
+                            'name' => $_FILES['work_image_before']['name'][$index],
+                            'type' => $_FILES['work_image_before']['type'][$index],
+                            'tmp_name' => $_FILES['work_image_before']['tmp_name'][$index],
+                            'error' => $_FILES['work_image_before']['error'][$index],
+                            'size' => $_FILES['work_image_before']['size'][$index]
+                        ];
+
+                        $uploaded_before = $this->handle_upload_file($file_before, 'work_before');
+                        if ($uploaded_before) {
+                            $work_record['image_path_before'] = $uploaded_before['file_path'];
+                            $work_record['image_name_before'] = $uploaded_before['file_name'];
+                        }
+                    }
+
+                    $this->Report_model->add_work($work_record);
                 }
             }
 
@@ -232,9 +219,9 @@ class Report extends MY_Controller
         $data["report"] = $report;
         $data["report"]["rab"] = $this->Report_model->get_rab($id);
         $data["report"]["manager"] = $this->Report_model->get_manager($id);
-        $data["report"]["evidences"] = $this->Report_model->get_evidences_by_report($id);;
-        $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
         $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
+        $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
+
         $data["list_data"]["entity"] = $this->Entity_model->get_all();
         $data["list_data"]["project"] = $this->Project_model->get_all();
         $data["list_data"]["company"] = $this->Company_model->get_all();
@@ -269,9 +256,6 @@ class Report extends MY_Controller
         $data["current_user"] = $this->auth_lib->current_user();
         $data["mode"] = "edit";
 
-        $existing_evidences = $this->Report_model->get_evidences_by_report($id);
-        $existing_count = count($existing_evidences);
-
         $this->form_validation->set_rules('entity_id', 'Entity', 'required');
         $this->form_validation->set_rules('project_id', 'Project', 'required');
         $this->form_validation->set_rules('company_id', 'Company', 'required');
@@ -282,12 +266,9 @@ class Report extends MY_Controller
             $data["report"] = $report;
             $data["report"]["rab"] = $this->Report_model->get_rab($id);
             $data["report"]["manager"] = $this->Report_model->get_manager($id);
+            $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
+            $data["report"]["works"] = $this->Report_model->get_works_by_report($id);
 
-            if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-                $data["report"]["details"] = $this->Report_model->get_details_by_report($id);
-            }
-
-            $data["report"]["evidences"] = $existing_evidences;
 
             $data["list_data"]["entity"] = $this->Entity_model->get_all();
             $data["list_data"]["project"] = $this->Project_model->get_all();
@@ -333,36 +314,6 @@ class Report extends MY_Controller
                     $data['title'] = $this->input->post('title');
                     $data['description'] = $this->input->post('description');
 
-                    $evidence_files = $_FILES['evidence_files'] ?? [];
-                    $evidence_count = !empty($evidence_files['name'][0]) ? count($evidence_files['name']) : 0;
-                    $deleted_evidences = !empty($this->input->post('deleted_evidence_files')) ? json_decode($this->input->post('deleted_evidence_files'), true) : [];
-                    $total_evidences = $existing_count + $evidence_count - count($deleted_evidences);
-
-                    if ($total_evidences < 1) {
-                        $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'required', [
-                            'required' => 'At least one evidence file is required.'
-                        ]);
-                    } elseif ($total_evidences > $this->MAX_FILE_COUNT) {
-                        $this->form_validation->set_rules('evidence_files', 'Evidence Files', 'max_evidence_files', [
-                            'max_evidence_files' => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
-                        ]);
-                    }
-
-                    $uploaded_evidences = [];
-                    if (!empty($evidence_files['name'][0])) {
-                        if ($total_evidences > $this->MAX_FILE_COUNT) {
-                            $this->session->set_flashdata('error', "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed.");
-                            $this->output->set_status_header(400);
-                            echo json_encode([
-                                "success" => false,
-                                "error" => "Maximum of {$this->MAX_FILE_COUNT} evidence files allowed."
-                            ]);
-                            return;
-                        }
-
-                        $uploaded_evidences = $this->handle_bulk_upload_files($evidence_files, 'evidence');
-                    }
-
                     if ($this->Report_model->delete_details_by_report($id)) {
                         if (in_array($data['category_id'], $this->CATEGORY_WITH_DETAIL)) {
                             $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
@@ -384,49 +335,14 @@ class Report extends MY_Controller
                         }
                     }
 
-                    if (!empty($uploaded_evidences)) {
-                        foreach ($uploaded_evidences as $file) {
-                            $this->Report_model->add_evidence($id, $file['file_path'], $file['file_name']);
-                        }
-                    }
-
-                    if (!empty($deleted_evidences)) {
-                        foreach ($deleted_evidences as $file_id) {
-                            $file = $this->Report_model->get_evidence($file_id);
-                            if ($file) {
-                                $this->handle_delete_file('./uploads/', $file['image_name']);
-                                $this->Report_model->delete_evidence($file_id);
-                            }
-                        }
-                    }
-
                     if ($data['status'] === 'Completed') {
                         $work_data = !empty($this->input->post('work_data')) ? json_decode($this->input->post('work_data'), true) : [];
 
                         if (!empty($work_data)) {
                             foreach ($work_data as $index => $work_item) {
                                 $work_record = [
-                                    'report_id' => $id,
-                                    'description_before' => $work_item['description_before'],
                                     'description_after' => $work_item['description_after'],
                                 ];
-
-                                // Handle before image
-                                if (isset($_FILES['work_image_before']['name'][$index]) && !empty($_FILES['work_image_before']['name'][$index])) {
-                                    $file_before = [
-                                        'name' => $_FILES['work_image_before']['name'][$index],
-                                        'type' => $_FILES['work_image_before']['type'][$index],
-                                        'tmp_name' => $_FILES['work_image_before']['tmp_name'][$index],
-                                        'error' => $_FILES['work_image_before']['error'][$index],
-                                        'size' => $_FILES['work_image_before']['size'][$index]
-                                    ];
-
-                                    $uploaded_before = $this->handle_upload_file($file_before, 'work_before');
-                                    if ($uploaded_before) {
-                                        $work_record['image_path_before'] = $uploaded_before['file_path'];
-                                        $work_record['image_name_before'] = $uploaded_before['file_name'];
-                                    }
-                                }
 
                                 // Handle after image
                                 if (isset($_FILES['work_image_after']['name'][$index]) && !empty($_FILES['work_image_after']['name'][$index])) {
@@ -445,7 +361,7 @@ class Report extends MY_Controller
                                     }
                                 }
 
-                                $this->Report_model->add_work($work_record);
+                                $this->Report_model->update_work($work_item['id'], $work_record);
                             }
                         }
                     }
@@ -660,13 +576,6 @@ class Report extends MY_Controller
         $this->Report_model->delete_rab($id);
 
         $this->Report_model->delete_manager($id);
-
-        $evidences = $this->Report_model->get_evidences_by_report($id);
-        foreach ($evidences as $evidence) {
-            $this->handle_delete_file('./uploads/', $evidence['image_name']);
-        }
-
-        $this->Report_model->delete_evidences_by_report($id);
 
         $works = $this->Report_model->get_works_by_report($id);
         foreach ($works as $work) {

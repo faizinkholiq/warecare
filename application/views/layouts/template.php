@@ -389,6 +389,8 @@
     const menuId = '<?php echo $menu_id; ?>';
     const modalPrompt = $("#modal_prompt");
     const MAX_VALUE = 9999999999;
+    const BASE_URL = '<?= base_url() ?>';
+    const SITE_URL = '<?= site_url() ?>';
 
     const capitalizeFirst = str => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
 

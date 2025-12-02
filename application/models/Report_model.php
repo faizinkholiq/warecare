@@ -429,6 +429,12 @@ class Report_model extends CI_Model
         return $this->db->insert_id();
     }
 
+    public function update_work($id, $data)
+    {
+        return $this->db->where('id', $id)->update('report_works', $data);
+    }
+
+
     public function delete_works_by_report($report_id)
     {
         return $this->db->delete('report_works', ['report_id' => $report_id]);

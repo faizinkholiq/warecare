@@ -45,9 +45,18 @@
         margin-bottom: 15px;
     }
 
+    .dropzone.readonly {
+        cursor: default;
+    }
+
     .dropzone:hover {
         border-color: #6c757d;
         background-color: #f8f9fa;
+    }
+
+    .dropzone.readonly:hover {
+        border-color: #ced4da;
+        background-color: #fff;
     }
 
     .dropzone.active {
@@ -59,7 +68,8 @@
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        margin-top: 20px;
+        /* margin-top: 20px; */
+        justify-content: center;
     }
 
     .preview-item {
@@ -104,9 +114,13 @@
 
     .preview-item-full {
         position: relative;
-        width: 100%;
-        max-height: 20rem;
+        width: 30%;
         overflow: visible;
+        height: 25rem;
+    }
+
+    .preview-item-full.split {
+        width: 80%;
     }
 
     .preview-item-full img {
@@ -394,93 +408,13 @@
                     <div class="col-md-12">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <label class="mb-0">Pekerjaan</label>
-                            <?php if ($mode !== 'detail'): ?>
-                                <button type="button" id="addWorkRowBtn" class="btn btn-sm btn-primary rounded-lg shadow-sm border-0">
+                            <?php if ($mode === 'create'): ?>
+                                <button type="button" id="addWorkRowBtn" class="btn btn-sm btn-default text-navy font-weight-bold rounded-lg shadow-sm border-0">
                                     <i class="fas fa-plus-circle mr-1"></i> Tambah
                                 </button>
                             <?php endif; ?>
                         </div>
                         <div id="workRowsContainer">
-                            <?php if (isset($report) && !empty($report['works'])): ?>
-                                <?php foreach ($report['works'] as $index => $work): ?>
-                                    <div class="work-row border rounded-lg p-3 mb-3" data-index="<?= $index ?>">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Sebelum</label>
-                                                    <div class="dropzone work-dropzone-before" data-type="before" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
-                                                        <?php if ($mode !== 'detail'): ?>
-                                                            <input type="file" class="file-input work-file-before" accept="image/*">
-                                                        <?php endif; ?>
-                                                        <div class="preview-container work-preview-before">
-                                                            <?php if (!empty($work['image_name_before'])):
-                                                                $file_path = base_url('/uploads/' . $work['image_name_before']);
-                                                            ?>
-                                                                <div class="preview-item-full">
-                                                                    <img src="<?= $file_path ?>" alt="Before Image" onclick="zoomImage('<?= $file_path ?>')">
-                                                                    <?php if ($mode !== 'detail'): ?>
-                                                                        <button type="button" class="remove-btn remove-work-image" data-type="before">
-                                                                            <i class="fa fa-times"></i>
-                                                                        </button>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            <?php else: ?>
-                                                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                                                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum" value="<?= isset($work['description_before']) ? $work['description_before'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Sesudah</label>
-                                                    <div class="dropzone work-dropzone-after" data-type="after" data-index="<?= $index ?>" <?= $mode === 'detail' ? 'style="pointer-events: none;"' : '' ?>>
-                                                        <?php if ($mode !== 'detail'): ?>
-                                                            <input type="file" class="file-input work-file-after" accept="image/*">
-                                                        <?php endif; ?>
-                                                        <div class="preview-container work-preview-after">
-                                                            <?php if (!empty($work['image_name_after'])):
-                                                                $file_path = base_url('/uploads/' . $work['image_name_after']);
-                                                            ?>
-                                                                <div class="preview-item-full">
-                                                                    <img src="<?= $file_path ?>" alt="After Image" onclick="zoomImage('<?= $file_path ?>')">
-                                                                    <?php if ($mode !== 'detail'): ?>
-                                                                        <button type="button" class="remove-btn remove-work-image" data-type="after">
-                                                                            <i class="fa fa-times"></i>
-                                                                        </button>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            <?php else: ?>
-                                                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                                                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah" value="<?= isset($work['description_after']) ? $work['description_after'] : '' ?>" <?= $mode === 'detail' ? 'disabled' : '' ?>>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <?php if ($mode !== 'detail'): ?>
-                                            <div class="text-right">
-                                                <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
-                                                    <i class="fas fa-trash mr-1"></i> Hapus
-                                                </button>
-                                            </div>
-                                        <?php endif; ?>
-                                        <input type="hidden" class="work-id" value="<?= isset($work['id']) ? $work['id'] : '' ?>">
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <?php if ($mode === 'detail'): ?>
-                                    <div class="text-red font-weight-bold">* Belum ada bukti pekerjaan yang diupload</div>
-                                <?php endif; ?>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -1079,12 +1013,6 @@
                     input: document.getElementById('reportRAB'),
                     container: document.getElementById('reportRABContainer'),
                 },
-                evidence: {
-                    input: document.getElementById('reportEvidenceFiles'),
-                    dropzone: document.getElementById('reportEvidenceDropzone'),
-                    preview: document.getElementById('reportEvidencePreview'),
-                    error: document.getElementById('reportEvidenceError')
-                },
                 rabNo: document.getElementById('reportRABNo'),
                 rabName: document.getElementById('reportRABName'),
                 rabBudget: document.getElementById('reportRABBudget'),
@@ -1148,10 +1076,6 @@
         categoryWithDetail: <?= json_encode($category_with_detail) ?>,
         reportData: <?= !empty($report) ? json_encode($report) : '{}' ?>,
         details: [],
-        evidence: {
-            files: [],
-            deletedIds: []
-        },
         rab: {
             deleted: false
         },
@@ -1424,23 +1348,6 @@
                 domCache.form.item.category.addEventListener('change', (e) => {
                     const value = e.target.value;
                     domCache.form.item.detail.container.style.display = categoryWithDetail.includes(parseInt(value)) ? '' : 'none';
-                });
-            }
-
-            // Evidence
-
-            if (domCache.form.item.evidence.dropzone && domCache.form.item.evidence.input) {
-                domCache.form.item.evidence.dropzone.addEventListener('click', () => {
-                    domCache.form.item.evidence.input.click();
-                });
-                domCache.form.item.evidence.dropzone.addEventListener('dragover', handleDragOver);
-                domCache.form.item.evidence.dropzone.addEventListener('dragleave', handleDragLeave);
-                domCache.form.item.evidence.dropzone.addEventListener('drop', (event) => {
-                    handleDrop('evidence', event);
-                });
-
-                domCache.form.item.evidence.input.addEventListener('change', (event) => {
-                    handleFileInputChange('evidence', event);
                 });
             }
 
@@ -1882,9 +1789,6 @@
     }
 
     function initializeDefaultData() {
-        // Evidence
-        appState.evidence.files = [];
-
         // Work
         appState.work.files = [];
         appState.work.deletedIds = [];
@@ -1922,25 +1826,86 @@
     }
 
     function initializeExistingData() {
-        if (appState.reportData.evidences && appState.reportData.evidences.length > 0) {
-            appState.evidence.files = appState.reportData.evidences.map(evidence => ({
-                id: evidence.id,
-                fileName: evidence.image_name,
-                filePath: evidence.image_path,
-                isExisting: true
-            }));
-        }
-
-        if (appState.reportData.works && appState.reportData.works.length > 0) {
-            appState.work.files = appState.reportData.works.map(work => ({
-                id: work.id,
-                fileName: work.image_name,
-                filePath: work.image_path,
-                isExisting: true
-            }));
-        } else {
-            // Add one default work row if no existing data
+        if (appState.reportData.works.length > 0) {
             const container = document.getElementById('workRowsContainer');
+            if (container && container.children.length === 0) {
+                appState.reportData.works.forEach((work, idx) => {
+                    const index = idx;
+                    const workRow = document.createElement('div');
+                    workRow.className = 'work-row border rounded-lg p-3 mb-3';
+                    workRow.dataset.index = index;
+
+                    const hasImageAfter = work.image_name_after && work.image_name_after.trim() !== '';
+                    const showAfterSection = (appState.mode === 'edit' && appState.reportData.status === 'Approved') || (appState.mode === 'detail' && hasImageAfter);
+
+                    workRow.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-${showAfterSection ? '6' : '12'}">
+                                <div class="form-group">
+                                    <label style="display: ${appState.mode === 'create' ? 'none' : ''}">Sebelum</label>
+                                    <div class="dropzone work-dropzone-before ${appState.mode === 'detail' ? 'readonly' : ''}" data-type="before" data-index="${index}">
+                                        <input type="file" class="file-input work-file-before" accept="image/*">
+                                        <div class="preview-container work-preview-before">
+                                            <div class="preview-item-full ${showAfterSection ? 'split' : ''}">
+                                                <img src="${BASE_URL+'uploads/'+work.image_name_before}" alt="Before Image" onclick="zoomImage('${BASE_URL+'uploads/'+work.image_name_before}')">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum" value="${work.description_before}" ${appState.mode === 'create' ? '' : 'readonly'}>
+                                </div>
+                            </div>
+                            ${showAfterSection ? `
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Sesudah</label>
+                                    <div class="dropzone work-dropzone-after ${appState.mode === 'detail' ? 'readonly' : ''}" data-type="after" data-index="${index}">
+                                        ${appState.mode !== 'detail' ? '<p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>' : ''}
+                                        <input type="file" class="file-input work-file-after" accept="image/*">
+                                        <div class="preview-container work-preview-after">
+                                            ${hasImageAfter ? `
+                                            <div class="preview-item-full split">
+                                                <img src="${BASE_URL+'uploads/'+work.image_name_after}" alt="After Image" onclick="zoomImage('${BASE_URL+'uploads/'+work.image_name_after}')">
+                                            </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah" value="${work.description_after || ''}" ${appState.mode === 'detail' ? 'readonly' : ''}>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        ${appState.mode === 'create' ? `
+                        <div class="text-right">
+                            <button type="button" class="btn btn-sm btn-danger rounded-lg shadow-sm border-0 remove-work-row">
+                                <i class="fas fa-trash mr-1"></i> Hapus
+                            </button>
+                        </div>
+                        ` : ''}
+                        <input type="hidden" class="work-id" value="${work.id}">
+                    `;
+
+                    container.appendChild(workRow);
+
+                    if (appState.mode !== 'detail') {
+                        setupWorkRowListeners(workRow);
+                    }
+                });
+
+            }
+        } else {
+            const container = document.getElementById('workRowsContainer');
+            if (appState.mode === 'detail') {
+                if (container) {
+                    container.innerHTML = `<div class="text-red font-weight-bold">* Belum ada bukti yang diupload</div>`;
+                    return;
+                }
+            }
+
+            // Add one default work row if no existing data
             if (container && container.children.length === 0) {
                 const index = 0;
                 const workRow = document.createElement('div');
@@ -1951,7 +1916,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Gambar Sebelum</label>
+                            <label>Sebelum</label>
                             <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
                                 <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
                                 <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
@@ -2151,17 +2116,10 @@
         if (previewElement) {
             previewElement.remove();
         }
-
-        // report.entity.evidence.dom.imageError.style.display = report.entity.evidence.data.length > 5 ? 'block' : 'none';
     }
 
     function handleFormSubmit(e) {
         e.preventDefault();
-
-        if (appState.evidence.files.length === 0) {
-            showError('Harap unggah setidaknya satu gambar bukti.');
-            return;
-        }
 
         const formData = new FormData();
 
@@ -2183,13 +2141,56 @@
             formData.append('description', domCache.form.item.description.input.value);
         }
 
-        appState.evidence.files.forEach((file, index) => {
-            if (file instanceof File) {
-                formData.append(`evidence_files[${index}]`, file);
-            }
-        });
+        if (appState.mode === 'create' || (appState.mode === 'edit' && appState.reportData.status === 'Approved')) {
+            // Collect work data from DOM
+            const workRows = document.querySelectorAll('.work-row');
+            const workData = [];
 
-        formData.append('deleted_evidence_files', JSON.stringify(appState.evidence.deletedIds));
+            workRows.forEach((row, index) => {
+                let workId = row.querySelector('.work-id').value;
+                let workItem = {
+                    id: workId || null,
+                }
+
+                if (appState.mode === 'create' || (appState.mode === 'edit' && appState.reportData.status === 'Pending')) {
+                    if (!row.fileBefore || row.fileBefore instanceof File === false) {
+                        return;
+                    }
+
+                    let descBefore = row.querySelector('.work-desc-before').value;
+                    let fileBefore = row.fileBefore;
+
+                    workItem.description_before = descBefore;
+
+                    if (fileBefore instanceof File) {
+                        formData.append(`work_image_before[${index}]`, fileBefore);
+                    }
+                } else if (appState.mode === 'edit') {
+                    if (!row.fileAfter || row.fileAfter instanceof File === false) {
+                        return;
+                    }
+
+                    let descAfter = row.querySelector('.work-desc-after').value;
+                    let fileAfter = row.fileAfter;
+
+                    workItem.description_after = descAfter;
+
+                    if (fileAfter instanceof File) {
+                        formData.append(`work_image_after[${index}]`, fileAfter);
+                    }
+                }
+
+                workData.push(workItem);
+            });
+
+            if (workData.length === 0) {
+                toastr.error("Mohon tambahkan minimal satu bukti pekerjaan.");
+                return;
+            }
+
+            // Append work data as JSON
+            formData.append('work_data', JSON.stringify(workData));
+        }
 
         if (appState.mode === 'edit') {
             if (appState.userRole === 'pelapor' && appState.reportData.status === 'Pending') {
@@ -2251,39 +2252,6 @@
 
                 formData.append('delete_manager_payment_file', appState.manager.deleted);
             }
-
-            // Collect work data from DOM
-            const workRows = document.querySelectorAll('.work-row');
-            const workData = [];
-
-            workRows.forEach((row, index) => {
-                const workId = row.querySelector('.work-id').value;
-                const descBefore = row.querySelector('.work-desc-before').value;
-                const descAfter = row.querySelector('.work-desc-after').value;
-                const fileBefore = row.fileBefore;
-                const fileAfter = row.fileAfter;
-
-                const workItem = {
-                    id: workId || null,
-                    description_before: descBefore,
-                    description_after: descAfter
-                };
-
-                // Append files if they exist
-                if (fileBefore instanceof File) {
-                    formData.append(`work_image_before[${index}]`, fileBefore);
-                }
-                if (fileAfter instanceof File) {
-                    formData.append(`work_image_after[${index}]`, fileAfter);
-                }
-
-                workData.push(workItem);
-            });
-
-            // Append work data as JSON
-            formData.append('work_data', JSON.stringify(workData));
-
-            // formData.append('deleted_work_files', JSON.stringify(appState.work.deletedIds));
         }
 
         submitFormData(formData);
@@ -2338,10 +2306,8 @@
 
     function resetForm() {
         domCache.form.name.reset();
-        appState.evidence.files = [];
-        appState.evidence.deletedIds = [];
-        domCache.form.item.evidence.preview.innerHTML = '';
-        domCache.form.item.evidence.error.style.display = 'none';
+        appState.work.files = [];
+        appState.work.deletedIds = [];
     }
 
     function updateFileUI(fileNameElement, removeBtn, selectBtn, file) {
@@ -2542,7 +2508,11 @@
         const dropzoneBefore = workRow.querySelector('.work-dropzone-before');
         const fileInputBefore = workRow.querySelector('.work-file-before');
 
-        dropzoneBefore.addEventListener('click', () => fileInputBefore.click());
+        dropzoneBefore.addEventListener('click', (e) => {
+            if (e.target === dropzoneBefore || e.target.tagName === 'P') {
+                fileInputBefore.click();
+            }
+        });
         dropzoneBefore.addEventListener('dragover', handleDragOver);
         dropzoneBefore.addEventListener('dragleave', handleDragLeave);
         dropzoneBefore.addEventListener('drop', (e) => handleWorkImageDrop(e, workRow, 'before'));
@@ -2552,7 +2522,15 @@
         const dropzoneAfter = workRow.querySelector('.work-dropzone-after');
         const fileInputAfter = workRow.querySelector('.work-file-after');
 
-        dropzoneAfter.addEventListener('click', () => fileInputAfter.click());
+        if (!dropzoneAfter || !fileInputAfter) {
+            return;
+        }
+
+        dropzoneAfter.addEventListener('click', (e) => {
+            if (e.target === dropzoneAfter || e.target.tagName === 'P') {
+                fileInputAfter.click();
+            }
+        });
         dropzoneAfter.addEventListener('dragover', handleDragOver);
         dropzoneAfter.addEventListener('dragleave', handleDragLeave);
         dropzoneAfter.addEventListener('drop', (e) => handleWorkImageDrop(e, workRow, 'after'));
@@ -2597,7 +2575,7 @@
         const reader = new FileReader();
         reader.onload = (e) => {
             const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item-full';
+            previewItem.className = 'preview-item-full split';
 
             const img = document.createElement('img');
             img.src = e.target.result;
