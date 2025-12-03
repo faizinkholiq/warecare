@@ -853,10 +853,14 @@ class Report extends MY_Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
+        // Check if user is manager to show RAB columns
+        $is_manager = ($this->auth_lib->role() === 'manager');
+
         // Set title if provided
         if (!empty($title)) {
+            $columnCount = $is_manager ? 14 : 11;
             $sheet->setCellValue('A1', $title);
-            $sheet->mergeCells('A1:' . getColumnLetter(count($data[0])) . '1');
+            $sheet->mergeCells('A1:' . getColumnLetter($columnCount) . '1');
             $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $startRow = 3;
@@ -877,13 +881,21 @@ class Report extends MY_Controller
                 'Nama Perusahaan',
                 'Kategori Pengaduan',
                 'Uraian',
-                'Sub Uraian',
-                'RAB Kontraktor',
-                'RAB Final',
-                'RAB Customer',
+                'Sub Uraian'
+            ];
+
+            if ($is_manager) {
+                $headers = array_merge($headers, [
+                    'RAB Kontraktor',
+                    'RAB Final',
+                    'RAB Customer'
+                ]);
+            }
+
+            $headers = array_merge($headers, [
                 'Status Pengajuan',
                 'Pelapor'
-            ];
+            ]);
 
             $columnWidths = [
                 'A' => 20, // No. Pengaduan
@@ -895,12 +907,18 @@ class Report extends MY_Controller
                 'G' => 20, // Kategori Pengaduan
                 'H' => 30, // Uraian
                 'I' => 30, // Sub Uraian
-                'J' => 18, // RAB Kontraktor
-                'K' => 15, // RAB Final
-                'L' => 18, // RAB Customer
-                'M' => 18, // Status Pengajuan
-                'N' => 20  // Pelapor
             ];
+
+            if ($is_manager) {
+                $columnWidths['J'] = 18; // RAB Kontraktor
+                $columnWidths['K'] = 15; // RAB Final
+                $columnWidths['L'] = 18; // RAB Customer
+                $columnWidths['M'] = 18; // Status Pengajuan
+                $columnWidths['N'] = 20; // Pelapor
+            } else {
+                $columnWidths['J'] = 18; // Status Pengajuan
+                $columnWidths['K'] = 20; // Pelapor
+            }
 
             foreach ($headers as $header) {
                 $sheet->setCellValue($column . $startRow, ucwords(str_replace('_', ' ', $header)));
@@ -921,7 +939,6 @@ class Report extends MY_Controller
 
                 $column++;
             }
-
 
             // Add data rows
             $row = $startRow + 1;
@@ -975,18 +992,22 @@ class Report extends MY_Controller
                                 $sheet->getStyle($column . $row)->getBorders()
                                     ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                                 $column++;
-                                $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
-                                $sheet->getStyle($column . $row)->getBorders()
-                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                                $column++;
-                                $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
-                                $sheet->getStyle($column . $row)->getBorders()
-                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                                $column++;
-                                $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
-                                $sheet->getStyle($column . $row)->getBorders()
-                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                                $column++;
+
+                                if ($is_manager) {
+                                    $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
+                                    $sheet->getStyle($column . $row)->getBorders()
+                                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                    $column++;
+                                    $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
+                                    $sheet->getStyle($column . $row)->getBorders()
+                                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                    $column++;
+                                    $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
+                                    $sheet->getStyle($column . $row)->getBorders()
+                                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                    $column++;
+                                }
+
                                 $sheet->setCellValue($column . $row, $item['status']);
                                 $sheet->getStyle($column . $row)->getBorders()
                                     ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -1046,18 +1067,22 @@ class Report extends MY_Controller
                             $sheet->getStyle($column . $row)->getBorders()
                                 ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                             $column++;
-                            $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
-                            $sheet->getStyle($column . $row)->getBorders()
-                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                            $column++;
-                            $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
-                            $sheet->getStyle($column . $row)->getBorders()
-                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                            $column++;
-                            $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
-                            $sheet->getStyle($column . $row)->getBorders()
-                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                            $column++;
+
+                            if ($is_manager) {
+                                $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                            }
+
                             $sheet->setCellValue($column . $row, $item['status']);
                             $sheet->getStyle($column . $row)->getBorders()
                                 ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -1109,18 +1134,22 @@ class Report extends MY_Controller
                     $sheet->getStyle($column . $row)->getBorders()
                         ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                     $column++;
-                    $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
-                    $sheet->getStyle($column . $row)->getBorders()
-                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                    $column++;
-                    $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
-                    $sheet->getStyle($column . $row)->getBorders()
-                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                    $column++;
-                    $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
-                    $sheet->getStyle($column . $row)->getBorders()
-                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-                    $column++;
+
+                    if ($is_manager) {
+                        $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
+                        $sheet->getStyle($column . $row)->getBorders()
+                            ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                        $column++;
+                        $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
+                        $sheet->getStyle($column . $row)->getBorders()
+                            ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                        $column++;
+                        $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
+                        $sheet->getStyle($column . $row)->getBorders()
+                            ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                        $column++;
+                    }
+
                     $sheet->setCellValue($column . $row, $item['status']);
                     $sheet->getStyle($column . $row)->getBorders()
                         ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -1178,35 +1207,49 @@ class Report extends MY_Controller
                         ->setVertical(Alignment::VERTICAL_CENTER)
                         ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                    // Merge RAB (Column J)
-                    $sheet->mergeCells('J' . $rowStart . ':J' . $rowEnd);
-                    $sheet->getStyle('J' . $rowStart . ':J' . $rowEnd)->getAlignment()
-                        ->setVertical(Alignment::VERTICAL_CENTER)
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    if ($is_manager) {
+                        // Merge RAB (Column J)
+                        $sheet->mergeCells('J' . $rowStart . ':J' . $rowEnd);
+                        $sheet->getStyle('J' . $rowStart . ':J' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                    // Merge RAB Final (Column K)
-                    $sheet->mergeCells('K' . $rowStart . ':K' . $rowEnd);
-                    $sheet->getStyle('K' . $rowStart . ':K' . $rowEnd)->getAlignment()
-                        ->setVertical(Alignment::VERTICAL_CENTER)
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        // Merge RAB Final (Column K)
+                        $sheet->mergeCells('K' . $rowStart . ':K' . $rowEnd);
+                        $sheet->getStyle('K' . $rowStart . ':K' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                    // Merge RAB Customer (Column L)
-                    $sheet->mergeCells('L' . $rowStart . ':L' . $rowEnd);
-                    $sheet->getStyle('L' . $rowStart . ':L' . $rowEnd)->getAlignment()
-                        ->setVertical(Alignment::VERTICAL_CENTER)
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        // Merge RAB Customer (Column L)
+                        $sheet->mergeCells('L' . $rowStart . ':L' . $rowEnd);
+                        $sheet->getStyle('L' . $rowStart . ':L' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                    // Merge Status (Column M)
-                    $sheet->mergeCells('M' . $rowStart . ':M' . $rowEnd);
-                    $sheet->getStyle('M' . $rowStart . ':M' . $rowEnd)->getAlignment()
-                        ->setVertical(Alignment::VERTICAL_CENTER)
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        // Merge Status (Column M)
+                        $sheet->mergeCells('M' . $rowStart . ':M' . $rowEnd);
+                        $sheet->getStyle('M' . $rowStart . ':M' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                    // Merge Created By (Column N)
-                    $sheet->mergeCells('N' . $rowStart . ':N' . $rowEnd);
-                    $sheet->getStyle('N' . $rowStart . ':N' . $rowEnd)->getAlignment()
-                        ->setVertical(Alignment::VERTICAL_CENTER)
-                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        // Merge Created By (Column N)
+                        $sheet->mergeCells('N' . $rowStart . ':N' . $rowEnd);
+                        $sheet->getStyle('N' . $rowStart . ':N' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    } else {
+                        // Merge Status (Column J for non-manager)
+                        $sheet->mergeCells('J' . $rowStart . ':J' . $rowEnd);
+                        $sheet->getStyle('J' . $rowStart . ':J' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                        // Merge Created By (Column K for non-manager)
+                        $sheet->mergeCells('K' . $rowStart . ':K' . $rowEnd);
+                        $sheet->getStyle('K' . $rowStart . ':K' . $rowEnd)->getAlignment()
+                            ->setVertical(Alignment::VERTICAL_CENTER)
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    }
                 }
             }
 
