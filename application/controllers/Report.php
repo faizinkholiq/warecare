@@ -1,5 +1,12 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
 class Report extends MY_Controller
 {
     private $CATEGORY_WITH_DETAIL = [1, 2, 3, 4, 5];
@@ -720,7 +727,7 @@ class Report extends MY_Controller
         }
 
         if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-            $report["details"] = $this->Report_model->get_details_by_report($id);
+            $report["details"] = $this->Report_model->get_details_by_report($id, false);
         }
 
         $pdf = new Pdf();
@@ -759,7 +766,7 @@ class Report extends MY_Controller
 
         foreach ($reports as $key => $report) {
             if (in_array($report['category_id'], $this->CATEGORY_WITH_DETAIL)) {
-                $reports[$key]["details"] = $this->Report_model->get_details_by_report($report['id']);
+                $reports[$key]["details"] = $this->Report_model->get_details_by_report($report['id'], false);
             }
         }
 
@@ -806,6 +813,9 @@ class Report extends MY_Controller
 
     private function export_excel()
     {
+        $filename = 'report_export_' . date('Ymd_His');;
+        $title = 'Laporan Pengaduan';
+
         $params["columns"] = $this->input->get("columns");
         $params["search"] = $this->input->get("search");
         $params["draw"] = $this->input->get("draw");
@@ -829,15 +839,391 @@ class Report extends MY_Controller
             $params['rab_only'] = true;
         }
 
-        $reports = $this->Report_model->get_list_export($params);
-        if (empty($reports)) {
+        $data = $this->Report_model->get_list_export($params);
+        if (empty($data)) {
             $this->session->set_flashdata('error', 'No data available for export.');
             redirect('report');
         }
 
-        if (!export_excel($reports, 'report_export_' . date('Y-m-d_H-i-s'), 'Pengaduan Export')) {
-            $this->session->set_flashdata('error', 'Failed to export report.');
-            redirect('report');
+        if (empty($data) || !is_array($data)) {
+            return;
         }
+
+        // Create new Spreadsheet object
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set title if provided
+        if (!empty($title)) {
+            $sheet->setCellValue('A1', $title);
+            $sheet->mergeCells('A1:' . getColumnLetter(count($data[0])) . '1');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $startRow = 3;
+        } else {
+            $startRow = 1;
+        }
+
+        // Add headers
+        if (!empty($data)) {
+            $column = 'A';
+
+            $headers = [
+                'No. Pengaduan',
+                'Entity',
+                'Project',
+                'Tgl. Pengaduan',
+                'No Gudang',
+                'Nama Perusahaan',
+                'Kategori Pengaduan',
+                'Uraian',
+                'Sub Uraian',
+                'RAB Kontraktor',
+                'RAB Final',
+                'RAB Customer',
+                'Status Pengajuan',
+                'Pelapor'
+            ];
+
+            $columnWidths = [
+                'A' => 20, // No. Pengaduan
+                'B' => 15, // Entity
+                'C' => 15, // Project
+                'D' => 18, // Tgl. Pengaduan
+                'E' => 18, // No Gudang
+                'F' => 25, // Nama Perusahaan
+                'G' => 20, // Kategori Pengaduan
+                'H' => 30, // Uraian
+                'I' => 30, // Sub Uraian
+                'J' => 18, // RAB Kontraktor
+                'K' => 15, // RAB Final
+                'L' => 18, // RAB Customer
+                'M' => 18, // Status Pengajuan
+                'N' => 20  // Pelapor
+            ];
+
+            foreach ($headers as $header) {
+                $sheet->setCellValue($column . $startRow, ucwords(str_replace('_', ' ', $header)));
+                $sheet->getStyle($column . $startRow)->getFont()->setBold(true);
+                $sheet->getStyle($column . $startRow)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFE0E0E0');
+                $sheet->getStyle($column . $startRow)->getBorders()
+                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                $sheet->getStyle($column . $startRow)->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                    ->setVertical(Alignment::VERTICAL_CENTER);
+
+                // Set custom column width
+                if (isset($columnWidths[$column])) {
+                    $sheet->getColumnDimension($column)->setWidth($columnWidths[$column]);
+                }
+
+                $column++;
+            }
+
+
+            // Add data rows
+            $row = $startRow + 1;
+            $mergedRows = []; // Track which cells are merged for each report
+
+            foreach ($data as $item) {
+                $rowStart = $row; // Track the starting row for this report
+
+                $details = $this->Report_model->get_parent_detail_by_report($item['id']);
+                if (!empty($details)) {
+                    foreach ($details as $detail_item) {
+                        $detail_row_start = $row; // Track starting row for this detail item
+                        $sub_details = $this->Report_model->get_sub_detail_by_parent($detail_item['id']);
+                        if (!empty($sub_details)) {
+                            foreach ($sub_details as $sub_detail_item) {
+                                $column = 'A';
+
+                                $sheet->setCellValue($column . $row, $item['no']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['entity']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['project']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['created_at']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['warehouse']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['company']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['category']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $detail_item['description']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $sub_detail_item['description']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['status']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+                                $sheet->setCellValue($column . $row, $item['created_by']);
+                                $sheet->getStyle($column . $row)->getBorders()
+                                    ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                                $column++;
+
+                                $row++;
+                            }
+
+                            // Merge column H (Uraian) for this detail item
+                            $detail_row_end = $row - 1;
+                            if ($detail_row_end > $detail_row_start) {
+                                $sheet->mergeCells('H' . $detail_row_start . ':H' . $detail_row_end);
+                                $sheet->getStyle('H' . $detail_row_start . ':H' . $detail_row_end)->getAlignment()
+                                    ->setVertical(Alignment::VERTICAL_CENTER)
+                                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                            }
+                        } else {
+                            $column = 'A';
+
+                            $sheet->setCellValue($column . $row, $item['no']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['entity']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['project']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['created_at']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['warehouse']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['company']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['category']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $detail_item['description']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, '');
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['status']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+                            $sheet->setCellValue($column . $row, $item['created_by']);
+                            $sheet->getStyle($column . $row)->getBorders()
+                                ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $column++;
+
+                            $row++;
+                        }
+                    }
+                } else {
+                    $column = 'A';
+
+                    $sheet->setCellValue($column . $row, $item['no']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['entity']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['project']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['created_at']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['warehouse']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['company']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['category']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, '');
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, '');
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, number_format($item['rab'], 0, ',', '.'));
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, number_format($item['rab_final'], 0, ',', '.'));
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, number_format($item['rab_customer'], 0, ',', '.'));
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['status']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+                    $sheet->setCellValue($column . $row, $item['created_by']);
+                    $sheet->getStyle($column . $row)->getBorders()
+                        ->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    $column++;
+
+                    $row++;
+                }
+
+                // Merge cells for this report if it spans multiple rows
+                $rowEnd = $row - 1;
+                if ($rowEnd > $rowStart) {
+                    // Merge No. Pengaduan (Column A)
+                    $sheet->mergeCells('A' . $rowStart . ':A' . $rowEnd);
+                    $sheet->getStyle('A' . $rowStart . ':A' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Entity (Column B)
+                    $sheet->mergeCells('B' . $rowStart . ':B' . $rowEnd);
+                    $sheet->getStyle('B' . $rowStart . ':B' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Project (Column C)
+                    $sheet->mergeCells('C' . $rowStart . ':C' . $rowEnd);
+                    $sheet->getStyle('C' . $rowStart . ':C' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Project (Column D)
+                    $sheet->mergeCells('D' . $rowStart . ':D' . $rowEnd);
+                    $sheet->getStyle('D' . $rowStart . ':D' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Warehouse (Column E)
+                    $sheet->mergeCells('E' . $rowStart . ':E' . $rowEnd);
+                    $sheet->getStyle('E' . $rowStart . ':E' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Company (Column F)
+                    $sheet->mergeCells('F' . $rowStart . ':F' . $rowEnd);
+                    $sheet->getStyle('F' . $rowStart . ':F' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Category (Column G)
+                    $sheet->mergeCells('G' . $rowStart . ':G' . $rowEnd);
+                    $sheet->getStyle('G' . $rowStart . ':G' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge RAB (Column J)
+                    $sheet->mergeCells('J' . $rowStart . ':J' . $rowEnd);
+                    $sheet->getStyle('J' . $rowStart . ':J' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge RAB Final (Column K)
+                    $sheet->mergeCells('K' . $rowStart . ':K' . $rowEnd);
+                    $sheet->getStyle('K' . $rowStart . ':K' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge RAB Customer (Column L)
+                    $sheet->mergeCells('L' . $rowStart . ':L' . $rowEnd);
+                    $sheet->getStyle('L' . $rowStart . ':L' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Status (Column M)
+                    $sheet->mergeCells('M' . $rowStart . ':M' . $rowEnd);
+                    $sheet->getStyle('M' . $rowStart . ':M' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                    // Merge Created By (Column N)
+                    $sheet->mergeCells('N' . $rowStart . ':N' . $rowEnd);
+                    $sheet->getStyle('N' . $rowStart . ':N' . $rowEnd)->getAlignment()
+                        ->setVertical(Alignment::VERTICAL_CENTER)
+                        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                }
+            }
+
+            // Auto size columns
+            $lastColumn = $sheet->getHighestColumn();
+            for ($col = 'A'; $col <= $lastColumn; $col++) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+        }
+
+        // Set headers for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        // Create writer and output
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
     }
 }

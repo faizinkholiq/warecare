@@ -207,24 +207,29 @@ class Report_model extends CI_Model
 
         // Base query
         $this->db->select([
-            'report.no AS no_pengaduan',
+            'report.id',
+            'report.no',
             'entity.name AS entity',
             'project.name AS project',
-            'report.created_at AS tgl_pengaduan',
-            'warehouse.name AS no_gudang',
-            'company.name AS nama_perusahaan',
-            'category.name AS kategori_pengaduan',
+            'warehouse.name AS warehouse',
+            'company.name AS company',
+            'category.name AS category',
             'CASE 
                 WHEN report.status = "On Process" THEN CONCAT(report.status, "(", CONCAT_WS(" ", processed_by.first_name, processed_by.last_name), ")")
                 WHEN report.status = "Approved" THEN CONCAT(report.status, "(", CONCAT_WS(" ", approved_by.first_name, approved_by.last_name), ")")
                 WHEN report.status = "Completed" THEN CONCAT(report.status, "(", CONCAT_WS(" ", completed_by.first_name, completed_by.last_name), ")")
                 WHEN report.status = "Rejected" THEN CONCAT(report.status, "(", CONCAT_WS(" ", rejected_by.first_name, rejected_by.last_name), ")")
                 ELSE report.status
-            END AS status_pengajuan',
-            'CONCAT_WS(" ", created_by.first_name, created_by.last_name) AS pelapor',
+                END AS status',
+            'report.created_at',
+            'CONCAT_WS(" ", created_by.first_name, created_by.last_name) AS created_by',
+            'report_rab.budget AS rab',
+            'report_rab.final_budget AS rab_final',
+            'report_manager.bill AS rab_customer',
         ])
             ->from('report')
             ->join('report_rab', 'report_rab.report_id = report.id', 'left')
+            ->join('report_manager', 'report_manager.report_id = report.id', 'left')
             ->join('entity', 'entity.id = report.entity_id', 'left')
             ->join('project', 'project.id = report.project_id', 'left')
             ->join('warehouse', 'warehouse.id = report.warehouse_id', 'left')
@@ -245,8 +250,6 @@ class Report_model extends CI_Model
         }
 
         $this->db->group_by('report.id');
-
-
         return $this->db->get()->result_array();
     }
 
@@ -510,5 +513,16 @@ class Report_model extends CI_Model
     public function get_works_pairs_by_report($report_id)
     {
         return $this->db->order_by('id')->get_where('report_works', ['report_id' => $report_id])->result_array();
+    }
+
+    public function get_parent_detail_by_report($id)
+    {
+        return $this->db->get_where('report_details', ['report_id' => $id, 'level' => 1])->result_array();
+    }
+
+
+    public function get_sub_detail_by_parent($id)
+    {
+        return $this->db->get_where('report_details', ['parent_id' => $id])->result_array();
     }
 }
