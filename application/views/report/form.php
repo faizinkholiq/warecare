@@ -1903,56 +1903,53 @@
             }
         } else {
             const container = document.getElementById('workRowsContainer');
-            if (appState.mode === 'detail') {
-                if (container) {
+            if (container) {
+                if (appState.mode === 'detail') {
                     container.innerHTML = `<div class="text-red font-weight-bold mb-4">* Belum ada bukti yang diupload</div>`;
-                    return;
+                } else {
+                    // Add one default work row if no existing data
+                    const index = 0;
+                    const workRow = document.createElement('div');
+                    workRow.className = 'work-row border rounded-lg p-3 mb-3';
+                    workRow.dataset.index = index;
+
+                    workRow.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Sebelum</label>
+                                    <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
+                                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                        <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                        <input type="file" class="file-input work-file-before" accept="image/*">
+                                        <div class="preview-container work-preview-before"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Sesudah</label>
+                                    <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
+                                        <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
+                                        <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
+                                        <input type="file" class="file-input work-file-after" accept="image/*">
+                                        <div class="preview-container work-preview-after"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" class="work-id" value="">
+                    `;
+
+                    container.appendChild(workRow);
+                    setupWorkRowListeners(workRow);
                 }
-            }
-
-            // Add one default work row if no existing data
-            if (container && container.children.length === 0) {
-                const index = 0;
-                const workRow = document.createElement('div');
-                workRow.className = 'work-row border rounded-lg p-3 mb-3';
-                workRow.dataset.index = index;
-
-                workRow.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Sebelum</label>
-                            <div class="dropzone work-dropzone-before" data-type="before" data-index="${index}">
-                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                                <input type="file" class="file-input work-file-before" accept="image/*">
-                                <div class="preview-container work-preview-before"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control work-desc-before" placeholder="Keterangan sebelum">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Sesudah</label>
-                            <div class="dropzone work-dropzone-after" data-type="after" data-index="${index}">
-                                <p class="font-weight-bold text-gray"><i class="fa fa-upload mr-1"></i> Drag & drop atau klik</p>
-                                <p class="small text-muted">Format: JPG, PNG, GIF. Max 2MB</p>
-                                <input type="file" class="file-input work-file-after" accept="image/*">
-                                <div class="preview-container work-preview-after"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" class="form-control work-desc-after" placeholder="Keterangan sesudah">
-                        </div>
-                    </div>
-                </div>
-                <input type="hidden" class="work-id" value="">
-            `;
-
-                container.appendChild(workRow);
-                setupWorkRowListeners(workRow);
             }
         }
 
