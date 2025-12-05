@@ -1905,7 +1905,7 @@
             const container = document.getElementById('workRowsContainer');
             if (appState.mode === 'detail') {
                 if (container) {
-                    container.innerHTML = `<div class="text-red font-weight-bold">* Belum ada bukti yang diupload</div>`;
+                    container.innerHTML = `<div class="text-red font-weight-bold mb-4">* Belum ada bukti yang diupload</div>`;
                     return;
                 }
             }
