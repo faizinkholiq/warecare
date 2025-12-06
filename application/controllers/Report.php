@@ -148,11 +148,12 @@ class Report extends MY_Controller
 
             $details = !empty($this->input->post('details')) ? json_decode($this->input->post('details'), true) : [];
             if (!empty($details)) {
+                $parent_id = null;
                 foreach ($details as $item) {
                     $item_data = [
                         'report_id' => $report_id,
                         'level' => $item['level'],
-                        'parent_id' => $item['parent_id'] ?? null,
+                        'parent_id' => $item['level'] == 2 ? $parent_id ?? null : null,
                         'no' => $item['no'],
                         'description' => $item['description'],
                         'status' => $item['level'] == 2 ? $item['status'] : null,
@@ -160,7 +161,11 @@ class Report extends MY_Controller
                         'information' => $item['level'] == 2 ? $item['information'] : null,
                         'is_show' => 0,
                     ];
-                    $this->Report_model->add_detail($item_data);
+
+                    $detail_id = $this->Report_model->add_detail($item_data);
+                    if ($item['level'] == 1) {
+                        $parent_id = $detail_id;
+                    }
                 }
             }
 
@@ -1060,7 +1065,7 @@ class Report extends MY_Controller
                             if ($detail_row_end > $detail_row_start) {
                                 $sheet->mergeCells('H' . $detail_row_start . ':H' . $detail_row_end);
                                 $sheet->getStyle('H' . $detail_row_start . ':H' . $detail_row_end)->getAlignment()
-                                    ->setVertical(Alignment::VERTICAL_CENTER)
+                                    ->setVertical(Alignment::VERTICAL_TOP)
                                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                             }
                         } else {
