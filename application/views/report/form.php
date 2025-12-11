@@ -340,8 +340,10 @@
                             <button
                                 type="button"
                                 onclick="showWarehouses()"
+                                id="reportSelectCompanyBtn"
                                 class="btn btn-default border-0 shadow-sm rounded-lg font-weight-bold text-navy ml-2"
-                                style="width:200px;">
+                                style="width:200px;"
+                                <?= isset($report) && $report['project_id'] ? '' : 'disabled=""' ?>>
                                 <i class="fas fa-caret-down mr-1"></i> Pilih Perusahaan
                             </button>
                         <?php endif ?>
@@ -995,6 +997,7 @@
                 company: {
                     id: document.getElementById('reportCompanyID'),
                     name: document.getElementById('reportCompany'),
+                    select: document.getElementById('reportSelectCompanyBtn'),
                 },
                 warehouse: {
                     id: document.getElementById('reportWarehouseID'),
@@ -1331,6 +1334,7 @@
 
             if (domCache.form.item.project) {
                 domCache.form.item.project.addEventListener('change', (e) => {
+                    domCache.form.item.company.select.disabled = !e.target.value;
                     domCache.form.item.company.id.value = '';
                     domCache.form.item.company.name.value = '';
                     domCache.form.item.warehouse.id.value = '';
