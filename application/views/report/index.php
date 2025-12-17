@@ -219,30 +219,35 @@
                     targets: 2
                 },
                 {
+                    name: "entity",
                     data: "entity",
                     width: "8%",
                     className: "align-middle",
                     targets: 3
                 },
                 {
+                    name: "project",
                     data: "project",
                     width: "8%",
                     className: "align-middle",
                     targets: 4
                 },
                 {
+                    name: "created_at",
                     data: "created_at",
                     width: "10%",
                     className: "align-middle",
                     targets: 5
                 },
                 {
+                    name: "warehouse",
                     data: "warehouse",
                     width: "10%",
                     className: "align-middle",
                     targets: 6
                 },
                 {
+                    name: "company",
                     data: "company",
                     width: "15%",
                     className: "align-middle",
@@ -289,6 +294,7 @@
                     targets: 9
                 },
                 {
+                    name: "created_by",
                     data: "created_by",
                     visible: (appState.userRole === 'pelapor') ? false : true,
                     width: "7%",
@@ -458,12 +464,12 @@
 
                         $('#categoryFilter').on('change', function() {
                             var category = $(this).val();
-                            table.column(9).search(category).draw();
+                            table.column(8).search(category).draw();
                         });
 
                         $('#statusFilter').on('change', function() {
                             var status = $(this).val();
-                            table.column(10).search(status).draw();
+                            table.column(9).search(status).draw();
                         });
 
                         $('#clearFilters').on('click', function() {

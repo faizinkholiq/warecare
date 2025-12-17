@@ -38,14 +38,17 @@ class Report_model extends CI_Model
             foreach ($columns as $column) {
                 if (!empty($column['search']['value'])) {
                     switch ($column['name']) {
-                        case 'status':
-                            $this->db->where('report.status', $column['search']['value']);
+                        case 'entity':
+                            $this->db->where('entity.name', $column['search']['value']);
                             break;
                         case 'category':
                             $this->db->where('category_id', $column['search']['value']);
                             break;
+                        case 'status':
+                            $this->db->where('report.status', $column['search']['value']);
+                            break;
                         default:
-                            $this->db->like($column['name'], $column['search']['value']);
+                            $this->db->like($column['name'], $column['search']['value'], 'both');
                     }
                 }
             }
@@ -61,7 +64,8 @@ class Report_model extends CI_Model
                 "company.name",
                 "category.name",
                 "report.status",
-                "report.created_at"
+                "report.created_at",
+                "CONCAT_WS(' ', created_by.first_name, created_by.last_name)",
             ];
 
             $search_terms = explode(" ", $search["value"]);
