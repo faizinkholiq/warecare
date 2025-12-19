@@ -529,4 +529,16 @@ class Report_model extends CI_Model
     {
         return $this->db->get_where('report_details', ['parent_id' => $id])->result_array();
     }
+
+
+    public function get_details($id)
+    {
+        return $this->db->get_where('report_details', ['id' => $id])->row_array();
+    }
+
+
+    public function update_details($id, $data)
+    {
+        return $this->db->where('id', $id)->update('report_details', $data);
+    }
 }

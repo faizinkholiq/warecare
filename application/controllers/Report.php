@@ -604,6 +604,41 @@ class Report extends MY_Controller
         ]);
     }
 
+    public function set_detail_show($id)
+    {
+        $data = [
+            'is_show' => (int)$this->input->post('is_show')
+        ];
+
+        $details = $this->Report_model->get_details($id);
+        if (!$details) {
+            $this->session->set_flashdata('error', 'Detail not found');
+            $this->output->set_status_header(404);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Detail not found.',
+            ]);
+            return;
+        }
+
+        if (!$this->Report_model->update_details($id, $data)) {
+            $this->session->set_flashdata('error', 'Failed to update detail');
+            $this->output->set_status_header(500);
+            echo json_encode([
+                "success" => false,
+                "error" => "Failed to update detail"
+            ]);
+            return;
+        }
+
+        $this->session->set_flashdata('success', 'Detail updated successfully');
+        $this->output->set_status_header(200);
+        echo json_encode([
+            "success" => true,
+            "message" => "Detail updated successfully"
+        ]);
+    }
+
     private function handle_bulk_upload_files($files, $suffix = 'my_file')
     {
         $config['upload_path'] = './uploads/';

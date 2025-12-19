@@ -986,6 +986,7 @@
         edit: "<?= site_url('report/edit') ?>",
         reject: "<?= site_url('report/reject') ?>",
         get_warehouses: "<?= site_url('warehouse/get_list') ?>",
+        set_detail_show: "<?= site_url('report/set_detail_show') ?>",
     };
 
     const domCache = {
@@ -1167,8 +1168,8 @@
                 visible: appState.userRole === 'manager',
                 render: function(data, type, row) {
                     const checked = data === '1' ? 'checked' : '';
-                    const disabled = appState.mode === 'detail' ? 'disabled' : '';
-                    return `<input type="checkbox" class="show-checkbox" data-id="${row.id}" ${checked} ${disabled}>`;
+                    // const disabled = appState.mode === 'detail' ? 'disabled' : '';
+                    return `<input type="checkbox" class="show-checkbox" data-id="${row.id}" ${checked}>`;
                 },
                 targets: 6
             },
@@ -1791,6 +1792,30 @@
                     // Clear file reference
                     delete workRow[`file${capitalizeFirst(type)}`];
                 }
+            });
+        } else {
+            $('#reportDetailTable').on('change', '.show-checkbox', function(e) {
+                const detailId = this.getAttribute('data-id');
+
+                const formData = new FormData();
+                formData.append('is_show', this.checked ? '1' : '0');
+
+                fetch(URLS.set_detail_show + "/" + detailId, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            toastr.success('Status tampil berhasil diperbarui.');
+                        } else {
+                            toastr.error('Gagal memperbarui status tampil.');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        toastr.error('Terjadi kesalahan saat memperbarui status tampil.');
+                    });
             });
         }
     }
