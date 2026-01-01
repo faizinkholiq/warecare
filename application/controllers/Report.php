@@ -864,6 +864,9 @@ class Report extends MY_Controller
         $params['rab_only'] = false;
         $params["start_date"] = $this->input->get("start_date");
         $params["end_date"] = $this->input->get("end_date");
+        $params["category"] = $this->input->get("category");
+        $params["entity"] = $this->input->get("entity");
+        $params["status"] = $this->input->get("status");
 
         if (!empty($params["start_date"])) {
             $params["start_date"] = date('Y-m-d', strtotime($params["start_date"]));

@@ -481,7 +481,26 @@
                         });
 
                         $('#exportExcel').on('click', function() {
-                            window.open(urls.export_excel, '_blank')
+                            var params = new URLSearchParams();
+
+                            var startDate = $('#startDate').val();
+                            var endDate = $('#endDate').val();
+                            var entity = $('#entityFilter').val();
+                            var category = $('#categoryFilter').val();
+                            var status = $('#statusFilter').val();
+                            var search = $('.dataTables_filter input').val();
+
+                            if (startDate) params.append('start_date', startDate);
+                            if (endDate) params.append('end_date', endDate);
+                            if (entity) params.append('entity', entity);
+                            if (category) params.append('category', category);
+                            if (status) params.append('status', status);
+                            if (search) params.append('search', search);
+
+                            var queryString = params.toString();
+                            var url = urls.export_excel + (queryString ? '&' + queryString : '');
+
+                            window.open(url, '_blank')
                         });
 
                         $('#printMemoBulk').on('click', function() {

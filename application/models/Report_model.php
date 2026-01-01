@@ -166,6 +166,18 @@ class Report_model extends CI_Model
             $this->db->where('DATE(report.created_at) <=', $p["end_date"]);
         }
 
+        if (!empty($p["category"])) {
+            $this->db->where('report.category_id', $p["category"]);
+        }
+
+        if (!empty($p["entity"])) {
+            $this->db->where('entity.name', $p["entity"]);
+        }
+
+        if (!empty($p["status"])) {
+            $this->db->where('report.status', $p["status"]);
+        }
+
         if (!empty($columns)) {
             foreach ($columns as $column) {
                 if (!empty($column['search']['value'])) {
